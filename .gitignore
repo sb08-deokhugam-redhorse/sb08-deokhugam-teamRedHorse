@@ -1,6 +1,6 @@
 .env
 application-prod.yaml
-./.logs
+.logs/
 
 .gradle
 build/
