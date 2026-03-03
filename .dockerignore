@@ -1,0 +1,17 @@
+build/
+.gradle/
+
+.idea/
+*.iml
+
+.git/
+.gitignore
+
+*.md
+Dockerfile
+.dockerignore
+
+.env
+.logs/
+out/
+uploads/
