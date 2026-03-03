@@ -25,6 +25,6 @@ public class Alarm extends BaseUpdatableEntity {
     private String link;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_alrams_users"))
+    @JoinColumn(name = "recipient", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_alarms_users"))
     private User recipient;
 }

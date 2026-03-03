@@ -24,8 +24,8 @@
         </encoder>
     </appender>
 
-    <!-- dev 환경: DEBUG -->
-    <springProfile name="dev">
+    <!-- local 환경: DEBUG -->
+    <springProfile name="local">
         <logger name="org.hibernate.SQL" level="DEBUG" />
         <logger name="com.redhorse.deokhugam.deokhugam" level="DEBUG"/>
         <root level="DEBUG">
