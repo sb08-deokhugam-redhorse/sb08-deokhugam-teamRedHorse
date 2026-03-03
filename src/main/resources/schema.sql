@@ -1,3 +1,9 @@
+CREATE SCHEMA IF NOT EXISTS deokhugam AUTHORIZATION redhorse;
+GRANT USAGE ON SCHEMA deokhugam TO redhorse;
+GRANT CREATE ON SCHEMA deokhugam TO redhorse;
+ALTER ROLE redhorse SET SEARCH_PATH TO deokhugam, public;
+SET SEARCH_PATH to deokhugam, public;
+
 DROP TABLE IF EXISTS popular_review CASCADE;
 DROP TABLE IF EXISTS popular_books CASCADE;
 DROP TABLE IF EXISTS power_users CASCADE;
@@ -99,7 +105,7 @@ CREATE TABLE IF NOT EXISTS alarms
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
 
-    CONSTRAINT fk_alarms_user FOREIGN KEY (recipient) REFERENCES users (id)
+    CONSTRAINT fk_alarms_users FOREIGN KEY (recipient) REFERENCES users (id)
 );
 
 CREATE TABLE IF NOT EXISTS power_users
