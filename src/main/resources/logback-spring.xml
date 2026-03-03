@@ -11,7 +11,7 @@
         </encoder>
     </appender>
 
-    <!-- file appendder -->
+    <!-- file appender -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/deokhugam.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -24,10 +24,10 @@
         </encoder>
     </appender>
 
-    <!-- dev 환경: DEBUG -->
-    <springProfile name="dev">
+    <!-- local 환경: DEBUG -->
+    <springProfile name="local">
         <logger name="org.hibernate.SQL" level="DEBUG" />
-        <logger name="com.redhorse.deokhugam.deokhugam" level="DEBUG"/>
+        <logger name="com.redhorse.deokhugam" level="DEBUG"/>
         <root level="DEBUG">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />
@@ -38,7 +38,7 @@
     <springProfile name="prod">
         <logger name="org.hibernate.SQL" level="WARN"/>
         <logger name="org.hibernate" level="WARN"/>
-        <logger name="com.redhorse.deokhugam.deokhugam" level="INFO"/>
+        <logger name="com.redhorse.deokhugam" level="INFO"/>
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />
