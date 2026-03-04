@@ -21,7 +21,6 @@ import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -48,9 +47,6 @@ class CommentServiceTest {
   @InjectMocks
   private CommentServiceImpl commentService;
 
-  @BeforeEach
-  void setUp() {
-  }
 
   @Nested
   @DisplayName("댓글 등록 관련 테스트")
@@ -64,7 +60,7 @@ class CommentServiceTest {
       UUID reviewId = UUID.randomUUID();
       UUID userId = UUID.randomUUID();
       UUID commentId = UUID.randomUUID();
-      String now = Instant.now().toString();
+      Instant now = Instant.now();
       CommentCreateRequest commentReq = new CommentCreateRequest(reviewId, userId, "하이");
 
       Review mockReview = mock(Review.class);
@@ -73,6 +69,8 @@ class CommentServiceTest {
       given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(mockReview));
       given(userRepository.findById(eq(userId))).willReturn(Optional.of(mockUser));
       given(mockUser.getNickname()).willReturn("감자");
+      given(commentRepository.save(any(Comment.class)))
+          .willAnswer(invocation -> invocation.getArgument(0));
 
       CommentDto commentDto = new CommentDto(commentId, reviewId, userId, mockUser.getNickname(), "하이",
           now, now);

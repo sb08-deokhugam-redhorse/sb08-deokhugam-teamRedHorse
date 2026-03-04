@@ -43,7 +43,7 @@ class CommentControllerTest {
 
     CommentDto responseDto = new CommentDto(
         UUID.randomUUID(), reviewId, userId, "감자", "하이루",
-        Instant.now().toString(), Instant.now().toString()
+        Instant.now(), Instant.now()
     );
 
     given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);

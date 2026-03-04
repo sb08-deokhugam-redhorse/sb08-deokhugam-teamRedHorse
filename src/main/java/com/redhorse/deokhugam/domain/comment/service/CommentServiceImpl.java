@@ -36,8 +36,9 @@ public class CommentServiceImpl implements CommentService {
         .orElseThrow(() -> new IllegalArgumentException("User Not Found"));
 
     Comment comment = new Comment(content, review, user);
-    commentRepository.save(comment);
 
-    return commentMapper.toDto(comment);
+    Comment savedComment = commentRepository.save(comment);
+
+    return commentMapper.toDto(savedComment);
   }
 }

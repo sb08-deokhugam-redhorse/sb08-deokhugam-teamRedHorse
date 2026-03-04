@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.comment.dto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record CommentDto(
@@ -8,7 +9,7 @@ public record CommentDto(
   UUID userId,
   String userNickname,
   String content,
-  String createdAt,
-  String updatedAt) {
+  Instant createdAt,
+  Instant updatedAt) {
 
 }
