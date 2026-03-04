@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,7 +22,7 @@ public class Alarm extends BaseUpdatableEntity {
     private String contents;
 
     @Column(name = "sender", length = 100, nullable = false)
-    private String sender;
+    private UUID sender;
 
     @Column(name = "link", length = 255, nullable = false)
     private String link;
@@ -27,4 +30,12 @@ public class Alarm extends BaseUpdatableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_alarms_users"))
     private User recipient;
+
+    public Alarm(String type, String contents, String sender, String link, User recipient) {
+        this.type = type;
+        this.contents = contents;
+        this.sender = sender;
+        this.link = link;
+        this.recipient = recipient;
+    }
 }
