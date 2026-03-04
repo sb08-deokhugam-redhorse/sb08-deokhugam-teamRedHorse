@@ -1,7 +1,6 @@
 package com.redhorse.deokhugam.domain.book.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -19,6 +18,7 @@ public record BookCreateRequest(
         String author,
 
         @Size(max = 3000)
+        @NotBlank(message = "소개는 필수 입력 사항입니다.")
         String description,
 
         @Size(max = 50)
@@ -29,7 +29,6 @@ public record BookCreateRequest(
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate publishedDate,
 
-        @Nullable
         @Pattern(regexp = "^(\\d{9}[\\dXx]|97[89]\\d{10})$", message = "유효한 ISBN 형식이 아닙니다.")
         String isbn
 ) {}

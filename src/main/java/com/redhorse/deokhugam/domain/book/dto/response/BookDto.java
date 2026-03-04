@@ -13,7 +13,7 @@ public record BookDto(
         LocalDate publishedDate,
         String isbn,
         String thumbnailUrl,
-        Long reviewCount,
+        int reviewCount,
         double rating,
         Instant createdAt,
         Instant updatedAt
