@@ -18,24 +18,24 @@ public class Alarm extends BaseUpdatableEntity {
     @Column(name = "type", length = 10, nullable = false)
     private String type;
 
-    @Column(name = "contents", length = 255, nullable = false)
-    private String contents;
+    @Column(name = "message", length = 255, nullable = false)
+    private String message;
 
-    @Column(name = "sender", length = 100, nullable = false)
-    private UUID sender;
+    @Column(name = "review_content", length = 255, nullable = false)
+    private String reviewContent;
 
-    @Column(name = "link", length = 255, nullable = false)
-    private String link;
+    @Column(name = "review_id", length = 255, nullable = false)
+    private UUID reviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_alarms_users"))
-    private User recipient;
+    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_alarms_users"))
+    private User user;
 
-    public Alarm(String type, String contents, String sender, String link, User recipient) {
+    public Alarm(String type, String message, String reviewContent, UUID reviewId, User user) {
         this.type = type;
-        this.contents = contents;
-        this.sender = sender;
-        this.link = link;
-        this.recipient = recipient;
+        this.message = message;
+        this.reviewContent = reviewContent;
+        this.reviewId = reviewId;
+        this.user = user;
     }
 }
