@@ -14,7 +14,7 @@ public record PopularReviewDto(
         UUID userId,
         String userNickname,
         int reviewCount,
-        double rivewRating,
+        double reviewRating,
         PeriodType period,
         Instant createAt,
         int rank,
