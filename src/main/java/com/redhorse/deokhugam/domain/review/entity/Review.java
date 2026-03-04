@@ -17,9 +17,11 @@ import java.time.Instant;
                 name = "uk_book_user_id",
                 columnNames = {"book_id", "user_id"}
         )
+
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseUpdatableEntity {
+
     @Column(name = "rating", nullable = false)
     private int rating;
 
@@ -27,10 +29,10 @@ public class Review extends BaseUpdatableEntity {
     private String content;
 
     @Column(name = "likes", nullable = false)
-    private Long likes = 0L;
+    private Long likeCount = 0L;
 
     @Column(name = "comments", nullable = false)
-    private Long comments = 0L;
+    private Long commentCount = 0L;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
@@ -43,11 +45,11 @@ public class Review extends BaseUpdatableEntity {
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_reviews_user_id"))
     private User user;
 
-    public Review(int rating, String content, Book book, User user) {
-        this.rating = rating;
+    public Review(String content, int rating, Book book, User user) {
         this.content = content;
-        this.likes = 0L;
-        this.comments = 0L;
+        this.rating = rating;
+        this.likeCount = 0L;
+        this.commentCount = 0L;
         this.book = book;
         this.user = user;
     }
