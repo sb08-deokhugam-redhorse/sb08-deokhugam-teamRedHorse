@@ -53,7 +53,7 @@ public class ReviewServiceTest {
   private UUID bookId;
   private UUID userId;
   private String content;
-  private int rating;
+  private Integer rating;
   private Review review;
   private ReviewDto reviewDto;
   private Book book;
