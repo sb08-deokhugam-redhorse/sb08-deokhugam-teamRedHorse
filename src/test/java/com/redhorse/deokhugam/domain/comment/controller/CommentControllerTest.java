@@ -1,7 +1,9 @@
 package com.redhorse.deokhugam.domain.comment.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
 import com.redhorse.deokhugam.domain.comment.service.CommentService;
 import java.time.Instant;
 import java.util.UUID;
@@ -102,5 +105,50 @@ class CommentControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("댓글 수정 요청이 성공적으로 처리되어야 한다.")
+  void update() throws Exception {
+    // given
+    UUID commentId = UUID.randomUUID();
+    UUID requestUserId = UUID.randomUUID();
+    CommentUpdateRequest commentReq = new CommentUpdateRequest("댓글 수정 테스트");
+
+    CommentDto responseDto = new CommentDto(
+        commentId, UUID.randomUUID(), requestUserId, "감자", "댓글 수정 테스트",
+        Instant.now(), Instant.now()
+    );
+
+    given(commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class))).willReturn(responseDto);
+
+    // when & then
+    mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+            .header("Deokhugam-Request-User-ID", requestUserId.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(commentReq)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(commentId.toString()))
+        .andExpect(jsonPath("$.content").value("댓글 수정 테스트"))
+        .andExpect(jsonPath("$.userId").value(requestUserId.toString()));
+  }
+
+  @Test
+  @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다")
+  void update_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    // given
+    UUID commentId = UUID.randomUUID();
+    UUID requestUserId = UUID.randomUUID();
+    CommentUpdateRequest request = new CommentUpdateRequest("댓글 수정 테스트");
+
+    given(commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class)))
+        .willThrow(new IllegalArgumentException("자신이 작성한 댓글만 수정할 수 있습니다."));
+
+    // when & then
+    mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+            .header("Deokhugam-Request-User-ID", requestUserId.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isInternalServerError());
   }
 }
