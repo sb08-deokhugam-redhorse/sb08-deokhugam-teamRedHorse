@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.reviewTest;
+package com.redhorse.deokhugam.domain.reviewTest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
