@@ -9,6 +9,7 @@ import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,12 +29,19 @@ public class UserServiceImpl implements UserService {
       throw new UserDuplicateException(email);
     }
 
-    // DTO → Entity 변환
-    User user = userMapper.toEntity(request);
+    // 이메일 중복 검사 + 저장하는 짧은 시간 사이에
+    // 누군가 저장할 수도 있으므로 try문 사용
+    try {
+      // DTO → Entity 변환
+      User user = userMapper.toEntity(request);
+      // 저장 및 반환
+      userRepository.save(user);
 
-    // 저장 및 반환
-    userRepository.save(user);
+      return userMapper.toUserDto(user);
+    } catch (DataIntegrityViolationException e) {
+      log.error("중복 가입 시도 감지 (동시성 요청): {}", request.email());
 
-    return userMapper.toUserDto(user);
+      throw new UserDuplicateException(request.email());
+    }
   }
 }

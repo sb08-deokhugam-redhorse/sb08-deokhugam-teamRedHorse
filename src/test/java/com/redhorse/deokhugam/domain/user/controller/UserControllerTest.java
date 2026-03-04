@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
+import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.service.UserService;
 import java.time.Instant;
 import java.util.UUID;
@@ -101,5 +102,27 @@ class UserControllerTest {
 
     // then
     result.andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("유저 회원가입 실패 - 이메일 중복")
+  void createUser_DuplicateEmail() throws Exception {
+    // given
+    UserRegisterRequest request = new UserRegisterRequest(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    given(
+        userService.createUser(eq(request))
+    ).willThrow(new UserDuplicateException(request.email()));
+
+    // when & then
+    var result = mockMvc.perform(post("/api/users")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+
+    result.andExpect(status().isConflict());
   }
 }
