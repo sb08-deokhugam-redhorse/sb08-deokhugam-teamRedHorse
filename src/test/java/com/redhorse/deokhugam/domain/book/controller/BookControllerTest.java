@@ -146,7 +146,8 @@ class BookControllerTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                    .file(bookData));
+                    .file(bookData))
+                    .andExpect(status().isCreated());
 
             MockMultipartFile bookData2 = new MockMultipartFile(
                     "bookData", "", MediaType.APPLICATION_JSON_VALUE,

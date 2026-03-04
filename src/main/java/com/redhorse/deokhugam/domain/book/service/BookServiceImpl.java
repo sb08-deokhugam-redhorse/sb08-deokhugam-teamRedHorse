@@ -36,6 +36,10 @@ public class BookServiceImpl implements BookService
             throw new IsbnDuplicateException(bookCreateRequest.isbn());
         }
 
+        String thumbnailUrl = (thumbnailImage != null && !thumbnailImage.isEmpty())
+                ? thumbnailImage.getOriginalFilename()
+                : null;
+
         Book book = new Book(
                 bookCreateRequest.title(),
                 bookCreateRequest.author(),
@@ -43,7 +47,7 @@ public class BookServiceImpl implements BookService
                 bookCreateRequest.publisher(),
                 bookCreateRequest.publishedDate(),
                 bookCreateRequest.isbn(),
-                null,
+                thumbnailUrl,
                 false,
                 0.0,
                 0L,
