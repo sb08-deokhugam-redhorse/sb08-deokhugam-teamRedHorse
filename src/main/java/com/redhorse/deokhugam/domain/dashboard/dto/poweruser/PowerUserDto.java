@@ -9,7 +9,7 @@ public record PowerUserDto(
         UUID userId,
         String nickname,
         PeriodType period,
-        Instant createAt,
+        Instant createdAt,
         int rank,
         double score,
         double reviewScoreSum,

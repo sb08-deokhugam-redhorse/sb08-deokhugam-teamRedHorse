@@ -11,10 +11,10 @@ public record PopularBookDto(
         String title,
         String thumbnailUrl,
         PeriodType period,
-        int rank,
+        long rank,
         double score,
-        int reviewCount,
+        long reviewCount,
         double rating,
-        Instant createAt
+        Instant createdAt
 ) {
 }

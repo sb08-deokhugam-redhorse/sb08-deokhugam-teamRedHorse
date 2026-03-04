@@ -18,13 +18,13 @@ public class Alarm extends BaseUpdatableEntity {
     @Column(name = "type", length = 10, nullable = false)
     private String type;
 
-    @Column(name = "message", length = 255, nullable = false)
+    @Column(name = "message", nullable = false)
     private String message;
 
     @Column(name = "review_content", length = 255, nullable = false)
     private String reviewContent;
 
-    @Column(name = "review_id", length = 255, nullable = false)
+    @Column(name = "review_id", nullable = false)
     private UUID reviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)

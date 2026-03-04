@@ -14,7 +14,7 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface AlarmMapper {
     @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "confirmed", constant = "false")
+    @Mapping(target = "confirmed", constant = "false") // 추후 수정, 생성시면 상관 없는데 업뎃에서 걸릴 듯
     NotificationDto alarmToNotificationDto(Alarm alarm);
 
 }

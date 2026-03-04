@@ -16,10 +16,10 @@ public record PopularReviewDto(
         int reviewCount,
         double reviewRating,
         PeriodType period,
-        Instant createAt,
-        int rank,
+        Instant createdAt,
+        long rank,
         double score,
-        int likeCount,
-        int commentCount
+        long likeCount,
+        long commentCount
 ) {
 }
