@@ -13,7 +13,8 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      # - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      # 스키마 실행은 flyway가 실행하도록 하기 위해 주석
 
 volumes:
   postgres_data:
