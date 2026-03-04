@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(GlobalException.class)
   public ResponseEntity<ErrorResponse> handleGlobalException(GlobalException e) {
-    log.warn("DiscodeitException: code={}, message={}", e.getErrorCode(),
+    log.warn("GlobalException: code={}, message={}", e.getErrorCode(),
         e.getErrorCode().getMessage());
 
     return ResponseEntity.status(e.getErrorCode().getStatus())
