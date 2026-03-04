@@ -1,29 +1,29 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create
-    defer-datasource-initialization: true
+      ddl-auto: validate
+    # defer-datasource-initialization: true
+    # flyway 기본 설정상 무조건 먼저 실행 되려고 하는데 true로 인해서 대기됨
+    # JPA는 flyway기본 설정때문에 대기됨
+    # → 순환참조 에러
 
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema.sql
-      data-locations: classpath:data.sql
+#  sql:
+#    init:
+#      mode: never
+#      schema-locations: classpath:schema.sql
+#      data-locations: classpath:data.sql
 
 logging:
   level:
-    root: debug
+    # 실시간으로 콘솔이 올라와서 선택적으로 debug
+    # root: debug
+    root: info
     org.hibernate.sql: debug
     org.hibernate.orm.jdbc.bind: trace

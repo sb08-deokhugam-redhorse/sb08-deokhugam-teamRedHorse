@@ -16,6 +16,14 @@ spring:
       max-file-size: 10MB
       max-request-size: 30MB
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations:
+      - classpath:db/migration # 스키마 저장 위치 - 관례
+      - classpath:db/seed      # 데이터 저장 위치 - 관례
+
 # Common Logging
 logging:
   level:
