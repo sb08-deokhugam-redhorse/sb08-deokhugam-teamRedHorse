@@ -5,8 +5,10 @@ import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
-import com.redhorse.deokhugam.domain.comment.dto.CommentDto; // 이거 임시임
+import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
+import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
+import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,60 +33,97 @@ public class AlarmServiceImpl implements AlarmService {
 
         // 자기 자신을 가져오게 수정
         Optional<User> user = userRepository.findById(dto.userId());
+        Optional<User> sender = userRepository.findById(dto.userId());
+        Optional<Review> review = reviewRepository.findById(dto.reviewId());
 
         Alarm alarm = new Alarm(
                 "COMMENT",
                 dto.content(),
+                // 유저랑 댓글 단사람 조합해서 만들기, 나중에 ddl 엔티티 이름 바꿔줘야 할 듯
                 dto.userNickName(),
-                "여기에 링크 넣기",
+                // 링크의 경우, /api/reviews/{reviewId}가 되게 저장하면 될듯
+                // js에서 이렇게 동작하는거 같네,
+                // 아니면 그냥 dto.reviewId()만 하면 되나?
+//                "/api/reviews/{"+dto.reviewId()+"}",
+                dto.reviewId(),
                 user.get()
         );
 
-         alarm = alarmRepository.save(alarm);
+        alarm = alarmRepository.save(alarm);
 
-         NotificationDto notificationDto = new NotificationDto(
-                 alarm.getId(),
-                 alarm.getSender(),
-                 alarm.getRecipient().getId(),
-         );
+        // 지금 알림 제목이 문제인데... sender 지우지 말고 이름만 바꿔서 활용해 볼까?
+        String title = "[" + sender.get().getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.";
 
-        return
+        NotificationDto notificationDto = new NotificationDto(
+                alarm.getId(),
+                alarm.getUser().getId(),
+                alarm.getReviewId(),
+                title,
+                dto.content(),
+                false,
+                alarm.getCreatedAt(),
+                alarm.getUpdatedAt()
+        );
 
-
-
-                .contents(dto.content()) // 댓글 내용
-                .sender(dto.userNickName()) // 발송자 (댓글 작성자 닉네임)
-                .link("/reviews/" + dto.reviewId()) // 이동할 링크 조립
-                .recipient(recipient) // 수신자 엔티티
-                .build();
-
-        alarmRepository.save(alarmMapper.createNotificationDtoToCommentDto(dto));
-        return  null;
+        return notificationDto;
     }
 
     @Override
-    public NotificationDto createDashboardAlarm(Object dto) {
+    public NotificationDto createLikeAlarm(ReviewLikeDto dto) {
+        // 임시 dto 사용 중
 
-        return  null;
+        // 자기 자신을 가져오게 수정
+        Optional<User> user = userRepository.findById(dto.userId());
+        Optional<Review> review = reviewRepository.findById(dto.reviewId());
+
+        String content = "[" + user.get().getNickname() + "]님이 나의 리뷰를 좋아합니다.";
+        Alarm alarm = new Alarm(
+                "LIKE",
+                content,
+                user.get().getNickname(),
+                dto.reviewId(),
+                user.get()
+        );
+
+        alarm = alarmRepository.save(alarm);
+
+        NotificationDto notificationDto = new NotificationDto(
+                alarm.getId(),
+                alarm.getUser().getId(),
+                alarm.getReviewId(),
+                content,
+                review.get().getContent(),
+                false,
+                alarm.getCreatedAt(),
+                alarm.getUpdatedAt()
+        );
+
+        return notificationDto;
     }
 
-//    @Override
-//    public void checkAlarm() {
-//
-//    }
-//
-//    @Override
-//    public void checkAllAlarm() {
-//
-//    }
-//
-//    @Override
-//    public void deleteAlarm() {
-//
-//    }
-//
-//    @Override
-//    public void getAlarmList() {
-//
-//    }
+    @Override
+    public NotificationDto createDashboardAlarm() {
+
+
+        return null;
+    }
+
+    @Override
+    public void checkAlarm() {
+
+    }
+
+    @Override
+    public void checkAllAlarm() {
+
+    }
+
+    @Override
+    public void deleteAlarm() {
+    }
+
+    @Override
+    public void getAlarmList() {
+
+    }
 }

@@ -13,9 +13,9 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface AlarmMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "message", source = "content")
-    @Mapping(target = "confirmed", constant = "false")
-    @Mapping(target = "reviewContent", constant = "COMMENT")
-    NotificationDto createNotificationDtoToCommentDto(Alarm alarm);
+//    @Mapping(target = "id", ignore = true)
+//    @Mapping(target = "message", source = "content")
+//    @Mapping(target = "confirmed", constant = "false")
+//    @Mapping(target = "reviewContent", constant = "COMMENT")
+//    NotificationDto createNotificationDtoToCommentDto(Alarm alarm);
 }
