@@ -1,24 +1,26 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRES_PORT}/${POSTGRES_DB}?currentSchema=deokhugam_test
-    driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
-  flyway:
-    enabled: true
-    # 만약 스키마가 없으면 자동으로 생성하게 하려면 아래 옵션이 필요할 수 있습니다.
-    create-schemas: true
+  sql:
+    init:
+      mode: never
 
 logging:
   level:
-    root: info
     org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.springframework.test: debug
