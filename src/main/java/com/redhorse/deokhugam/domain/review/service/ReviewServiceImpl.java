@@ -11,6 +11,7 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,14 +35,14 @@ public class ReviewServiceImpl implements ReviewService {
     User user = userRepository
         .findById(userId).orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
-    if(reviewRepository.existsByBookIdAndUserId(bookId, userId)){
-      throw new IllegalArgumentException("Review already exists");
+    try{
+      Review review = new Review(request.content(), request.rating(), book, user);
+      reviewRepository.save(review);
+      return reviewMapper.toDto(review);
+    } catch (DataIntegrityViolationException e){
+      throw new IllegalStateException("bookId, userId exists");
     }
 
-    Review review = new Review(request.content(), request.rating(), book, user);
-    reviewRepository.save(review);
-
-    return reviewMapper.toDto(review);
   }
 
 }

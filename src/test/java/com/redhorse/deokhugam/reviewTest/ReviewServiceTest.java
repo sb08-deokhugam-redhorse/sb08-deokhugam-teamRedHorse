@@ -19,6 +19,7 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +76,11 @@ public class ReviewServiceTest {
         "publisher",
         LocalDate.now(),
         "isbn",
-        false);
+        "thumbnailUrl",
+        Boolean.FALSE,
+        Double.valueOf(0),
+        Long.valueOf(0),
+        new ArrayList<>());
     ReflectionTestUtils.setField(book, "id", bookId);
 
     user = new User("email", "nickname", "password");
