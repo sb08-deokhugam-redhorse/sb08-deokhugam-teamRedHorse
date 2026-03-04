@@ -56,6 +56,13 @@ public class MDCLoggingInterceptor implements HandlerInterceptor {
       String ip = request.getHeader(header);
 
       if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+
+        // AWS에서 로드 벨런스 같은 것을 거치면 IP가 ,(콤마)를 기준으로 여러개가 된다고 함
+        // e.g. X-Forwarded-For: <Client_IP>, <Proxy1_IP>, <Proxy2_IP>
+        // 맨 처음이 사용자의 원본IP이므로 첫 번째만 추출한다.
+        if(ip.contains(",")) {
+          return ip.split(",")[0];
+        }
         return ip;
       }
     }
