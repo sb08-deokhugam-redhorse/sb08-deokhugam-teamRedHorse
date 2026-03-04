@@ -6,15 +6,18 @@ import com.redhorse.deokhugam.domain.dashboard.entity.PowerUser;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.global.entity.BaseUpdatableEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @SQLRestriction("is_deleted = false")
 @Entity
