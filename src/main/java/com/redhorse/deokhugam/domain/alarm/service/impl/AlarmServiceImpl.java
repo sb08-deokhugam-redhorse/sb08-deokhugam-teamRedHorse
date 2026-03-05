@@ -2,6 +2,8 @@ package com.redhorse.deokhugam.domain.alarm.service.impl;
 
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
 import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
+import com.redhorse.deokhugam.domain.alarm.exception.AlarmNotFoundException;
+import com.redhorse.deokhugam.domain.alarm.exception.NoAlarmException;
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
@@ -13,11 +15,11 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -115,13 +117,25 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public void checkAlarm(UUID alarmId, UUID userId) {
         Alarm alarm = alarmRepository.findById(alarmId).orElseThrow(
-                () -> new IllegalArgumentException("알림이 없습니다.")
+                () -> new AlarmNotFoundException(alarmId)
         );
+
+        if (alarm.getUser().getId().equals(userId)) {
+            alarm.update();
+        }
     }
 
     @Override
-    public void checkAllAlarm() {
+    public void checkAllAlarm(UUID userId) {
+        List<Alarm> alarms = alarmRepository.findAllAlarmByUserId(userId);
 
+        if (alarms.isEmpty()) {
+            throw new NoAlarmException(userId);
+        }
+
+        for (Alarm alarm : alarms) {
+            alarm.update();
+        }
     }
 
     @Override

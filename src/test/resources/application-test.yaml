@@ -24,3 +24,8 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
     org.springframework.test: debug
+
+# 인증 인터셉터
+auth:
+  interceptor:
+    enabled: false

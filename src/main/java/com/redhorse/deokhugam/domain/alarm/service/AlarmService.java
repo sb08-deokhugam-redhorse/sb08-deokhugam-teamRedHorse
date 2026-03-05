@@ -9,10 +9,16 @@ import java.util.UUID;
 
 public interface AlarmService {
     NotificationDto createCommentAlarm(CommentDto dto);
+
     NotificationDto createLikeAlarm(ReviewLikeDto dto);
+
     NotificationDto createReviewAlarm(PopularReviewDto dto);
+
     void checkAlarm(UUID alarmId, UUID userId);
-    void checkAllAlarm();
+
+    void checkAllAlarm(UUID userId);
+
     void deleteAlarm();
+
     void getAlarmList();
 }

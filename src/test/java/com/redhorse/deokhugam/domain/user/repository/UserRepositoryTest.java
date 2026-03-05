@@ -57,4 +57,29 @@ class UserRepositoryTest {
     assertThat(savedUser.getEmail()).isEqualTo("seongjo.park@gmail.com");
     assertThat(savedUser.getCreatedAt()).isNotNull();
   }
+
+  @Test
+  @DisplayName("이메일로 유저 조회")
+  void findByEmail() {
+    // given
+    String email = "seongjo.park@gmail.com";
+
+    User user = new User(
+        email,
+        "박성조",
+        "Thisistest123***"
+    );
+    userRepository.save(user);
+
+    // when
+    var foundUser = userRepository.findByEmail(email);
+    var notFoundUser = userRepository.findByEmail("notfound@gmail.com");
+
+    // then
+    assertThat(foundUser).isPresent();
+    assertThat(
+        foundUser.get().getEmail()
+    ).isEqualTo(email);
+    assertThat(notFoundUser).isEmpty();
+  }
 }

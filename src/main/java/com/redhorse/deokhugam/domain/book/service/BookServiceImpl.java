@@ -5,7 +5,6 @@ import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
 import com.redhorse.deokhugam.domain.book.dto.response.CursorPageResponseBookDto;
 import com.redhorse.deokhugam.domain.book.entity.Book;
-import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.exception.IsbnDuplicateException;
 import com.redhorse.deokhugam.domain.book.mapper.BookMapper;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
@@ -28,21 +27,10 @@ public class BookServiceImpl implements BookService
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
 
-    /**
-     * 도서를 등록한다.
-     * <p>
-     *      ISBN이 제공된 경우 중복 여부를 검사하며, 썸네일 이미지는 S3에 저장한다.
-     * </p>
-     *
-     * @param bookCreateRequest 도서 등록 요청 정보
-     * @param thumbnailImage    썸네일 이미지 파일
-     * @return 등록된 도서 정보
-     * @throws IsbnDuplicateException ISBN이 이미 존재하는 경우
-     */
     @Transactional
     @Override
     public BookDto create(BookCreateRequest bookCreateRequest, MultipartFile thumbnailImage) {
-        log.debug("책 등록 요청: bookCreateRequest={}", bookCreateRequest);
+        log.debug("책 등록 요청 - bookCreateRequest: {}", bookCreateRequest);
 
         if (bookCreateRequest.isbn() != null && bookRepository.existsByIsbn(bookCreateRequest.isbn())) {
             throw new IsbnDuplicateException(bookCreateRequest.isbn());
@@ -68,8 +56,6 @@ public class BookServiceImpl implements BookService
 
         Book savedBook = bookRepository.save(book);
 
-        log.info("책 등록 완료: book={}", savedBook);
-
         return bookMapper.toBookDto(savedBook);
     }
 
@@ -83,82 +69,19 @@ public class BookServiceImpl implements BookService
         return null;
     }
 
-    /**
-     * 도서 정보를 수정한다.
-     * <p>
-     *      제목, 저자, 소개, 출판사, 출간일만 수정 가능하다.
-     * </p>
-     *
-     * @param bookId            수정할 도서 ID
-     * @param bookUpdateRequest 도서 수정 요청 정보
-     * @param thumbnailImage    썸네일 이미지 파일
-     * @return 수정된 도서 정보
-     * @throws BookNotFoundException 도서를 찾을 수 없는 경우
-     */
-    @Transactional
     @Override
-    public BookDto update(UUID bookId, BookUpdateRequest bookUpdateRequest, MultipartFile thumbnailImage) {
-        log.debug("책 수정 요청: bookUpdateRequest={}", bookUpdateRequest);
-
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId));
-
-        book.update(
-                bookUpdateRequest.title(),
-                bookUpdateRequest.author(),
-                bookUpdateRequest.description(),
-                bookUpdateRequest.publisher(),
-                bookUpdateRequest.publishedDate()
-        );
-
-        log.info("책 수정 완료: book={}", book);
-
-        return bookMapper.toBookDto(book);
+    public BookDto update(BookUpdateRequest bookUpdateRequest, MultipartFile thumbnailImage) {
+        return null;
     }
 
-    /**
-     * 도서를 논리 삭제한다.
-     * <p>
-     *      삭제 후에도 관련 리뷰, 댓글 등의 데이터는 DB에 유지된다.
-     * </p>
-     *
-     * @param bookId 논리 삭제할 도서 ID
-     * @throws BookNotFoundException 도서를 찾을 수 없는 경우
-     */
-    @Transactional
     @Override
     public void softDelete(UUID bookId) {
-        log.debug("책 논리 삭제 요청: bookId={}", bookId);
 
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId));
-
-        book.delete();
-
-        log.info("책 논리 삭제 완료: bookId={}", bookId);
     }
 
-    /**
-     * 도서를 물리 삭제한다.
-     * <p>
-     *     도서와 관련된 리뷰, 댓글 등 모든 데이터가 DB에서 영구 삭제된다.
-     *     UI로 제공되지 않으며 테스트 코드를 통해서만 검증한다.
-     * </p>
-     *
-     * @param bookId 물리 삭제할 도서 ID
-     * @throws BookNotFoundException 도서를 찾을 수 없는 경우
-     */
-    @Transactional
     @Override
     public void hardDelete(UUID bookId) {
-        log.debug("책 물리 삭제 요청: bookId={}", bookId);
 
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId));
-
-        bookRepository.delete(book);
-
-        log.info("책 물리 삭제 완료: bookId={}", bookId);
     }
 
     @Override

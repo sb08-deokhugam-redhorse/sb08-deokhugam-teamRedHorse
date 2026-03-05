@@ -19,7 +19,8 @@ public interface CommentService {
   // 댓글 목록 조회
 
   // 댓글 논리 삭제
+  void softDelete(UUID commentId, UUID requestUserId);
 
   // 댓글 물리 삭제
-
+  void hardDelete(UUID commentId, UUID requestUserId);
 }

@@ -38,4 +38,10 @@ public class Alarm extends BaseUpdatableEntity {
         this.reviewId = reviewId;
         this.user = user;
     }
+
+    public void update(){
+        if(this.getUpdatedAt().equals(this.getCreatedAt())){
+            this.message+=" ";
+        }
+    }
 }
