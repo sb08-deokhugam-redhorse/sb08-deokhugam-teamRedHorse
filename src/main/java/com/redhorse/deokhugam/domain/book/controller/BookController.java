@@ -27,7 +27,7 @@ public class BookController
     public ResponseEntity<BookDto> createBook(@Valid @RequestPart("bookData") BookCreateRequest bookCreateRequest,
                                               @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage)
     {
-        log.debug("책 생성 시작: bookName={}", bookCreateRequest.title());
+        log.debug("[Book-Controller] 생성 요청 시작: bookName={}", bookCreateRequest.title());
 
         BookDto book = bookService.create(bookCreateRequest, thumbnailImage);
 
@@ -39,7 +39,7 @@ public class BookController
                                               @Valid @RequestPart("bookData") BookUpdateRequest bookUpdateRequest,
                                               @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage)
     {
-        log.debug("책 수정 시작: bookId={}", bookId);
+        log.debug("[Book-Controller] 수정 요청 시작: bookId={}", bookId);
 
         BookDto book = bookService.update(bookId, bookUpdateRequest, thumbnailImage);
 
@@ -47,9 +47,8 @@ public class BookController
     }
 
     @DeleteMapping("/{bookId}")
-    public ResponseEntity<Void> softDeleteBook(@PathVariable UUID bookId)
-    {
-        log.debug("책 삭제 시작(논리): bookId={}", bookId);
+    public ResponseEntity<Void> softDeleteBook(@PathVariable UUID bookId) {
+        log.debug("[Book-Controller] 논리 삭제 시작: bookId={}", bookId);
 
         bookService.softDelete(bookId);
 
@@ -57,9 +56,8 @@ public class BookController
     }
 
     @DeleteMapping("/{bookId}/hard")
-    public ResponseEntity<Void> hardDeleteBook(@PathVariable UUID bookId)
-    {
-        log.debug("책 삭제 시작(물리): bookId={}", bookId);
+    public ResponseEntity<Void> hardDeleteBook(@PathVariable UUID bookId) {
+        log.debug("[Book-Controller] 물리 삭제 요청 시작: bookId={}", bookId);
 
         bookService.hardDelete(bookId);
 

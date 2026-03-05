@@ -42,8 +42,6 @@ public class BookServiceImpl implements BookService
     @Transactional
     @Override
     public BookDto create(BookCreateRequest bookCreateRequest, MultipartFile thumbnailImage) {
-        log.debug("책 등록 요청: bookCreateRequest={}", bookCreateRequest);
-
         if (bookCreateRequest.isbn() != null && bookRepository.existsByIsbn(bookCreateRequest.isbn())) {
             throw new IsbnDuplicateException(bookCreateRequest.isbn());
         }
@@ -68,7 +66,7 @@ public class BookServiceImpl implements BookService
 
         Book savedBook = bookRepository.save(book);
 
-        log.info("책 등록 완료: book={}", savedBook);
+        log.info("[Book-Controller] 등록 작업 완료: book={}", savedBook);
 
         return bookMapper.toBookDto(savedBook);
     }
@@ -98,8 +96,6 @@ public class BookServiceImpl implements BookService
     @Transactional
     @Override
     public BookDto update(UUID bookId, BookUpdateRequest bookUpdateRequest, MultipartFile thumbnailImage) {
-        log.debug("책 수정 요청: bookUpdateRequest={}", bookUpdateRequest);
-
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
@@ -111,7 +107,7 @@ public class BookServiceImpl implements BookService
                 bookUpdateRequest.publishedDate()
         );
 
-        log.info("책 수정 완료: book={}", book);
+        log.info("[Book-Service] 수정 작업 완료: book={}", book);
 
         return bookMapper.toBookDto(book);
     }
@@ -128,14 +124,12 @@ public class BookServiceImpl implements BookService
     @Transactional
     @Override
     public void softDelete(UUID bookId) {
-        log.debug("책 논리 삭제 요청: bookId={}", bookId);
-
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
         book.delete();
 
-        log.info("책 논리 삭제 완료: bookId={}", bookId);
+        log.info("[Book-Service] 논리 삭제 작업 완료: bookId={}", bookId);
     }
 
     /**
@@ -151,14 +145,12 @@ public class BookServiceImpl implements BookService
     @Transactional
     @Override
     public void hardDelete(UUID bookId) {
-        log.debug("책 물리 삭제 요청: bookId={}", bookId);
-
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
         bookRepository.delete(book);
 
-        log.info("책 물리 삭제 완료: bookId={}", bookId);
+        log.info("[Book-Service] 물리 삭제 작업 완료: bookId={}", bookId);
     }
 
     @Override
