@@ -75,8 +75,6 @@ public class AlarmServiceImpl implements AlarmService {
     public NotificationDto createReviewAlarm(PopularReviewDto dto) {
         // 임시 dto 사용 중
 
-        User user = userRepository.findById(dto.userId())
-                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
         Review review = reviewRepository.findById(dto.reviewId())
                 .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
         User reviewOwner = review.getUser();
