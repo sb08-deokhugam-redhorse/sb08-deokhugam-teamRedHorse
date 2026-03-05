@@ -40,6 +40,7 @@ class BookServiceImplTest
 
     private Book book;
     private BookDto bookDto;
+    private UUID bookId;
 
     @BeforeEach
     void setUp() {
@@ -71,6 +72,8 @@ class BookServiceImplTest
                 LocalDate.of(2024, 1, 1), "9788965745464", null, 0, 0.0,
                 Instant.now(), Instant.now()
         );
+
+        bookId = UUID.randomUUID();
     }
 
     @Nested
@@ -150,16 +153,72 @@ class BookServiceImplTest
         @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException이 발생한다.")
         void fail_withNonExistentBook_throwsBookNotFoundException() {
             // given
-            UUID uuid = UUID.randomUUID();
-            given(bookRepository.findById(uuid)).willReturn(Optional.empty());
+            given(bookRepository.findById(bookId)).willReturn(Optional.empty());
 
             // when
-            assertThatThrownBy(() -> bookServiceimpl.update(uuid, bookUpdateRequest, null))
+            assertThatThrownBy(() -> bookServiceimpl.update(bookId, bookUpdateRequest, null))
                     .isInstanceOf(BookNotFoundException.class);
 
             // then
-            then(bookRepository).should().findById(uuid);
+            then(bookRepository).should().findById(bookId);
             then(bookRepository).should(never()).save(any(Book.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 삭제")
+    class SoftDelete {
+        @Test
+        @DisplayName("성공 - 도서를 논리 삭제한다.")
+        void success_softDelete() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.of(book));
+
+            // when
+            bookServiceimpl.softDelete(bookId);
+
+            // then
+            assertThat(book.getIsDeleted()).isTrue();
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException이 발생한다.")
+        void fail_withNonExistentBook_throwsBookNotFoundException() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> bookServiceimpl.softDelete(bookId))
+                    .isInstanceOf(BookNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("hardDelete 메서드")
+    class HardDelete {
+
+        @Test
+        @DisplayName("성공 - 도서를 물리 삭제한다")
+        void success_hardDelete() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.of(book));
+
+            // when
+            bookServiceimpl.hardDelete(bookId);
+
+            // then
+            then(bookRepository).should().delete(book);
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException을 던진다")
+        void fail_withNonExistentBook_throwsBookNotFoundException() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> bookServiceimpl.hardDelete(bookId))
+                    .isInstanceOf(BookNotFoundException.class);
         }
     }
 }

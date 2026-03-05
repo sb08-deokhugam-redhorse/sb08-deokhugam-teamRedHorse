@@ -25,8 +25,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.mockito.BDDMockito.any;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -216,6 +216,60 @@ class BookControllerTest
 
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/books/{bookId}", bookId)
                             .file(bookData))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 삭제(논리) DELETE /api/books/{bookId}")
+    class SoftDeleteBook {
+
+        @Test
+        @DisplayName("성공 - 도서를 논리 삭제하면 204 No Content를 반환한다")
+        void success_softDelete_returns204() throws Exception {
+            // given
+            willDoNothing().given(bookService).softDelete(bookId);
+
+            // when & then
+            mockMvc.perform(delete("/api/books/{bookId}", bookId))
+                    .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 404 Not Found를 반환한다")
+        void fail_withNonExistentBook_returns404() throws Exception {
+            // given
+            willThrow(new BookNotFoundException(bookId)).given(bookService).softDelete(bookId);
+
+            // when & then
+            mockMvc.perform(delete("/api/books/{bookId}", bookId))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 삭제(물리) DELETE /api/books/{bookId}/hard")
+    class HardDeleteBook {
+
+        @Test
+        @DisplayName("성공 - 도서를 물리 삭제하면 204 No Content를 반환한다")
+        void success_hardDelete_returns204() throws Exception {
+            // given
+            willDoNothing().given(bookService).hardDelete(bookId);
+
+            // when & then
+            mockMvc.perform(delete("/api/books/{bookId}/hard", bookId))
+                    .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 404 Not Found를 반환한다")
+        void fail_withNonExistentBook_returns404() throws Exception {
+            // given
+            willThrow(new BookNotFoundException(bookId)).given(bookService).hardDelete(bookId);
+
+            // when & then
+            mockMvc.perform(delete("/api/books/{bookId}/hard", bookId))
                     .andExpect(status().isNotFound());
         }
     }
