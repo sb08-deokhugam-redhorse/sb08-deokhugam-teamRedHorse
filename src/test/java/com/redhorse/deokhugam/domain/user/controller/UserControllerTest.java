@@ -1,6 +1,5 @@
 package com.redhorse.deokhugam.domain.user.controller;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,7 +18,6 @@ import com.redhorse.deokhugam.global.config.AuthenticationInterceptor;
 import com.redhorse.deokhugam.global.config.MDCLoggingInterceptor;
 import java.time.Instant;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,17 +47,6 @@ class UserControllerTest {
 
   @MockitoBean
   private AuthenticationInterceptor authenticationInterceptor;
-
-  @BeforeEach
-  void setUp() throws Exception {
-    given(
-        mdcLoggingInterceptor.preHandle(any(), any(), any())
-    ).willReturn(true);
-
-    given(
-        authenticationInterceptor.preHandle(any(), any(), any())
-    ).willReturn(true);
-  }
 
   @Test
   @DisplayName("유저 회원가입 성공")

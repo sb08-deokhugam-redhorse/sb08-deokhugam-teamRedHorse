@@ -1,6 +1,5 @@
 package com.redhorse.deokhugam.global.config;
 
-import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.exception.AuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +40,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     // 실제 유저가 존재하는지 확인
     userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+        .orElseThrow(AuthenticationException::new);
 
     return true;
   }
