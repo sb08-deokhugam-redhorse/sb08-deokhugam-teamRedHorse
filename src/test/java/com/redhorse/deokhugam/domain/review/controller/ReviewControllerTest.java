@@ -3,6 +3,9 @@ package com.redhorse.deokhugam.domain.review.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -123,10 +126,11 @@ public class ReviewControllerTest {
         Instant.now(),
         Instant.now()
     );
-    // when & then
+
     given(reviewService.update(eq(reviewId), eq(userId), any(ReviewUpdateRequest.class)))
         .willReturn(reviewDto);
 
+    // when & then
     mockMvc.perform(patch("/api/reviews/{reviewId}", reviewId)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId)
@@ -155,5 +159,71 @@ public class ReviewControllerTest {
             .header("Deokhugam-Request-User-ID", userId)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  @DisplayName("리뷰 논리 삭제 성공 테스트")
+  void deleteReview_Success() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    willDoNothing().given(reviewService).delete(eq(reviewId), eq(userId));
+
+    // when & then
+    mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @DisplayName("리뷰 논리 삭제 실패 테스트 - 리뷰 작성자가 아닌 사람이 삭제할 경우")
+  void deleteReview_Failure() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new IllegalArgumentException("User did not write review"))
+        .given(reviewService).delete(eq(reviewId), eq(userId));
+
+    // when & then
+    mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  @DisplayName("리뷰 물리 삭제 성공 테스트")
+  void deleteHardReview_Success() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    willDoNothing().given(reviewService).deleteHard(eq(reviewId), eq(userId));
+
+    // when & then
+    mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @DisplayName("리뷰 물리 삭제 실패 테스트 - 존재하지 않는 리뷰일 경우")
+  void deleteHardReview_Failure() throws Exception {
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new IllegalArgumentException("review not exists"))
+        .given(reviewService).deleteHard(eq(reviewId), eq(userId));
+
+    // when & then
+    mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isInternalServerError());
+
   }
 }
