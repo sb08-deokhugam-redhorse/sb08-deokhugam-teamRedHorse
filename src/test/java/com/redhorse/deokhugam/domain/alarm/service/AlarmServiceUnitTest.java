@@ -163,9 +163,6 @@ class AlarmServiceUnitTest {
                 5, 2
         );
 
-        User mockUser = mock(User.class);
-        given(userRepository.findById(testUserId)).willReturn(Optional.of(mockUser));
-
         Review mockReview = mock(Review.class);
         User mockReviewOwner = mock(User.class);
         given(mockReview.getUser()).willReturn(mockReviewOwner);
