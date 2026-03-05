@@ -120,7 +120,9 @@ public class AlarmServiceImpl implements AlarmService {
                 () -> new AlarmNotFoundException(alarmId)
         );
 
-        alarm.update();
+        if (alarm.getUser().getId().equals(userId)) {
+            alarm.update();
+        }
     }
 
     @Override

@@ -40,6 +40,8 @@ public class Alarm extends BaseUpdatableEntity {
     }
 
     public void update(){
-        this.message+=" ";
+        if(this.getUpdatedAt().equals(this.getCreatedAt())){
+            this.message+=" ";
+        }
     }
 }
