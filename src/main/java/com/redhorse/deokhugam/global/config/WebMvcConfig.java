@@ -26,14 +26,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
         .excludePathPatterns(
             // 인증 제외 대상
             "/",
+            "/index.html",
+            "/api/users",
             "/api/users/login",
-            "/api/users/signup",
-            "/favicon.ico",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/static/**",
-            "/images/**"
+            "/assets/**",
+            "/images/**",
+            "/favicon.ico"
         )
         .order(2);
+
   }
 }
