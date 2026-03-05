@@ -114,8 +114,6 @@ class AlarmServiceAlarmReadUnitTest {
         // given
         UUID testUserId = UUID.randomUUID();
         Alarm mockAlarm = mock(Alarm.class);
-        given(mockAlarm.getMessage()).willReturn("스프링 테스트 알림");
-
         given(alarmRepository.findAllAlarmByUserId(testUserId)).willReturn(List.of(mockAlarm));
 
         // when
