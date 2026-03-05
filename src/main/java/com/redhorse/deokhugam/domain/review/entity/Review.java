@@ -53,4 +53,13 @@ public class Review extends BaseUpdatableEntity {
         this.book = book;
         this.user = user;
     }
+
+    public void update(String content, Integer rating){
+        if(content != null && !content.equals(this.content)){
+            this.content = content;
+        }
+        if(rating != null && rating != this.rating){
+            this.rating = rating;
+        }
+    }
 }
