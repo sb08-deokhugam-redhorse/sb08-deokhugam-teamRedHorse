@@ -80,4 +80,17 @@ public class CommentServiceImpl implements CommentService {
 
     comment.softDelete();
   }
+
+  @Override
+  public void hardDelete(UUID commentId, UUID requestUserId) {
+    // 물리 삭제인 경우 논리 삭제된 댓글까지 지울 수 있어야 함.
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+
+    if (!comment.getUser().getId().equals(requestUserId)) {
+      throw new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다.");
+    }
+
+    commentRepository.delete(comment);
+  }
 }

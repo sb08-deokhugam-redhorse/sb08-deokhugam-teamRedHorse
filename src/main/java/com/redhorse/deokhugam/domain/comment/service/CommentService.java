@@ -22,5 +22,5 @@ public interface CommentService {
   void softDelete(UUID commentId, UUID requestUserId);
 
   // 댓글 물리 삭제
-
+  void hardDelete(UUID commentId, UUID requestUserId);
 }
