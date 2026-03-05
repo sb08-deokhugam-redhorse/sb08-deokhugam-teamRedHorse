@@ -71,4 +71,16 @@ public class CommentController {
         .status(HttpStatus.NO_CONTENT)
         .build();
   }
+
+  @DeleteMapping("/{commentId}/hard")
+  public ResponseEntity<Void> hardDelete(
+      @PathVariable UUID commentId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId
+  ) {
+    commentService.hardDelete(commentId, requestUserId);
+
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
 }

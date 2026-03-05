@@ -211,8 +211,8 @@ class CommentControllerTest {
   }
 
   @Nested
-  @DisplayName("댓글 삭제 관련 테스트")
-  class deleteCommentTests {
+  @DisplayName("댓글 논리 삭제 관련 테스트")
+  class softDeleteCommentTests {
 
     @Test
     @DisplayName("댓글 논리 삭제 요청이 성공적으로 처리되어야 한다.")
@@ -269,6 +269,69 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}", commentId))
+          .andExpect(status().isInternalServerError());
+    }
+  }
+
+  @Nested
+  @DisplayName("댓글 물리 삭제 관련 테스트")
+  class hardDeleteCommentTests {
+
+    @Test
+    @DisplayName("댓글 물리 삭제 요청이 성공적으로 처리되어야 한다.")
+    void hardDelete_Success() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      doNothing().when(commentService).hardDelete(eq(commentId), eq(requestUserId));
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
+          .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("댓글 물리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 500을 반환한다.")
+    void hardDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      doThrow(new IllegalArgumentException("Comment Not Found"))
+          .when(commentService).hardDelete(eq(commentId), eq(requestUserId));
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
+          .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("댓글 물리 삭제 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다.")
+    void hardDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      doThrow(new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다."))
+          .when(commentService).hardDelete(eq(commentId), eq(requestUserId));
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
+          .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 400을 반환한다")
+    void hardDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId))
           .andExpect(status().isInternalServerError());
     }
   }
