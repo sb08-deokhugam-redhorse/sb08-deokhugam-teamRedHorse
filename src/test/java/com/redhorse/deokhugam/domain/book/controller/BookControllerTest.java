@@ -43,6 +43,7 @@ class BookControllerTest
     private BookCreateRequest bookCreateRequest;
     private BookUpdateRequest bookUpdateRequest;
     private BookDto bookDto;
+    private BookDto updatedBookDto;
     private UUID bookId;
 
     @BeforeEach
@@ -67,6 +68,12 @@ class BookControllerTest
         bookDto = new BookDto(
                 UUID.randomUUID(), "자바 프로그래밍", "김자바", "자바 소개", "출판사A",
                 LocalDate.of(2024, 1, 1), "9788965745464", null, 0, 0.0,
+                Instant.now(), Instant.now()
+        );
+
+        updatedBookDto = new BookDto(
+                UUID.randomUUID(), "수정된 자바 프로그래밍", "수정된 김자바", "수정된 소개", "수정된 출판사",
+                LocalDate.of(2025, 1, 1), "9788965745464", null, 0, 0.0,
                 Instant.now(), Instant.now()
         );
 
@@ -172,7 +179,7 @@ class BookControllerTest
         @Test
         @DisplayName("성공 - 유효한 요청이면 200 OK를 반환한다")
         void success_withValidRequest_returns200() throws Exception {
-            given(bookService.update(any(UUID.class), any(BookUpdateRequest.class), any())).willReturn(bookDto);
+            given(bookService.update(any(UUID.class), any(BookUpdateRequest.class), any())).willReturn(updatedBookDto);
 
             MockMultipartFile bookData = new MockMultipartFile(
                     "bookData", "", MediaType.APPLICATION_JSON_VALUE,
@@ -182,7 +189,7 @@ class BookControllerTest
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/books/{bookId}", bookId)
                             .file(bookData))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.title").value("자바 프로그래밍"));
+                    .andExpect(jsonPath("$.title").value("수정된 자바 프로그래밍"));
         }
 
         @Test

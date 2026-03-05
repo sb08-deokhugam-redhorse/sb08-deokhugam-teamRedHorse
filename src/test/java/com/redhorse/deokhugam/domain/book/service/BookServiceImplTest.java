@@ -136,16 +136,19 @@ class BookServiceImplTest
         @DisplayName("성공 - 유효한 요청이면 도서가 수정된다.")
         void success_withValidRequest_updatesBook() {
             // given
-            given(bookRepository.findById(book.getId())).willReturn(Optional.of(book));
+            given(bookRepository.findById(bookId)).willReturn(Optional.of(book));
             given(bookMapper.toBookDto(book)).willReturn(bookDto);
             
             // when
-            BookDto result = bookServiceimpl.update(book.getId(), bookUpdateRequest, null);
+            BookDto result = bookServiceimpl.update(bookId, bookUpdateRequest, null);
             
             // then
             assertThat(result).isNotNull();
+            assertThat(book.getTitle()).isEqualTo("수정된 자바 프로그래밍");
+            assertThat(book.getAuthor()).isEqualTo("수정된 김자바");
+            assertThat(book.getPublisher()).isEqualTo("수정된 출판사");
 
-            then(bookRepository).should(times(1)).findById(book.getId());
+            then(bookRepository).should(times(1)).findById(bookId);
             then(bookMapper).should(times(1)).toBookDto(book);
         }
 
