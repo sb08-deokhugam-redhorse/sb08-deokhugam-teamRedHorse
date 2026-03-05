@@ -241,7 +241,23 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}", commentId)
-              .header("Deokhugam-Request-User-ID", requestUserId))
+              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
+          .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("댓글 논리 삭제 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다.")
+    void softDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      doThrow(new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다."))
+          .when(commentService).softDelete(eq(commentId), eq(requestUserId));
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isInternalServerError());
     }
   }
