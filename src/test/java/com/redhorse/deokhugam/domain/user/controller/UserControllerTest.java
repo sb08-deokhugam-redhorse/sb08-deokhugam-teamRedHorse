@@ -14,8 +14,6 @@ import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
-import com.redhorse.deokhugam.global.config.AuthenticationInterceptor;
-import com.redhorse.deokhugam.global.config.MDCLoggingInterceptor;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -23,11 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
 @DisplayName("UserController 슬라이스 테스트")
+@ActiveProfiles("test")
 class UserControllerTest {
 
   @Autowired
@@ -41,12 +41,6 @@ class UserControllerTest {
 
   @MockitoBean
   private UserRepository userRepository;
-
-  @MockitoBean
-  private MDCLoggingInterceptor mdcLoggingInterceptor;
-
-  @MockitoBean
-  private AuthenticationInterceptor authenticationInterceptor;
 
   @Test
   @DisplayName("유저 회원가입 성공")
