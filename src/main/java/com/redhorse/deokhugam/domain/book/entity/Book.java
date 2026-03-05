@@ -61,4 +61,9 @@ public class Book extends BaseUpdatableEntity
         this.publisher = publisher;
         this.publishedDate = publishedDate;
     }
+
+    // 논리 삭제
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

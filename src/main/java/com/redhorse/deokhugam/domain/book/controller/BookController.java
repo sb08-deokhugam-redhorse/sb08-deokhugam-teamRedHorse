@@ -45,4 +45,24 @@ public class BookController
 
         return ResponseEntity.status(HttpStatus.OK).body(book);
     }
+
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<Void> softDeleteBook(@PathVariable UUID bookId)
+    {
+        log.debug("책 삭제 시작(논리): bookId={}", bookId);
+
+        bookService.softDelete(bookId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @DeleteMapping("/{bookId}/hard")
+    public ResponseEntity<Void> hardDeleteBook(@PathVariable UUID bookId)
+    {
+        log.debug("책 삭제 시작(물리): bookId={}", bookId);
+
+        bookService.hardDelete(bookId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
