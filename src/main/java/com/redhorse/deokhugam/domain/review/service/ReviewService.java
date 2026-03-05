@@ -9,4 +9,8 @@ public interface ReviewService {
   ReviewDto create(ReviewCreateRequest request);
 
   ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request);
+
+  void delete(UUID reviewId, UUID userId);
+
+  void deleteHard(UUID reviewId, UUID userId);
 }

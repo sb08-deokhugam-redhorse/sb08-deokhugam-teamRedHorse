@@ -14,10 +14,12 @@ public interface CommentService {
   CommentDto update(UUID commentId, UUID requestUserId, CommentUpdateRequest commentUpdateRequest);
 
   // 댓글 상세 조회
+  CommentDto find(UUID commentId);
 
   // 댓글 목록 조회
 
   // 댓글 논리 삭제
+  void softDelete(UUID commentId, UUID requestUserId);
 
   // 댓글 물리 삭제
 
