@@ -7,6 +7,6 @@ import java.util.UUID;
 public record ReviewLikeDto(
        @NotNull UUID reviewId,
        @NotNull UUID userId,
-       @NotNull boolean like
+       boolean like
 ) {
 }
