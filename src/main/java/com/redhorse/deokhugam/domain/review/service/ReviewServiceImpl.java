@@ -50,12 +50,20 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
     String content = request.content();
-    int rating = request.rating();
+    Integer rating = request.rating();
+
+    if(content == null && rating == null ){
+      throw new IllegalArgumentException("Both content and rating are null");
+    }
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
     userRepository.findById(userId).
         orElseThrow(() -> new IllegalArgumentException("User not exists"));
+
+    if(content != null && content.isBlank()){
+      throw new IllegalArgumentException("content cannot be empty");
+    }
 
     review.update(content, rating);
     return  reviewMapper.toDto(review);

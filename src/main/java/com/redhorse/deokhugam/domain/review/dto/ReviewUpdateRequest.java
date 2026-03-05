@@ -7,12 +7,10 @@ import jakarta.validation.constraints.NotNull;
 
 public record ReviewUpdateRequest(
 
-    @NotBlank(message = "수정 내용은 필수입니다.")
     String content,
 
     @Min(1)
     @Max(5)
-    @NotNull(message = "평점은 필수입니다.")
     Integer rating
 ) {
 
