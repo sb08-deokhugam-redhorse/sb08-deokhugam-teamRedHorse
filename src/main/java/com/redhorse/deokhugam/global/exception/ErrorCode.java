@@ -13,7 +13,8 @@ public enum ErrorCode {
     // review
 
     // book
-    DUPLICATE_ISBN("이미 존재하는 ISBN입니다.", HttpStatus.CONFLICT),
+    BOOK_NOT_FOUND("도서를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    DUPLICATE_ISBN("이미 존재하는 ISBN입니다.", HttpStatus.CONFLICT);
 
     // comment
 
