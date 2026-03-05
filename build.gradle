@@ -83,21 +83,4 @@ jacocoTestReport {
         html.required = true
         xml.required = true
     }
-
-    // 리포트에서 제외할 클래스들 (QueryDSL QClass, DTO, Mapper 등)
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    "**/Q*_*",
-                    "**/QClass*",
-                    "**/*Dto*",
-                    "**/*Request*",
-                    "**/entity/**",
-                    "**/*MapperImpl*",
-                    "**/*Application*",
-                    "**/global/exception/**",
-                    "**/config/**"
-            ])
-        }))
-    }
 }
