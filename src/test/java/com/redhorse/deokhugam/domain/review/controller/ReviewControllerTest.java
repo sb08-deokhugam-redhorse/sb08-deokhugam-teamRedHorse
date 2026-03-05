@@ -168,7 +168,7 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willDoNothing().given(reviewService).delete(eq(reviewId), eq(userId));
+    willDoNothing().given(reviewService).softDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
@@ -185,7 +185,7 @@ public class ReviewControllerTest {
     UUID userId = UUID.randomUUID();
 
     willThrow(new IllegalArgumentException("User did not write review"))
-        .given(reviewService).delete(eq(reviewId), eq(userId));
+        .given(reviewService).softDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
@@ -201,7 +201,7 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willDoNothing().given(reviewService).deleteHard(eq(reviewId), eq(userId));
+    willDoNothing().given(reviewService).hardDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
@@ -217,7 +217,7 @@ public class ReviewControllerTest {
     UUID userId = UUID.randomUUID();
 
     willThrow(new IllegalArgumentException("review not exists"))
-        .given(reviewService).deleteHard(eq(reviewId), eq(userId));
+        .given(reviewService).hardDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)

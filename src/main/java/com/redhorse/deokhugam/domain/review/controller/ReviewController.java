@@ -46,7 +46,7 @@ public class ReviewController {
       @PathVariable UUID reviewId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
 
-    reviewService.delete(reviewId, userId);
+    reviewService.softDelete(reviewId, userId);
     return ResponseEntity.noContent().build();
   }
 
@@ -54,7 +54,7 @@ public class ReviewController {
   public ResponseEntity<Void> hardDelete(
       @PathVariable UUID reviewId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
-    reviewService.deleteHard(reviewId, userId);
+    reviewService.hardDelete(reviewId, userId);
     return ResponseEntity.noContent().build();
 
   }

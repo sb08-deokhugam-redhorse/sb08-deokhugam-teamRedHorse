@@ -10,7 +10,7 @@ public interface ReviewService {
 
   ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request);
 
-  void delete(UUID reviewId, UUID userId);
+  void softDelete(UUID reviewId, UUID userId);
 
-  void deleteHard(UUID reviewId, UUID userId);
+  void hardDelete(UUID reviewId, UUID userId);
 }

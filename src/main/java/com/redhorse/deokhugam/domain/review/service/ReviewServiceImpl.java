@@ -74,7 +74,7 @@ public class ReviewServiceImpl implements ReviewService {
 
   @Transactional
   @Override
-  public void delete(UUID reviewId, UUID userId) {
+  public void softDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 
@@ -87,7 +87,7 @@ public class ReviewServiceImpl implements ReviewService {
 
   @Transactional
   @Override
-  public void deleteHard(UUID reviewId, UUID userId) {
+  public void hardDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 

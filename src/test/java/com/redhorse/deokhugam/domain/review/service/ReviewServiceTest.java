@@ -200,7 +200,7 @@ public class ReviewServiceTest {
         .willReturn(Optional.of(review));
 
     // when
-    reviewService.delete(reviewId, userId);
+    reviewService.softDelete(reviewId, userId);
 
     // then
     assertThat(review.getDeletedAt()).isNotNull();
@@ -214,7 +214,7 @@ public class ReviewServiceTest {
         .willReturn(Optional.empty());
 
     // when & then
-    assertThatThrownBy(() -> reviewService.delete(reviewId, userId))
+    assertThatThrownBy(() -> reviewService.softDelete(reviewId, userId))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -226,7 +226,7 @@ public class ReviewServiceTest {
         .willReturn(Optional.of(review));
 
     // when
-    reviewService.deleteHard(reviewId, userId);
+    reviewService.hardDelete(reviewId, userId);
 
     // then
     verify(reviewRepository).delete(eq(review));
@@ -242,7 +242,7 @@ public class ReviewServiceTest {
     UUID otherUserId = UUID.randomUUID();
 
     // when & then
-    assertThatThrownBy(() -> reviewService.deleteHard(reviewId, otherUserId))
+    assertThatThrownBy(() -> reviewService.hardDelete(reviewId, otherUserId))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
