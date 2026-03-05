@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
-  Optional<Comment> findByIdAndDeletedAtIsNull(UUID id);
+  Optional<Comment> findByIdAndDeletedAtIsNull(UUID commentId);
 }

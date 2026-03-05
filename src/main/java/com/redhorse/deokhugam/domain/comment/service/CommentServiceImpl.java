@@ -12,12 +12,14 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class CommentServiceImpl implements CommentService {
 
   private final ReviewRepository reviewRepository;
@@ -54,6 +56,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     comment.update(commentUpdateRequest.content());
+
+    return commentMapper.toDto(comment);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public CommentDto find(UUID commentId) {
+    Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
 
     return commentMapper.toDto(comment);
   }
