@@ -215,7 +215,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("댓글 단건 조회 실패 - 유효하지 않는 댓글 Id")
+    @DisplayName("댓글 단건 조회 실패 - 댓글이 유효하지 않을 경우")
     void find_WhenNotFoundComment_ShouldThrowException() {
       // given
       UUID invalidCommentId = UUID.randomUUID();
