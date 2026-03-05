@@ -5,11 +5,13 @@ import com.redhorse.deokhugam.domain.alarm.exception.AlarmNotFoundException;
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.impl.AlarmServiceImpl;
+import com.redhorse.deokhugam.domain.comment.controller.CommentController;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -22,8 +24,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-// 특정 클래스만 빈으로 등록하여 가볍게 스프링 컨텍스트 로드
-@SpringBootTest(classes = AlarmServiceImpl.class)
+@WebMvcTest(AlarmServiceImpl.class)
 class AlarmServiceAlarmReadSliceTest {
 
     @Autowired
