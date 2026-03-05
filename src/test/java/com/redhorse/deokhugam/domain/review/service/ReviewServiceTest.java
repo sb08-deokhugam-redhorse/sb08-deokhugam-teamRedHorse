@@ -149,17 +149,31 @@ public class ReviewServiceTest {
         "update", rating
     );
 
-    given(userRepository.findById(eq(userId))).willReturn(Optional.of(user));
     given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
-    given(reviewMapper.toDto(any(Review.class))).willReturn(reviewDto);
+
+    ReviewDto updateReviewDto = new ReviewDto(
+        reviewId,
+        bookId,
+        "bookTitle",
+        "bookThumbnailUrl",
+        userId,
+        "userNickname",
+        "update",
+        rating,
+        0,
+        0,
+        false,
+        date,
+        date
+    );
+    given(reviewMapper.toDto(any(Review.class))).willReturn(updateReviewDto);
 
     // when
     ReviewDto result = reviewService.update(reviewId, userId, request);
 
     // then
-    assertThat(result).isEqualTo(reviewDto);
-    assertThat(review.getContent()).isEqualTo(request.content());
-    assertThat(review.getRating()).isEqualTo(request.rating());
+    assertThat(result).isEqualTo(updateReviewDto);
+    assertThat(result.content()).isEqualTo("update");
   }
 
   @Test
@@ -167,14 +181,14 @@ public class ReviewServiceTest {
   void updateReview_Failure() {
     // given
     ReviewUpdateRequest request = new ReviewUpdateRequest(
-        "update",3
+        "update", 3
     );
 
     UUID otherUserId = UUID.randomUUID();
     given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
 
     // when & then
-    assertThatThrownBy(()->reviewService.update(reviewId, otherUserId, request))
+    assertThatThrownBy(() -> reviewService.update(reviewId, otherUserId, request))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
