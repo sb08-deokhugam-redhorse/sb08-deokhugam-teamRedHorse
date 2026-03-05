@@ -64,9 +64,6 @@ public class ReviewServiceImpl implements ReviewService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 
-    userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
-
     if (!review.getUser().getId().equals(userId)) {
       throw new IllegalArgumentException("User did not write review");
     }
@@ -81,9 +78,6 @@ public class ReviewServiceImpl implements ReviewService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 
-    userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
-
     if(!review.getUser().getId().equals(userId)){
       throw new IllegalArgumentException("User did not write review");
     }
@@ -96,9 +90,6 @@ public class ReviewServiceImpl implements ReviewService {
   public void deleteHard(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
-
-    userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
     if(!review.getUser().getId().equals(userId)){
       throw new IllegalArgumentException("User did not write review");

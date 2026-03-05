@@ -150,8 +150,6 @@ public class ReviewServiceTest {
     );
 
     given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
-    given(userRepository.findById(eq(userId)))
-        .willReturn(Optional.of(user));
 
     ReviewDto updateReviewDto = new ReviewDto(
         reviewId,
@@ -200,8 +198,6 @@ public class ReviewServiceTest {
     // given
     given(reviewRepository.findById(eq(reviewId)))
         .willReturn(Optional.of(review));
-    given(userRepository.findById(eq(userId)))
-        .willReturn(Optional.of(user));
 
     // when
     reviewService.delete(reviewId, userId);
@@ -228,8 +224,6 @@ public class ReviewServiceTest {
     // given
     given(reviewRepository.findById(eq(reviewId)))
         .willReturn(Optional.of(review));
-    given(userRepository.findById(eq(userId)))
-        .willReturn(Optional.of(user));
 
     // when
     reviewService.deleteHard(reviewId, userId);
@@ -239,16 +233,16 @@ public class ReviewServiceTest {
   }
 
   @Test
-  @DisplayName("리뷰 물리 삭제 실패 - 존재하지 않는 유저일 경우")
+  @DisplayName("리뷰 물리 삭제 실패 - 리뷰 작성자와 유저 아이디가 다를 경우")
   void deleteHardReview_Failure() {
     // given
     given(reviewRepository.findById(eq(reviewId)))
         .willReturn(Optional.of(review));
-    given(userRepository.findById(eq(userId)))
-        .willReturn(Optional.empty());
+
+    UUID otherUserId = UUID.randomUUID();
 
     // when & then
-    assertThatThrownBy(() -> reviewService.deleteHard(reviewId, userId))
+    assertThatThrownBy(() -> reviewService.deleteHard(reviewId, otherUserId))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
