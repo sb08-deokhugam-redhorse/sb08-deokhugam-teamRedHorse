@@ -53,4 +53,12 @@ public class Book extends BaseUpdatableEntity
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
+
+    public void update(String title, String author, String description, String publisher, LocalDate publishedDate) {
+        this.title = title;
+        this.author = author;
+        this.description = description;
+        this.publisher = publisher;
+        this.publishedDate = publishedDate;
+    }
 }

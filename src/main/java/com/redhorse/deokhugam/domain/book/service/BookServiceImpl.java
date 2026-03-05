@@ -5,6 +5,7 @@ import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
 import com.redhorse.deokhugam.domain.book.dto.response.CursorPageResponseBookDto;
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.exception.IsbnDuplicateException;
 import com.redhorse.deokhugam.domain.book.mapper.BookMapper;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
@@ -56,6 +57,8 @@ public class BookServiceImpl implements BookService
 
         Book savedBook = bookRepository.save(book);
 
+        log.info("책 등록 완료 - book: {}", savedBook);
+
         return bookMapper.toBookDto(savedBook);
     }
 
@@ -69,9 +72,25 @@ public class BookServiceImpl implements BookService
         return null;
     }
 
+    @Transactional
     @Override
-    public BookDto update(BookUpdateRequest bookUpdateRequest, MultipartFile thumbnailImage) {
-        return null;
+    public BookDto update(UUID bookId, BookUpdateRequest bookUpdateRequest, MultipartFile thumbnailImage) {
+        log.debug("책 수정 요청 - bookUpdateRequest: {}", bookUpdateRequest);
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        book.update(
+                bookUpdateRequest.title(),
+                bookUpdateRequest.author(),
+                bookUpdateRequest.description(),
+                bookUpdateRequest.publisher(),
+                bookUpdateRequest.publishedDate()
+        );
+
+        log.info("책 수정 완료 - book: {}", book);
+
+        return bookMapper.toBookDto(book);
     }
 
     @Override
