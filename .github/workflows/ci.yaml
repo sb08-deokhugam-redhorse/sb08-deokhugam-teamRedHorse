@@ -18,12 +18,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: 실행 권한 부여
         run: chmod +x gradlew
 
-      - name: 빌드
-        run: ./gradlew build -x test
-
-      - name: 테스트
-        run: ./gradlew test
+      - name: 빌드 및 테스트
+        run: ./gradlew build jacocoTestReport
