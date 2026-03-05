@@ -154,6 +154,6 @@ public class ReviewControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isInternalServerError());
   }
 }

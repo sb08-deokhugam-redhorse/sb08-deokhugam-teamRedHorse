@@ -58,8 +58,10 @@ public class ReviewServiceImpl implements ReviewService {
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
-    userRepository.findById(userId).
-        orElseThrow(() -> new IllegalArgumentException("User not exists"));
+
+    if(!review.getUser().getId().equals(userId)){
+      throw new IllegalArgumentException("User did not write review");
+    }
 
     if(content != null && content.isBlank()){
       throw new IllegalArgumentException("content cannot be empty");

@@ -163,18 +163,18 @@ public class ReviewServiceTest {
   }
 
   @Test
-  @DisplayName("리뷰 수정 실패 - 유저를 찾을 수 없을 경우")
+  @DisplayName("리뷰 수정 실패 - 리뷰 작성자와 유저 아이디가 다를 경우")
   void updateReview_Failure() {
     // given
     ReviewUpdateRequest request = new ReviewUpdateRequest(
         "update",3
     );
 
+    UUID otherUserId = UUID.randomUUID();
     given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
-    given(userRepository.findById(eq(userId))).willReturn(Optional.empty());
 
     // when & then
-    assertThatThrownBy(()->reviewService.update(reviewId, userId, request))
+    assertThatThrownBy(()->reviewService.update(reviewId, otherUserId, request))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
