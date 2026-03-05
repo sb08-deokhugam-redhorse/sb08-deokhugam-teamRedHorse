@@ -1,7 +1,5 @@
 package com.redhorse.deokhugam.domain.alarm.dto;
 
-import com.redhorse.deokhugam.global.entity.PeriodType;
-
 import java.time.Instant;
 import java.util.UUID;
 
