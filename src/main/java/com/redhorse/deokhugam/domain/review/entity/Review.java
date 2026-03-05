@@ -53,10 +53,10 @@ public class Review extends BaseUpdatableEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval=true)
-    private List<ReviewLike> reviewLike = new ArrayList<>();
+    private List<ReviewLike> reviewLikes = new ArrayList<>();
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval=true)
-    private List<PopularReview> popularReview = new ArrayList<>();
+    private List<PopularReview> popularReviews = new ArrayList<>();
 
     public Review(String content, int rating, Book book, User user) {
         this.content = content;

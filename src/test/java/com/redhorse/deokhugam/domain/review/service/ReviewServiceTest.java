@@ -150,6 +150,8 @@ public class ReviewServiceTest {
     );
 
     given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.of(user));
 
     ReviewDto updateReviewDto = new ReviewDto(
         reviewId,
