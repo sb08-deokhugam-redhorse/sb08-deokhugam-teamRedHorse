@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.11'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.redhorse'
@@ -63,10 +64,39 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+jacoco {
+    toolVersion = "0.8.11"
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
 
 jar {
-    enabled = false;
+    enabled = false
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required = true
+        xml.required = true
+    }
+
+    // 리포트에서 제외할 클래스들 (QueryDSL QClass, DTO, Mapper 등)
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/Q*",
+                    "**/*Dto*",
+                    "**/*Request*",
+                    "**/entity/**",
+                    "**/*MapperImpl*",
+                    "**/*Application*",
+                    "**/global/exception/**",
+                    "**/config/**"
+            ])
+        }))
+    }
 }
