@@ -1,8 +1,10 @@
 package com.redhorse.deokhugam.domain.book.service;
 
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
+import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.exception.IsbnDuplicateException;
 import com.redhorse.deokhugam.domain.book.mapper.BookMapper;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
@@ -18,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +36,8 @@ class BookServiceImplTest
     @Mock private BookMapper bookMapper;
 
     private BookCreateRequest bookCreateRequest;
+    private BookUpdateRequest bookUpdateRequest;
+
     private Book book;
     private BookDto bookDto;
 
@@ -45,6 +50,14 @@ class BookServiceImplTest
                 "출판사A",
                 LocalDate.of(2024, 1, 1),
                 "9788965745464"
+        );
+
+        bookUpdateRequest = new BookUpdateRequest(
+                "수정된 자바 프로그래밍",
+                "수정된 김자바",
+                "수정된 소개",
+                "수정된 출판사",
+                LocalDate.of(2025, 1, 1)
         );
 
         book = new Book(
@@ -109,6 +122,43 @@ class BookServiceImplTest
             // when & then
             assertThatThrownBy(() -> bookServiceimpl.create(bookCreateRequest, null))
                     .isInstanceOf(IsbnDuplicateException.class);
+            then(bookRepository).should(never()).save(any(Book.class));
+        }
+    }
+    
+    @Nested
+    @DisplayName("도서 수정")
+    class Update {
+        @Test
+        @DisplayName("성공 - 유효한 요청이면 도서가 수정된다.")
+        void success_withValidRequest_updatesBook() {
+            // given
+            given(bookRepository.findById(book.getId())).willReturn(Optional.of(book));
+            given(bookMapper.toBookDto(book)).willReturn(bookDto);
+            
+            // when
+            BookDto result = bookServiceimpl.update(book.getId(), bookUpdateRequest, null);
+            
+            // then
+            assertThat(result).isNotNull();
+
+            then(bookRepository).should(times(1)).findById(book.getId());
+            then(bookMapper).should(times(1)).toBookDto(book);
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException이 발생한다.")
+        void fail_withNonExistentBook_throwsBookNotFoundException() {
+            // given
+            UUID uuid = UUID.randomUUID();
+            given(bookRepository.findById(uuid)).willReturn(Optional.empty());
+
+            // when
+            assertThatThrownBy(() -> bookServiceimpl.update(uuid, bookUpdateRequest, null))
+                    .isInstanceOf(BookNotFoundException.class);
+
+            // then
+            then(bookRepository).should().findById(uuid);
             then(bookRepository).should(never()).save(any(Book.class));
         }
     }
