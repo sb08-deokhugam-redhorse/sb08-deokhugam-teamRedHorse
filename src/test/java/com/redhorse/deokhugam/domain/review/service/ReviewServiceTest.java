@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.reviewTest;
+package com.redhorse.deokhugam.domain.review.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -11,10 +11,10 @@ import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
-import com.redhorse.deokhugam.domain.review.service.ReviewServiceImpl;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
@@ -53,7 +53,7 @@ public class ReviewServiceTest {
   private UUID bookId;
   private UUID userId;
   private String content;
-  private int rating;
+  private Integer rating;
   private Review review;
   private ReviewDto reviewDto;
   private Book book;
@@ -139,6 +139,57 @@ public class ReviewServiceTest {
     assertThatThrownBy(() -> reviewService.create(request))
         .isInstanceOf(IllegalArgumentException.class);
 
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 성공")
+  void updateReview_Success() {
+    // given
+    ReviewUpdateRequest request = new ReviewUpdateRequest(
+        "update", rating
+    );
+
+    given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+
+    ReviewDto updateReviewDto = new ReviewDto(
+        reviewId,
+        bookId,
+        "bookTitle",
+        "bookThumbnailUrl",
+        userId,
+        "userNickname",
+        "update",
+        rating,
+        0,
+        0,
+        false,
+        date,
+        date
+    );
+    given(reviewMapper.toDto(any(Review.class))).willReturn(updateReviewDto);
+
+    // when
+    ReviewDto result = reviewService.update(reviewId, userId, request);
+
+    // then
+    assertThat(result).isEqualTo(updateReviewDto);
+    assertThat(result.content()).isEqualTo("update");
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 실패 - 리뷰 작성자와 유저 아이디가 다를 경우")
+  void updateReview_Failure() {
+    // given
+    ReviewUpdateRequest request = new ReviewUpdateRequest(
+        "update", 3
+    );
+
+    UUID otherUserId = UUID.randomUUID();
+    given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+
+    // when & then
+    assertThatThrownBy(() -> reviewService.update(reviewId, otherUserId, request))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
 }
