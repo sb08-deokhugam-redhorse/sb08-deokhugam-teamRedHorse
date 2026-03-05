@@ -13,12 +13,13 @@ public enum ErrorCode {
     // review
 
     // book
+    BOOK_NOT_FOUND("도서를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     DUPLICATE_ISBN("이미 존재하는 ISBN입니다.", HttpStatus.CONFLICT),
 
     // comment
 
     // alarm
-    ALARM_NOT_FOUND("알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    ALARM_NOT_FOUND("알림을 찾을 수 없습니다.",HttpStatus.NOT_FOUND);
 
 
     // dashboard
