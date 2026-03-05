@@ -48,20 +48,25 @@ class AlarmServiceUnitTest {
     private AlarmMapper alarmMapper;
 
     @Test
-    @DisplayName("댓글 알림 생성 성공 - 정상적으로 알림이 저장되고 반환된다")
+    @DisplayName("댓글 알림 생성 성공 - 리뷰 작성자에게 알림이 저장된다")
     void createCommentAlarm_Success() {
         // given
-        UUID userId = UUID.randomUUID();
-        UUID reviewId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+        UUID testReviewId = UUID.randomUUID();
 
         CommentDto dto = new CommentDto(
-                UUID.randomUUID(), reviewId, userId, "닉네임",
+                UUID.randomUUID(), testReviewId, testUserId, "닉네임",
                 "댓글 내용", Instant.now(), Instant.now()
         );
 
-        User mockUser = mock(User.class);
-        given(mockUser.getNickname()).willReturn("테스트유저");
-        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+        Review mockReview = mock(Review.class);
+        User mockReviewOwner = mock(User.class);
+        given(mockReview.getUser()).willReturn(mockReviewOwner);
+        given(reviewRepository.findById(testReviewId)).willReturn(Optional.of(mockReview));
+
+        User mockCommenter = mock(User.class);
+        given(mockCommenter.getNickname()).willReturn("테스트유저");
+        given(userRepository.findById(testUserId)).willReturn(Optional.of(mockCommenter));
 
         Alarm mockAlarm = mock(Alarm.class);
         given(alarmRepository.save(any(Alarm.class))).willReturn(mockAlarm);
@@ -74,44 +79,47 @@ class AlarmServiceUnitTest {
 
         // then
         assertThat(result).isNotNull();
-        verify(alarmRepository).save(any(Alarm.class)); // save 메서드가 1번 호출되었는지 검증
+        verify(alarmRepository).save(any(Alarm.class));
     }
 
     @Test
-    @DisplayName("댓글 알림 생성 실패 - 유저가 존재하지 않으면 UserNotFoundException 발생")
-    void createCommentAlarm_UserNotFound() {
+    @DisplayName("댓글 알림 생성 실패 - 리뷰가 존재하지 않으면 예외 발생")
+    void createCommentAlarm_ReviewNotFound() {
         // given
-        UUID userId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+        UUID testReviewId = UUID.randomUUID();
 
         CommentDto dto = new CommentDto(
-                UUID.randomUUID(), UUID.randomUUID(), userId, "닉네임",
+                UUID.randomUUID(), testReviewId, testUserId, "닉네임",
                 "내용", Instant.now(), Instant.now()
         );
 
-        given(userRepository.findById(userId)).willReturn(Optional.empty());
+        given(reviewRepository.findById(testReviewId)).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> alarmService.createCommentAlarm(dto))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("리뷰가 없습니다.");
     }
 
     @Test
     @DisplayName("좋아요 알림 생성 성공")
     void createLikeAlarm_Success() {
         // given
-        UUID userId = UUID.randomUUID();
-        UUID reviewId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+        UUID testReviewId = UUID.randomUUID();
 
-        ReviewLikeDto dto = new ReviewLikeDto(reviewId,userId, true);
+        ReviewLikeDto dto = new ReviewLikeDto(testReviewId, testUserId, true);
 
-        User mockUser = mock(User.class);
-        given(mockUser.getNickname()).willReturn("테스트유저");
+        User mockLiker = mock(User.class);
+        given(mockLiker.getNickname()).willReturn("테스트유저");
+        given(userRepository.findById(testUserId)).willReturn(Optional.of(mockLiker));
 
         Review mockReview = mock(Review.class);
+        User mockReviewOwner = mock(User.class);
+        given(mockReview.getUser()).willReturn(mockReviewOwner);
         given(mockReview.getContent()).willReturn("리뷰 내용");
-
-        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(reviewRepository.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepository.findById(testReviewId)).willReturn(Optional.of(mockReview));
 
         Alarm mockAlarm = mock(Alarm.class);
         given(alarmRepository.save(any(Alarm.class))).willReturn(mockAlarm);
@@ -126,44 +134,43 @@ class AlarmServiceUnitTest {
     }
 
     @Test
-    @DisplayName("좋아요 알림 생성 실패 - 리뷰가 존재하지 않으면 예외 발생")
-    void createLikeAlarm_ReviewNotFound() {
+    @DisplayName("좋아요 알림 생성 실패 - 유저가 없으면 예외 발생")
+    void createLikeAlarm_UserNotFound() {
         // given
-        UUID userId = UUID.randomUUID();
-        UUID reviewId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+        UUID testReviewId = UUID.randomUUID();
 
-        ReviewLikeDto dto = new ReviewLikeDto(reviewId,userId,  true);
+        ReviewLikeDto dto = new ReviewLikeDto(testReviewId, testUserId, true);
 
-        User mockUser = mock(User.class);
-        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(reviewRepository.findById(reviewId)).willReturn(Optional.empty());
+        given(userRepository.findById(testUserId)).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> alarmService.createLikeAlarm(dto))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰가 없습니다.");
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
-    @DisplayName("인기 리뷰 알림 생성 성공")
+    @DisplayName("인기 리뷰 알림 생성 성공 - 타입 변환 검증 포함")
     void createReviewAlarm_Success() {
         // given
-        UUID userId = UUID.randomUUID();
-        UUID reviewId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+        UUID testReviewId = UUID.randomUUID();
 
         PopularReviewDto dto = new PopularReviewDto(
-                UUID.randomUUID(), reviewId, UUID.randomUUID(), "책제목",
-                "url", userId, "닉네임", 10,
+                UUID.randomUUID(), testReviewId, UUID.randomUUID(), "책제목",
+                "url", testUserId, "닉네임", 10,
                 4.5, PeriodType.DAILY, Instant.now(), 1, 100.0,
                 5, 2
         );
 
         User mockUser = mock(User.class);
-        Review mockReview = mock(Review.class);
-        given(mockReview.getContent()).willReturn("리뷰 내용입니다");
+        given(userRepository.findById(testUserId)).willReturn(Optional.of(mockUser));
 
-        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(reviewRepository.findById(reviewId)).willReturn(Optional.of(mockReview));
+        Review mockReview = mock(Review.class);
+        User mockReviewOwner = mock(User.class);
+        given(mockReview.getUser()).willReturn(mockReviewOwner);
+        given(mockReview.getContent()).willReturn("리뷰 내용입니다");
+        given(reviewRepository.findById(testReviewId)).willReturn(Optional.of(mockReview));
 
         Alarm mockAlarm = mock(Alarm.class);
         given(alarmRepository.save(any(Alarm.class))).willReturn(mockAlarm);

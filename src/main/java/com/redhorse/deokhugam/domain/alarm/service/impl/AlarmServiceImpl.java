@@ -17,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class AlarmServiceImpl implements AlarmService {
@@ -31,14 +29,16 @@ public class AlarmServiceImpl implements AlarmService {
     public NotificationDto createCommentAlarm(CommentDto dto) {
         // 임시 dto 사용 중
 
-        Optional<Review> review = reviewRepository.findById(dto.reviewId());
-        User reviewOwner = review.get().getUser();
-        Optional<User> user = userRepository.findById(dto.userId());
+        Review review = reviewRepository.findById(dto.reviewId())
+                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+        User reviewOwner = review.getUser();
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
 
         Alarm alarm = new Alarm(
                 "COMMENT",
                 dto.content(),
-                "[" + user.get().getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.",
+                "[" + user.getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.",
                 dto.reviewId(),
                 reviewOwner
         );
@@ -51,14 +51,17 @@ public class AlarmServiceImpl implements AlarmService {
     public NotificationDto createLikeAlarm(ReviewLikeDto dto) {
         // 임시 dto 사용 중
 
-        Optional<Review> review = reviewRepository.findById(dto.reviewId());
-        User reviewOwner = review.get().getUser();
-        Optional<User> user = userRepository.findById(dto.userId());
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
+        Review review = reviewRepository.findById(dto.reviewId())
+                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+        User reviewOwner = review.getUser();
+
 
         Alarm alarm = new Alarm(
                 "LIKE",
-                review.get().getContent(),
-                "[" + user.get().getNickname() + "]님이 나의 리뷰를 좋아합니다.",
+                review.getContent(),
+                "[" + user.getNickname() + "]님이 나의 리뷰를 좋아합니다.",
                 dto.reviewId(),
                 reviewOwner
         );
@@ -72,9 +75,11 @@ public class AlarmServiceImpl implements AlarmService {
     public NotificationDto createReviewAlarm(PopularReviewDto dto) {
         // 임시 dto 사용 중
 
-        Optional<User> user = userRepository.findById(dto.userId());
-        Optional<Review> review = reviewRepository.findById(dto.reviewId());
-        User reviewOwner = review.get().getUser();
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
+        Review review = reviewRepository.findById(dto.reviewId())
+                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+        User reviewOwner = review.getUser();
 
         String type = "";
         switch (dto.period().toString()) {
@@ -94,7 +99,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         Alarm alarm = new Alarm(
                 dto.period().toString(),
-                review.get().getContent(),
+                review.getContent(),
                 "나의 리뷰가 " + type + dto.rank() + "위에 올랐습니다.",
                 dto.reviewId(),
                 reviewOwner
