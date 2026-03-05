@@ -4,6 +4,7 @@ import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
@@ -35,14 +36,39 @@ public class ReviewServiceImpl implements ReviewService {
     User user = userRepository
         .findById(userId).orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
-    try{
+    try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
       return reviewMapper.toDto(review);
-    } catch (DataIntegrityViolationException e){
+    } catch (DataIntegrityViolationException e) {
       throw new IllegalStateException("bookId, userId exists");
     }
 
+  }
+
+  @Transactional
+  @Override
+  public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
+    String content = request.content();
+    Integer rating = request.rating();
+
+    if (content == null && rating == null) {
+      throw new IllegalArgumentException("Both content and rating are null");
+    }
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+
+    if (!review.getUser().getId().equals(userId)) {
+      throw new IllegalArgumentException("User did not write review");
+    }
+
+    if (content != null && content.isBlank()) {
+      throw new IllegalArgumentException("content cannot be empty");
+    }
+
+    review.update(content, rating);
+    return reviewMapper.toDto(review);
   }
 
 }

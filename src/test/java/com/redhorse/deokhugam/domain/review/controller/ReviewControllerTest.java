@@ -1,15 +1,17 @@
-package com.redhorse.deokhugam.reviewTest;
+package com.redhorse.deokhugam.domain.review.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhorse.deokhugam.domain.review.controller.ReviewController;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import java.time.Instant;
 import java.util.UUID;
@@ -95,5 +97,63 @@ public class ReviewControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 성공 테스트")
+  void updateReview_Success() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UUID bookId = UUID.randomUUID();
+    ReviewUpdateRequest request = new ReviewUpdateRequest("update", 3);
+
+    ReviewDto reviewDto = new ReviewDto(
+        reviewId,
+        bookId,
+        "testBook",
+        "testUrl",
+        userId,
+        "testName",
+        "update",
+        3,
+        0,
+        0,
+        false,
+        Instant.now(),
+        Instant.now()
+    );
+    // when & then
+    given(reviewService.update(eq(reviewId), eq(userId), any(ReviewUpdateRequest.class)))
+        .willReturn(reviewDto);
+
+    mockMvc.perform(patch("/api/reviews/{reviewId}", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(reviewId.toString()))
+        .andExpect(jsonPath("$.userId").value(userId.toString()))
+        .andExpect(jsonPath("$.content").value("update"))
+        .andExpect(jsonPath("$.rating").value(3));
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 실패 테스트 - 존재하지 않은 리뷰일 경우")
+  void updateReview_Failure() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    ReviewUpdateRequest request = new ReviewUpdateRequest("update", 3);
+
+    given(reviewService.update(eq(reviewId), eq(userId), any(ReviewUpdateRequest.class)))
+        .willThrow(new IllegalArgumentException("Review not exists"));
+
+    //when & then
+    mockMvc.perform(patch("/api/reviews/{reviewId}", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isInternalServerError());
   }
 }

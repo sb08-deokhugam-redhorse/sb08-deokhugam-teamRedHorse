@@ -20,7 +20,7 @@ public record ReviewCreateRequest(
     @Min(1)
     @Max(5)
     @NotNull(message = "평점은 필수입니다.")
-    int rating
+    Integer rating
 ) {
 
 }

@@ -12,7 +12,7 @@ public record ReviewDto(
     UUID userId,
     String userNickname,
     String content,
-    int rating,
+    Integer rating,
     int likeCount,
     int commentCount,
     boolean likedByMe,
