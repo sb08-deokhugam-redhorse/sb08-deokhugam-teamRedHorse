@@ -192,4 +192,62 @@ public class ReviewServiceTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
+  @Test
+  @DisplayName("리뷰 논리 삭제 성공")
+  void deleteReview_Success() {
+    // given
+    given(reviewRepository.findById(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.of(user));
+
+    // when
+    reviewService.delete(reviewId, userId);
+
+    // then
+    assertThat(review.getDeletedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("리뷰 논리 삭제 실패 - 존재하지 않는 리뷰일 경우")
+  void deleteReview_Failure() {
+    // given
+    given(reviewRepository.findById(eq(reviewId)))
+        .willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(() -> reviewService.delete(reviewId, userId))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  @DisplayName("리뷰 물리 삭제 성공")
+  void deleteHardReview_Success() {
+    // given
+    given(reviewRepository.findById(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.of(user));
+
+    // when
+    reviewService.deleteHard(reviewId, userId);
+
+    // then
+    verify(reviewRepository).delete(eq(review));
+  }
+
+  @Test
+  @DisplayName("리뷰 물리 삭제 실패 - 존재하지 않는 유저일 경우")
+  void deleteHardReview_Failure() {
+    // given
+    given(reviewRepository.findById(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(() -> reviewService.deleteHard(reviewId, userId))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
 }
