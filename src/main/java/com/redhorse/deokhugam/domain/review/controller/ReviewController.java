@@ -61,7 +61,7 @@ public class ReviewController {
 
   }
 
-  @PostMapping("{reviewId}/like")
+  @PostMapping("/{reviewId}/like")
   public ResponseEntity<ReviewLikeDto> like(
       @PathVariable UUID reviewId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {

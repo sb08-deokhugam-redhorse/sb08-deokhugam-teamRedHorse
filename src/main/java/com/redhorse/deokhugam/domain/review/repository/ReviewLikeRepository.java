@@ -16,5 +16,5 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, UUID> {
   @Query("select rl from ReviewLike rl where rl.review.id= :reviewId AND rl.user.id= :userId")
   Optional<ReviewLike> findByReviewIdAndUserId(
       @Param("reviewId") UUID reviewId,
-      @Param("userId") UUID userID);
+      @Param("userId") UUID userId);
 }

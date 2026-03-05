@@ -123,10 +123,12 @@ public class ReviewServiceImpl implements ReviewService {
 
       if (reviewLike.getDeletedAt() == null) {
         reviewLike.update(Instant.now());
+        review.decrementLikeCount();
         like = false;
       } else {
         like = true;
         reviewLike.update(null);
+        review.incrementLikeCount();
       }
     }
     // 리뷰 좋아요 테이블에 없는 경우
