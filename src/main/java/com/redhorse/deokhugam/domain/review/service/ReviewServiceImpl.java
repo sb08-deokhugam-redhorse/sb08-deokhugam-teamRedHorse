@@ -135,6 +135,7 @@ public class ReviewServiceImpl implements ReviewService {
     else {
       ReviewLike newReviewLike = new ReviewLike(user, review);
       reviewLikeRepository.save(newReviewLike);
+      review.incrementLikeCount();
       like = true;
     }
     ReviewLikeDto dto = new ReviewLikeDto(reviewId, userId, like);
