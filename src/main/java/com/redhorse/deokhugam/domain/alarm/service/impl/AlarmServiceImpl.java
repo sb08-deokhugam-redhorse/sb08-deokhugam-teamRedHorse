@@ -134,7 +134,6 @@ public class AlarmServiceImpl implements AlarmService {
         }
 
         for (Alarm alarm : alarms) {
-            System.out.println(alarm.getMessage());
             alarm.update();
         }
     }

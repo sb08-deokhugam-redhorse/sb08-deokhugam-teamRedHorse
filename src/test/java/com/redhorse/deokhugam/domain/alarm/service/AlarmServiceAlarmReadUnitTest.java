@@ -7,6 +7,7 @@ import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.impl.AlarmServiceImpl;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
+import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,10 @@ class AlarmServiceAlarmReadUnitTest {
         UUID testAlarmId = UUID.randomUUID();
         UUID testUserId = UUID.randomUUID();
         Alarm mockAlarm = mock(Alarm.class);
+        User mockUser = mock(User.class);
 
+        given(mockUser.getId()).willReturn(testUserId);
+        given(mockAlarm.getUser()).willReturn(mockUser);
         given(alarmRepository.findById(testAlarmId)).willReturn(Optional.of(mockAlarm));
 
         // when
