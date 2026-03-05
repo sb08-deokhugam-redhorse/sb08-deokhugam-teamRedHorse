@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +42,17 @@ public class CommentController {
       @Valid @RequestBody CommentUpdateRequest commentUpdateRequest
   ){
     CommentDto comment = commentService.update(commentId, requestUserId, commentUpdateRequest);
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(comment);
+  }
+
+  @GetMapping("/{commentId}")
+  public ResponseEntity<CommentDto> find(
+      @PathVariable UUID commentId
+  ) {
+    CommentDto comment = commentService.find(commentId);
 
     return ResponseEntity
         .status(HttpStatus.OK)

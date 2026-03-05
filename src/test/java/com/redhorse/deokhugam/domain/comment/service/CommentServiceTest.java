@@ -127,6 +127,11 @@ class CommentServiceTest {
       // then
       then(commentRepository).should(never()).save(any(Comment.class));
     }
+  }
+
+  @Nested
+  @DisplayName("댓글 수정 관련 테스트")
+  class updateCommentTests {
 
     @Test
     @DisplayName("댓글 수정 성공")
@@ -141,9 +146,11 @@ class CommentServiceTest {
 
       Comment mockComment = mock(Comment.class);
       given(mockComment.getUser()).willReturn(mockUser);
-      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(Optional.of(mockComment));
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
+          Optional.of(mockComment));
 
-      CommentDto expectedDto = new CommentDto(commentId, UUID.randomUUID(), requestUserId, "감자", "댓글 수정 테스트", Instant.now(), Instant.now());
+      CommentDto expectedDto = new CommentDto(commentId, UUID.randomUUID(), requestUserId, "감자",
+          "댓글 수정 테스트", Instant.now(), Instant.now());
       given(commentMapper.toDto(mockComment)).willReturn(expectedDto);
 
       // when
@@ -167,13 +174,57 @@ class CommentServiceTest {
 
       Comment mockComment = mock(Comment.class);
       given(mockComment.getUser()).willReturn(mockAuthor);
-      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(Optional.of(mockComment));
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
+          Optional.of(mockComment));
 
       // when & then
       assertThatThrownBy(() -> commentService.update(commentId, requestUserId, commentReq))
           .isInstanceOf(IllegalArgumentException.class);
 
       verify(mockComment, never()).update(anyString());
+    }
+  }
+
+  @Nested
+  @DisplayName("댓글 단건 조회 관련 테스트")
+  class findCommentTests {
+
+    @Test
+    @DisplayName("댓글 단건 조회 성공")
+    void find_ShouldReturnCommentDto() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      Comment mockComment = mock(Comment.class);
+      CommentDto expectedDto = new CommentDto(commentId, UUID.randomUUID(), UUID.randomUUID(),
+          "감자",
+          "댓글 수정 테스트", Instant.now(), Instant.now());
+
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
+          Optional.of(mockComment));
+      given(commentMapper.toDto(mockComment)).willReturn(expectedDto);
+
+      // when
+      CommentDto result = commentService.find(commentId);
+
+      // then
+      assertThat(result).isNotNull();
+      assertThat(result).isEqualTo(expectedDto);
+
+      then(commentRepository).should().findByIdAndDeletedAtIsNull(eq(commentId));
+      then(commentMapper).should().toDto(any(Comment.class));
+    }
+
+    @Test
+    @DisplayName("댓글 단건 조회 실패 - 유효하지 않는 댓글 Id")
+    void find_WhenNotFoundComment_ShouldThrowException() {
+      // given
+      UUID invalidCommentId = UUID.randomUUID();
+
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(invalidCommentId))).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> commentService.find(invalidCommentId))
+          .isInstanceOf(IllegalArgumentException.class);
     }
   }
 }

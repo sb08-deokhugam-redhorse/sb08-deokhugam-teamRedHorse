@@ -3,6 +3,7 @@ package com.redhorse.deokhugam.domain.comment.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -16,6 +17,7 @@ import com.redhorse.deokhugam.domain.comment.service.CommentService;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -36,119 +38,172 @@ class CommentControllerTest {
   @MockitoBean
   private CommentService commentService;
 
-  @Test
-  @DisplayName("댓글 등록 요청이 성공적으로 처리되어야 한다.")
-  void create_Success() throws Exception {
-    // given
-    UUID reviewId = UUID.randomUUID();
-    UUID userId = UUID.randomUUID();
-    CommentCreateRequest request = new CommentCreateRequest(reviewId, userId, "하이루");
+  @Nested
+  @DisplayName("댓글 등록 관련 테스트")
+  class createCommentsTests {
 
-    CommentDto responseDto = new CommentDto(
-        UUID.randomUUID(), reviewId, userId, "감자", "하이루",
-        Instant.now(), Instant.now()
-    );
+    @Test
+    @DisplayName("댓글 등록 요청이 성공적으로 처리되어야 한다.")
+    void create_Success() throws Exception {
+      // given
+      UUID reviewId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+      CommentCreateRequest request = new CommentCreateRequest(reviewId, userId, "하이루");
 
-    given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);
+      CommentDto responseDto = new CommentDto(
+          UUID.randomUUID(), reviewId, userId, "감자", "하이루",
+          Instant.now(), Instant.now()
+      );
 
-    // when & then
-    mockMvc.perform(post("/api/comments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.content").value("하이루"))
-        .andExpect(jsonPath("$.userNickname").value("감자"));
+      given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);
+
+      // when & then
+      mockMvc.perform(post("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.content").value("하이루"))
+          .andExpect(jsonPath("$.userNickname").value("감자"));
+    }
+
+    @Test
+    @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 500 반환")
+    void create_WhenReviewNotFound_ShouldThrowException() throws Exception {
+      // given
+      UUID invalidReviewId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+      CommentCreateRequest request = new CommentCreateRequest(invalidReviewId, userId, "하이루");
+
+      given(commentService.create(any(CommentCreateRequest.class)))
+          .willThrow(new IllegalArgumentException("Review Not Found"));
+
+      // when & then
+      mockMvc.perform(post("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("댓글 등록 실패 - 존재하지 않는 사용자 ID인 경우 500 반환")
+    void create_WhenUserNotFound_ShouldThrowException() throws Exception {
+      // given
+      CommentCreateRequest request = new CommentCreateRequest(UUID.randomUUID(), UUID.randomUUID(),
+          "하이루");
+
+      given(commentService.create(any(CommentCreateRequest.class)))
+          .willThrow(new IllegalArgumentException("User Not Found"));
+
+      // when & then
+      mockMvc.perform(post("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("입력값 검증 실패 시 - 400 Bad Request")
+    void create_InvalidInput_ShouldThrowException() throws Exception {
+      // given
+      CommentCreateRequest invalidRequest = new CommentCreateRequest(null, null, "");
+
+      // when & then
+      mockMvc.perform(post("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(invalidRequest)))
+          .andExpect(status().isBadRequest());
+    }
   }
 
-  @Test
-  @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 500 반환")
-  void create_Fail_ReviewNotFound() throws Exception {
-    // given
-    UUID invalidReviewId = UUID.randomUUID();
-    UUID userId = UUID.randomUUID();
-    CommentCreateRequest request = new CommentCreateRequest(invalidReviewId, userId, "하이루");
+  @Nested
+  @DisplayName("댓글 수정 관련 테스트")
+  class updateCommentsTests {
 
-    given(commentService.create(any(CommentCreateRequest.class)))
-        .willThrow(new IllegalArgumentException("Review Not Found"));
+    @Test
+    @DisplayName("댓글 수정 요청이 성공적으로 처리되어야 한다.")
+    void update_Success() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+      CommentUpdateRequest commentReq = new CommentUpdateRequest("댓글 수정 테스트");
 
-    // when & then
-    mockMvc.perform(post("/api/comments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isInternalServerError());
+      CommentDto responseDto = new CommentDto(
+          commentId, UUID.randomUUID(), requestUserId, "감자", "댓글 수정 테스트",
+          Instant.now(), Instant.now()
+      );
+
+      given(commentService.update(eq(commentId), eq(requestUserId),
+          any(CommentUpdateRequest.class))).willReturn(responseDto);
+
+      // when & then
+      mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(commentReq)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.id").value(commentId.toString()))
+          .andExpect(jsonPath("$.content").value("댓글 수정 테스트"))
+          .andExpect(jsonPath("$.userId").value(requestUserId.toString()));
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다")
+    void update_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+      CommentUpdateRequest request = new CommentUpdateRequest("댓글 수정 테스트");
+
+      given(
+          commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class)))
+          .willThrow(new IllegalArgumentException("자신이 작성한 댓글만 수정할 수 있습니다."));
+
+      // when & then
+      mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isInternalServerError());
+    }
   }
 
-  @Test
-  @DisplayName("댓글 등록 실패 - 존재하지 않는 사용자 ID인 경우 500 반환")
-  void create_Fail_UserNotFound() throws Exception {
-    // given
-    CommentCreateRequest request = new CommentCreateRequest(UUID.randomUUID(), UUID.randomUUID(), "하이루");
+  @Nested
+  @DisplayName("댓글 단건 조회 관련 테스트")
+  class findCommentsTests {
 
-    given(commentService.create(any(CommentCreateRequest.class)))
-        .willThrow(new IllegalArgumentException("User Not Found"));
+    @Test
+    @DisplayName("댓글 단건 조회 요청이 성공적으로 처리되어야 한다.")
+    void find_Success() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+      CommentDto responseDto = new CommentDto(
+          commentId, UUID.randomUUID(), UUID.randomUUID(), "감자", "댓글 수정 테스트",
+          Instant.now(), Instant.now()
+      );
 
-    // when & then
-    mockMvc.perform(post("/api/comments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isInternalServerError());
-  }
+      given(commentService.find(eq(commentId))).willReturn(responseDto);
 
-  @Test
-  @DisplayName("입력값 검증 실패 시 - 400 Bad Request")
-  void create_Fail_InvalidInput() throws Exception {
-    // given
-    CommentCreateRequest invalidRequest = new CommentCreateRequest(null, null, "");
+      // when & then
+      mockMvc.perform(get("/api/comments/{commentId}", commentId)
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.id").value(commentId.toString()))
+          .andExpect(jsonPath("$.id").exists());
+    }
 
-    // when & then
-    mockMvc.perform(post("/api/comments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidRequest)))
-        .andExpect(status().isBadRequest());
-  }
+    @Test
+    @DisplayName("댓글 단건 조회 요청 실패 - 존재하지 않은 댓글  Id인 경우 500을 반환한다.")
+    void find_WhenCommentNotFound_ShouldThrowException() throws Exception {
+      // given
+      UUID invalidCommentId = UUID.randomUUID();
 
-  @Test
-  @DisplayName("댓글 수정 요청이 성공적으로 처리되어야 한다.")
-  void update() throws Exception {
-    // given
-    UUID commentId = UUID.randomUUID();
-    UUID requestUserId = UUID.randomUUID();
-    CommentUpdateRequest commentReq = new CommentUpdateRequest("댓글 수정 테스트");
+      given(commentService.find(eq(invalidCommentId)))
+          .willThrow(new IllegalArgumentException("Comment Not Found"));
 
-    CommentDto responseDto = new CommentDto(
-        commentId, UUID.randomUUID(), requestUserId, "감자", "댓글 수정 테스트",
-        Instant.now(), Instant.now()
-    );
-
-    given(commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class))).willReturn(responseDto);
-
-    // when & then
-    mockMvc.perform(patch("/api/comments/{commentId}", commentId)
-            .header("Deokhugam-Request-User-ID", requestUserId.toString())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(commentReq)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(commentId.toString()))
-        .andExpect(jsonPath("$.content").value("댓글 수정 테스트"))
-        .andExpect(jsonPath("$.userId").value(requestUserId.toString()));
-  }
-
-  @Test
-  @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다")
-  void update_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
-    // given
-    UUID commentId = UUID.randomUUID();
-    UUID requestUserId = UUID.randomUUID();
-    CommentUpdateRequest request = new CommentUpdateRequest("댓글 수정 테스트");
-
-    given(commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class)))
-        .willThrow(new IllegalArgumentException("자신이 작성한 댓글만 수정할 수 있습니다."));
-
-    // when & then
-    mockMvc.perform(patch("/api/comments/{commentId}", commentId)
-            .header("Deokhugam-Request-User-ID", requestUserId.toString())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isInternalServerError());
+      // when & then
+      mockMvc.perform(get("/api/comments/{commentId}", invalidCommentId)
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isInternalServerError());
+    }
   }
 }
