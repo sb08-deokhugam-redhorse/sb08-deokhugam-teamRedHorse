@@ -1,9 +1,11 @@
 package com.redhorse.deokhugam.domain.user.service.impl;
 
+import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
+import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
@@ -43,5 +45,20 @@ public class UserServiceImpl implements UserService {
 
       throw new UserDuplicateException(request.email());
     }
+  }
+
+  @Override
+  public UserDto login(UserLoginRequest request) {
+    // 사용자 조회
+    User user = userRepository.findByEmail(request.email())
+        .orElseThrow(UserLoginFailedException::new);
+
+    // 비번 검증 - 현재 비번 암호화는 사용 안함 / security 미사용 중
+    if (!user.getPassword().equals(request.password())) {
+      throw new UserLoginFailedException();
+    }
+
+    // 응답
+    return userMapper.toUserDto(user);
   }
 }

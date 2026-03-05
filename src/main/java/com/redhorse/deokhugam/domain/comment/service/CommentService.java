@@ -2,6 +2,8 @@ package com.redhorse.deokhugam.domain.comment.service;
 
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
+import java.util.UUID;
 
 public interface CommentService {
 
@@ -9,8 +11,10 @@ public interface CommentService {
   CommentDto create(CommentCreateRequest commentCreateRequest);
 
   // 댓글 수정
+  CommentDto update(UUID commentId, UUID requestUserId, CommentUpdateRequest commentUpdateRequest);
 
   // 댓글 상세 조회
+  CommentDto find(UUID commentId);
 
   // 댓글 목록 조회
 

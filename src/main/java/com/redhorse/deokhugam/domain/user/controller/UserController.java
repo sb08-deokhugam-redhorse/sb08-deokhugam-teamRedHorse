@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.user.controller;
 
+import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.service.UserService;
@@ -28,6 +29,16 @@ public class UserController {
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
+        .body(userDto);
+  }
+
+  @PostMapping("/login")
+  public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginRequest request) {
+
+    UserDto userDto = userService.login(request);
+
+    return  ResponseEntity
+        .status(HttpStatus.OK)
         .body(userDto);
   }
 }

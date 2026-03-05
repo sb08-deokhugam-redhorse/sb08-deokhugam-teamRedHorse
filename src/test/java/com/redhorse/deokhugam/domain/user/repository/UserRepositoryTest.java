@@ -2,8 +2,8 @@ package com.redhorse.deokhugam.domain.user.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.redhorse.deokhugam.config.TestJpaConfig;
 import com.redhorse.deokhugam.domain.user.entity.User;
-import com.redhorse.deokhugam.global.config.JpaConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
-@Import(JpaConfig.class)
+@Import(TestJpaConfig.class)
 @DisplayName("UserRepository 슬라이스 테스트")
 class UserRepositoryTest {
 
