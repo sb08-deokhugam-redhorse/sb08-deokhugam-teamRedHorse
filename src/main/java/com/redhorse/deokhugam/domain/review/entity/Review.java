@@ -1,9 +1,13 @@
 package com.redhorse.deokhugam.domain.review.entity;
 
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.comment.entity.Comment;
+import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.global.entity.BaseUpdatableEntity;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +49,15 @@ public class Review extends BaseUpdatableEntity {
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_reviews_user_id"))
     private User user;
 
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval=true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval=true)
+    private List<ReviewLike> reviewLike = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval=true)
+    private List<PopularReview> popularReview = new ArrayList<>();
+
     public Review(String content, int rating, Book book, User user) {
         this.content = content;
         this.rating = rating;
@@ -61,5 +74,9 @@ public class Review extends BaseUpdatableEntity {
         if(rating != null && rating != this.rating){
             this.rating = rating;
         }
+    }
+
+    public void delete(){
+        this.deletedAt = Instant.now();
     }
 }
