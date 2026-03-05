@@ -83,9 +83,6 @@ class AlarmServiceAlarmReadUnitTest {
         Alarm mockAlarm1 = mock(Alarm.class);
         Alarm mockAlarm2 = mock(Alarm.class);
 
-        given(mockAlarm1.getMessage()).willReturn("메시지1");
-        given(mockAlarm2.getMessage()).willReturn("메시지2");
-
         given(alarmRepository.findAllAlarmByUserId(testUserId)).willReturn(List.of(mockAlarm1, mockAlarm2));
 
         // when
