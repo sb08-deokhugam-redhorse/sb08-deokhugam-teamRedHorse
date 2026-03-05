@@ -93,7 +93,7 @@ public class AlarmServiceImpl implements AlarmService {
         Alarm alarm = new Alarm(
                 dto.period().toString(),
                 review.getContent(),
-                "{'나의 리뷰가 " + type + dto.rank() + "위에 올랐습니다.",
+                "나의 리뷰가 " + type + dto.rank() + "위에 올랐습니다.",
                 dto.reviewId(),
                 user
         );
