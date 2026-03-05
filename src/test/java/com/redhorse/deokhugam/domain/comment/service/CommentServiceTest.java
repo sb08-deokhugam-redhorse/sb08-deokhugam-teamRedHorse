@@ -229,7 +229,7 @@ class CommentServiceTest {
   }
 
   @Nested
-  @DisplayName("댓글 물리 삭제 관련 테스트")
+  @DisplayName("댓글 논리 삭제 관련 테스트")
   class softDeleteCommentTests {
 
     @Test
@@ -317,6 +317,7 @@ class CommentServiceTest {
 
       // then
       then(commentRepository).should().findById(eq(commentId));
+      then(commentRepository).should().delete(eq(mockComment));
     }
 
     @Test
