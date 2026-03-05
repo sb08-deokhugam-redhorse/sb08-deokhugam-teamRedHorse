@@ -260,5 +260,16 @@ class CommentControllerTest {
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isInternalServerError());
     }
+
+    @Test
+    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 400을 반환한다")
+    void softDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
+      // given
+      UUID commentId = UUID.randomUUID();
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}", commentId))
+          .andExpect(status().isInternalServerError());
+    }
   }
 }
