@@ -13,11 +13,15 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AlarmServiceImpl implements AlarmService {
     private final AlarmRepository alarmRepository;
@@ -109,8 +113,10 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public void checkAlarm() {
-
+    public void checkAlarm(UUID alarmId, UUID userId) {
+        Alarm alarm = alarmRepository.findById(alarmId).orElseThrow(
+                () -> new IllegalArgumentException("알림이 없습니다.")
+        );
     }
 
     @Override
