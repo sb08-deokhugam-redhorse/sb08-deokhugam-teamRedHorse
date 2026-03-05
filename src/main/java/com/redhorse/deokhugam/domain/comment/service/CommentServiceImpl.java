@@ -68,4 +68,16 @@ public class CommentServiceImpl implements CommentService {
 
     return commentMapper.toDto(comment);
   }
+
+  @Override
+  public void softDelete(UUID commentId, UUID requestUserId) {
+    Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+
+    if (!comment.getUser().getId().equals(requestUserId)) {
+      throw new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다.");
+    }
+
+    comment.softDelete();
+  }
 }
