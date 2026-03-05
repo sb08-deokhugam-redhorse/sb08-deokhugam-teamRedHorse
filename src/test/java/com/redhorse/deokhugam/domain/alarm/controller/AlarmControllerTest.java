@@ -38,7 +38,7 @@ class AlarmControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/notifications/{notificationId}", testAlarmId)
-                        .param("Deokhugam-Request-Id", testUserId)
+                        .header("Deokhugam-Request-Id", testUserId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.*").exists());
@@ -56,7 +56,8 @@ class AlarmControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/notifications/read-all")
-                        .param("Deokhugam-Request-Id", testUserId)
+                        // 🚨 수정: .param() 대신 .header()를 사용합니다!
+                        .header("Deokhugam-Request-Id", testUserId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -64,14 +65,14 @@ class AlarmControllerTest {
     }
 
     @Test
-    @DisplayName("단건 알림 읽음 처리 실패 - 필수 파라미터 누락 시 500 Server Error 반환")
-    void updateAlarmToRead_Single_MissingParam() throws Exception {
+    @DisplayName("단건 알림 읽음 처리 실패 - 필수 헤더 누락 시 500 Server Error 반환")
+    void updateAlarmToRead_Single_MissingHeader() throws Exception {
         // given
         String testAlarmId = UUID.randomUUID().toString();
 
         // when & then
         mockMvc.perform(patch("/api/notifications/{notificationId}", testAlarmId)
                         .contentType(MediaType.APPLICATION_JSON))
-                 .andExpect(status().isInternalServerError());
+                .andExpect(status().isInternalServerError());
     }
 }
