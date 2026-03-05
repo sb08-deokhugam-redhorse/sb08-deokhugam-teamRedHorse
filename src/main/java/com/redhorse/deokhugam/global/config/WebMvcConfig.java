@@ -7,13 +7,33 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
-public class WebMvcConfig implements WebMvcConfigurer
-{
-    private final MDCLoggingInterceptor mdcLoggingInterceptor;
+public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(mdcLoggingInterceptor)
-                .addPathPatterns("/**");
-    }
+  private final MDCLoggingInterceptor mdcLoggingInterceptor;
+  private final AuthenticationInterceptor authenticationInterceptor;
+
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    // MDC 로그 인터셉터
+    registry.addInterceptor(mdcLoggingInterceptor)
+        .addPathPatterns("/**")
+        .order(1);
+
+    // 인증 헤더확인 인터셉터
+    registry
+        .addInterceptor(authenticationInterceptor)
+        .addPathPatterns("/**")
+        .excludePathPatterns(
+            // 인증 제외 대상
+            "/",
+            "/api/users/login",
+            "/api/users/signup",
+            "/favicon.ico",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/static/**",
+            "/images/**"
+        )
+        .order(2);
+  }
 }
