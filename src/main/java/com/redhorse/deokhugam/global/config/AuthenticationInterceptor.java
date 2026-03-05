@@ -28,11 +28,14 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     try {
       // UUID 패턴인지 확인
       // String → UUID 변환할 때, String이 UUID 형식이 아니면 IllegalArgumentException 에러 발생하기 때문에 try문 사용
-      UUID.fromString(userIdHeader);
+      UUID userId = UUID.fromString(userIdHeader);
+
+      // 컨트롤러에서 쉽게 추출하기 위함
+      request.setAttribute("requestUserId", userId);
+
+      return true;
     } catch (IllegalArgumentException e) {
       throw new AuthenticationException();
     }
-
-    return true;
   }
 }
