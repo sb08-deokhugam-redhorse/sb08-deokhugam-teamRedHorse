@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.review.controller;
 
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
@@ -54,9 +55,19 @@ public class ReviewController {
   public ResponseEntity<Void> hardDelete(
       @PathVariable UUID reviewId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
+
     reviewService.hardDelete(reviewId, userId);
     return ResponseEntity.noContent().build();
 
+  }
+
+  @PostMapping("{reviewId}/like")
+  public ResponseEntity<ReviewLikeDto> like(
+      @PathVariable UUID reviewId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId) {
+
+    ReviewLikeDto dto = reviewService.like(reviewId, userId);
+    return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
 
