@@ -4,6 +4,7 @@ import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
@@ -43,6 +44,21 @@ public class ReviewServiceImpl implements ReviewService {
       throw new IllegalStateException("bookId, userId exists");
     }
 
+  }
+
+  @Transactional
+  @Override
+  public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
+    String content = request.content();
+    int rating = request.rating();
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+    userRepository.findById(userId).
+        orElseThrow(() -> new IllegalArgumentException("User not exists"));
+
+    review.update(content, rating);
+    return  reviewMapper.toDto(review);
   }
 
 }

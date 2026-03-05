@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.domain.reviewTest;
+package com.redhorse.deokhugam.domain.review.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -11,10 +11,10 @@ import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
-import com.redhorse.deokhugam.domain.review.service.ReviewServiceImpl;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
@@ -139,6 +139,43 @@ public class ReviewServiceTest {
     assertThatThrownBy(() -> reviewService.create(request))
         .isInstanceOf(IllegalArgumentException.class);
 
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 성공")
+  void updateReview_Success() {
+    // given
+    ReviewUpdateRequest request = new ReviewUpdateRequest(
+        "update", rating
+    );
+
+    given(userRepository.findById(eq(userId))).willReturn(Optional.of(user));
+    given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+    given(reviewMapper.toDto(any(Review.class))).willReturn(reviewDto);
+
+    // when
+    ReviewDto result = reviewService.update(reviewId, userId, request);
+
+    // then
+    assertThat(result).isEqualTo(reviewDto);
+    assertThat(review.getContent()).isEqualTo(request.content());
+    assertThat(review.getRating()).isEqualTo(request.rating());
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 실패 - 유저를 찾을 수 없을 경우")
+  void updateReview_Failure() {
+    // given
+    ReviewUpdateRequest request = new ReviewUpdateRequest(
+        "update",3
+    );
+
+    given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId))).willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(()->reviewService.update(reviewId, userId, request))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
 }
