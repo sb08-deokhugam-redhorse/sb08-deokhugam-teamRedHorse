@@ -37,14 +37,12 @@ public class UserServiceImpl implements UserService {
       // 저장 및 반환
       userRepository.saveAndFlush(user);
 
+      log.info("[User-Service] 작업 완료");
       return userMapper.toUserDto(user);
     } catch (DataIntegrityViolationException e) {
 
       log.error("[User-Service] 에러 중복 이메일: detail = {}", request.email());
       throw new UserDuplicateException(request.email());
-    } finally {
-
-      log.info("[User-Service] 작업 완료");
     }
   }
 
@@ -54,13 +52,13 @@ public class UserServiceImpl implements UserService {
     // 사용자 조회
     User user = userRepository.findByEmail(request.email())
         .orElseThrow(() -> {
-          log.error("[User-Service] 에러 없는 이메일: detail = {}", request.password());
+          log.error("[User-Service] 에러 없는 이메일: detail = {}", request.email());
           return new UserLoginFailedException();
         });
 
     // 비번 검증 - 현재 비번 암호화는 사용 안함 / security 미사용 중
     if (!user.getPassword().equals(request.password())) {
-      log.error("[User-Service] 에러 비밀번호 다름: detail = {}", request.password());
+      log.error("[User-Service] 에러 비밀번호 다름: detail = 비밀번호 다름");
       throw new UserLoginFailedException();
     }
 

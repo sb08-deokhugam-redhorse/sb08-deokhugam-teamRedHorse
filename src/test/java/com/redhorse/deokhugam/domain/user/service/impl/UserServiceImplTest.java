@@ -234,7 +234,7 @@ class UserServiceImplTest {
 
     given(
         userRepository.findById(userId)
-    ).willThrow(new UserNotFoundException(userId));
+    ).willReturn(Optional.empty());
 
     // when & Then
     assertThatThrownBy(() -> userService.getUser(userId))
