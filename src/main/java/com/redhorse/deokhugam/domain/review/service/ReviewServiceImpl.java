@@ -155,6 +155,10 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   @Override
   public CursorPageResponseReviewDto findAll(ReviewSearchRequest request, UUID requestUserId) {
+    if(!userRepository.existsById(requestUserId)){
+      throw new IllegalArgumentException("User not exists");
+    }
+
     Slice<Review> slice = reviewRepository.getAllReviews(request);
 
     List<Review> reviews = slice.getContent();

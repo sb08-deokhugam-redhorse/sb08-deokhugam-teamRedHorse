@@ -271,7 +271,7 @@ public class ReviewControllerTest {
 
   @Test
   @DisplayName("리뷰 상세 조회 성공 테스트 ")
-  void findAllReview_Success() throws Exception {
+  void findByIdReview_Success() throws Exception {
     // given
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
@@ -309,7 +309,7 @@ public class ReviewControllerTest {
 
   @Test
   @DisplayName("리뷰 상세 조회 실패 테스트 - 존재하지 않는 리뷰일 경우")
-  void findAllReview_Failure() throws Exception {
+  void findByIdReview_Failure() throws Exception {
     // given
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
