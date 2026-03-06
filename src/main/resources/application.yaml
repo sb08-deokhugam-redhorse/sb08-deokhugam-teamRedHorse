@@ -21,6 +21,11 @@ spring:
     locations:
       - classpath:db/migration # 스키마 저장 위치 - 관례
 
+  batch:
+    jdbc:
+      # 앱 시작 시 스프링 배치가 메타데이터 테이블을 자동으로 생성하도록 설정
+      initialize-schema: always
+
 # Common Logging
 logging:
   level:
