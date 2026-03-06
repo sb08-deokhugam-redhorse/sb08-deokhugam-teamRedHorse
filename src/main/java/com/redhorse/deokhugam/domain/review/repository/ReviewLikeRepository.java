@@ -14,7 +14,7 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, UUID> {
 
   // 연속으로 좋아요를 누를 경우 오류를 막기 위해서
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("select rl from ReviewLike rl where rl.review.id= :reviewId AND rl.user.id= :userId AND rl.deletedAt IS NULL")
+  @Query("select rl from ReviewLike rl where rl.review.id= :reviewId AND rl.user.id= :userId")
   Optional<ReviewLike> findByIdForUpdate(
       @Param("reviewId") UUID reviewId,
       @Param("userId") UUID userId);
