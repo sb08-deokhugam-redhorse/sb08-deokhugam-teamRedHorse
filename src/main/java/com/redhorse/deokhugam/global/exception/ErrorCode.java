@@ -16,6 +16,8 @@ public enum ErrorCode {
     // book
     BOOK_NOT_FOUND("도서를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     DUPLICATE_ISBN("이미 존재하는 ISBN입니다.", HttpStatus.CONFLICT),
+    INVALID_ISBN("ISBN이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
+    NAVER_BOOK_NOT_FOUND("네이버에서 도서를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // comment
 
