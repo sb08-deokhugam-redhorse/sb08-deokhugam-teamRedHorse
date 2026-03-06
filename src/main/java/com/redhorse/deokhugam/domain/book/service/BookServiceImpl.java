@@ -11,12 +11,14 @@ import com.redhorse.deokhugam.domain.book.mapper.BookMapper;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Transactional(readOnly = true)
@@ -72,13 +74,45 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
-    public CursorPageResponseBookDto getBooks(String keyword, String orderBy, String direction, Instant after, int limit) {
-        return null;
+    public CursorPageResponseBookDto getBooks(String keyword, String orderBy, String direction, String cursor, Instant after, int limit) {
+        Slice<Book> slice = bookRepository.getAllBooks(keyword, orderBy, direction, cursor, after, limit);
+
+        List<Book> books = slice.getContent();
+        long totalElements = bookRepository.countBooksWithKeyword(keyword);
+
+        String nextCursor = null;
+        Instant nextAfter = null;
+
+        if (slice.hasNext()) {
+            Book lastBook = books.get(books.size() - 1);
+            nextCursor = resolveNextCursor(orderBy, lastBook);
+            nextAfter = lastBook.getCreatedAt();
+        }
+
+        List<BookDto> content = books.stream()
+                .map(bookMapper::toBookDto)
+                .toList();
+
+        return new CursorPageResponseBookDto(
+                content,
+                nextCursor,
+                nextAfter,
+                content.size(),
+                totalElements,
+                slice.hasNext()
+        );
     }
 
+    /**
+     * 도서 ID로 상세 정보를 조회한다.
+     *
+     * @param bookId 조회할 도서 ID
+     * @return 도서 정보
+     */
     @Override
     public BookDto findById(UUID bookId) {
-        return null;
+        log.info("[Book-Service] 단건 조회 작업 완료: bookId={}", bookId);
+        return bookMapper.toBookDto(bookRepository.findById(bookId).orElse(null));
     }
 
     /**
@@ -156,5 +190,21 @@ public class BookServiceImpl implements BookService
     @Override
     public String extractIsbnFromImage(MultipartFile file) {
         return "";
+    }
+
+    /**
+     * 정렬 기준에 따라 마지막 요소의 값을 nextCursor 문자열로 변환한다.
+     *
+     * @param orderBy  정렬 기준
+     * @param lastBook 마지막 요소
+     * @return nextCursor 문자열
+     */
+    private String resolveNextCursor(String orderBy, Book lastBook) {
+        return switch (orderBy == null ? "title" : orderBy) {
+            case "publishedDate" -> lastBook.getPublishedDate().toString();
+            case "rating" -> lastBook.getRating().toString();
+            case "reviewCount" -> lastBook.getReviewCount().toString();
+            default -> lastBook.getTitle();
+        };
     }
 }

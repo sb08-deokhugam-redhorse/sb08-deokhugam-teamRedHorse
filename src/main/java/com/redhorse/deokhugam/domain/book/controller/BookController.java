@@ -3,6 +3,7 @@ package com.redhorse.deokhugam.domain.book.controller;
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
 import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
+import com.redhorse.deokhugam.domain.book.dto.response.CursorPageResponseBookDto;
 import com.redhorse.deokhugam.domain.book.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j
@@ -32,6 +34,30 @@ public class BookController
         BookDto book = bookService.create(bookCreateRequest, thumbnailImage);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
+    }
+
+    @GetMapping("/{bookId}")
+    public ResponseEntity<BookDto> getBookById(@PathVariable("bookId") UUID bookId) {
+        log.debug("[Book-Controller] 단건 조회 요청 시작: bookId={}", bookId);
+
+        BookDto book = bookService.findById(bookId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(book);
+    }
+
+    @GetMapping
+    public ResponseEntity<CursorPageResponseBookDto> getAllBooks(@RequestParam(required = false) String keyword,
+                                                                 @RequestParam(required = false, defaultValue = "title") String orderBy,
+                                                                 @RequestParam(required = false, defaultValue = "DESC") String direction,
+                                                                 @RequestParam(required = false) String cursor,
+                                                                 @RequestParam(required = false) Instant after,
+                                                                 @RequestParam(required = false, defaultValue = "10") int limit)
+    {
+        log.debug("[Book-Controller] 다건 조회 요청 시작: keyword={}, orderBy={}, direction={}, cursor={}, after={}", keyword, orderBy, direction, cursor, after);
+
+        CursorPageResponseBookDto response = bookService.getBooks(keyword, orderBy, direction, cursor, after, limit);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PatchMapping("/{bookId}")
