@@ -62,10 +62,11 @@ public class UserServiceImpl implements UserService {
       throw new UserLoginFailedException();
     }
 
-    log.info("[User-Service] 작업 완료: content {}", userMapper.toUserDto(user));
+    UserDto result = userMapper.toUserDto(user);
 
     // 응답
-    return userMapper.toUserDto(user);
+    log.info("[User-Service] 작업 완료: content {}", result);
+    return result;
   }
 
   @Override
