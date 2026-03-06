@@ -1,7 +1,7 @@
 package com.redhorse.deokhugam.batch;
 
-import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.global.batch.BatchConfig.AlarmsCleanupBatchConfig;
+import com.redhorse.deokhugam.global.batch.repository.AlarmBatchRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class AlarmsCleanupTaskletUnitTest {
 
     @Mock
-    private AlarmRepository alarmRepository;
+    private AlarmBatchRepository alarmRepository;
 
     @InjectMocks
     private AlarmsCleanupBatchConfig batchConfig;
