@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface AlarmRepository extends JpaRepository<Alarm, UUID> {
 
     List<Alarm> findAllAlarmByUserId(UUID userId);
+
 }
