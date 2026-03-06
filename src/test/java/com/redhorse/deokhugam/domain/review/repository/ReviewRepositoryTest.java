@@ -1,15 +1,11 @@
 package com.redhorse.deokhugam.domain.review.repository;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import com.redhorse.deokhugam.config.TestJpaConfig;
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import java.time.LocalDate;
-import java.util.ArrayList;
+import com.redhorse.deokhugam.global.config.JpaConfig;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,8 +15,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 @DataJpaTest
-@Import(TestJpaConfig.class)
+@Import(JpaConfig.class)
 @ActiveProfiles("test")
 public class ReviewRepositoryTest {
 

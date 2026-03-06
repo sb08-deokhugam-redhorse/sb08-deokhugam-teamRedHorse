@@ -20,10 +20,13 @@ public enum ErrorCode {
     // comment
 
     // alarm
-    ALARM_NOT_FOUND("알림을 찾을 수 없습니다.",HttpStatus.NOT_FOUND);
+    ALARM_NOT_FOUND("알림을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
 
 
     // dashboard
+
+    // common
+    INVALID_CURSOR("유효하지 않은 cursor 값 입니다.", HttpStatus.BAD_REQUEST);
 
     private final String message;
     private final int status;
