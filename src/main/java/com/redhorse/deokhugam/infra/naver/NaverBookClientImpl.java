@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.infra.naver;
 
 import com.redhorse.deokhugam.domain.book.exception.InValidIsbnException;
+import com.redhorse.deokhugam.domain.book.exception.NaverApiException;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Optional;
 
@@ -39,19 +41,24 @@ public class NaverBookClientImpl implements NaverBookClient
             throw new InValidIsbnException(isbn);
         }
 
-        NaverBookResponse response = restClient.get()
-                .uri(naverUrl + isbn)
-                .header("X-Naver-Client-Id", clientId)
-                .header("X-Naver-Client-Secret", clientSecret)
-                .retrieve()
-                .body(NaverBookResponse.class);
+        try {
+            NaverBookResponse response = restClient.get()
+                    .uri(naverUrl + isbn)
+                    .header("X-Naver-Client-Id", clientId)
+                    .header("X-Naver-Client-Secret", clientSecret)
+                    .retrieve()
+                    .body(NaverBookResponse.class);
 
-        log.info("[Book-Api] 네이버 API 작업 완료: isbn={}", isbn);
+            log.info("[Book-Api] 네이버 API 작업 완료: isbn={}", isbn);
 
-        if (response == null || response.items() == null || response.items().isEmpty()) {
-            return Optional.empty();
+            if (response == null || response.items() == null || response.items().isEmpty()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(response.items().get(0));
+        } catch (RestClientException e) {
+            log.error("[Book-Api] 네이버 API 호출 실패: isbn={}", isbn);
+            throw new NaverApiException(e);
         }
-
-        return Optional.of(response.items().get(0));
     }
 }
