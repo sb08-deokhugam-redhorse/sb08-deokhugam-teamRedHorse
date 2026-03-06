@@ -5,6 +5,7 @@ import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewSearchRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
@@ -14,10 +15,13 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -140,6 +144,15 @@ public class ReviewServiceImpl implements ReviewService {
     }
     ReviewLikeDto dto = new ReviewLikeDto(reviewId, userId, like);
     return dto;
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public List<ReviewDto> findAll(ReviewSearchRequest request, UUID requestUserId) {
+    int limit = request.limit() != null ? request.limit() : 50;
+    String orderBy = request.orderBy() != null ? request.orderBy():  "createdAt";
+
+    return reviewRepository.findAll().stream().map(reviewMapper::toDto).toList();
   }
 
 }

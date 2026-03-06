@@ -3,7 +3,9 @@ package com.redhorse.deokhugam.domain.review.service;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewSearchRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
+import java.util.List;
 import java.util.UUID;
 
 public interface ReviewService {
@@ -16,4 +18,6 @@ public interface ReviewService {
   void hardDelete(UUID reviewId, UUID userId);
 
   ReviewLikeDto like(UUID reviewId, UUID userId);
+
+  List<ReviewDto> findAll(ReviewSearchRequest request,UUID requestUserId);
 }
