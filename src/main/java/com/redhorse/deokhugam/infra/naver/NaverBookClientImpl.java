@@ -58,7 +58,7 @@ public class NaverBookClientImpl implements NaverBookClient
             return Optional.of(response.items().get(0));
         } catch (RestClientException e) {
             log.error("[Book-Api] 네이버 API 호출 실패: isbn={}", isbn);
-            throw new NaverApiException(e);
+            throw new NaverApiException(isbn);
         }
     }
 }
