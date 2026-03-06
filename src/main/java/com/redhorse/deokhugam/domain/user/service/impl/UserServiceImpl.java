@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     UserDto result = userMapper.toUserDto(user);
 
     // 응답
-    log.info("[User-Service] 작업 완료: content {}", result);
+    log.info("[User-Service] 작업 완료: content {}", result.id());
     return result;
   }
 
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     UserDto result = userMapper.toUserDto(user);
 
     // 응답
-    log.info("[User-Service] 작업 완료: content {}", result);
+    log.info("[User-Service] 작업 완료: content {}", result.id());
     return result;
   }
 }
