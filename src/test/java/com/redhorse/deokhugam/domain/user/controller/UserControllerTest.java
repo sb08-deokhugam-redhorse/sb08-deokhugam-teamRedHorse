@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.user.controller;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +13,7 @@ import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
 import java.time.Instant;
@@ -221,5 +223,53 @@ class UserControllerTest {
 
     // then
     result.andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("사용자 조회 성공")
+  void read_user() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    UserDto response = new UserDto(
+        userId,
+        "seongjo.park@gmail.com",
+        "박성조",
+        Instant.now()
+    );
+
+    given(
+        userService.getUser(userId)
+    ).willReturn(response);
+
+    // when
+    var result = mockMvc.perform(get("/api/users/{userId}", userId)
+        .header("Deokhugam-Request-User-ID", userId)
+        .contentType(MediaType.APPLICATION_JSON));
+
+    // then
+    result.andExpect(status().isOk());
+    result.andExpect(jsonPath("$.nickname").value(response.nickname()));
+    result.andExpect(jsonPath("$.email").value(response.email()));
+  }
+
+  @Test
+  @DisplayName("사용자 조회 실패 - 존재하지 않는 사용자의 ID")
+  void read_user_failed() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    given(
+        userService.getUser(userId)
+    ).willThrow(new UserNotFoundException(userId));
+
+    // when
+    var result = mockMvc.perform(get("/api/users/{userId}", userId)
+        .header("Deokhugam-Request-User-ID", userId)
+        .contentType(MediaType.APPLICATION_JSON));
+
+    // then
+    result.andExpect(status().isNotFound());
+    result.andExpect(jsonPath("$.message").value("사용자를 찾을 수 없습니다."));
   }
 }
