@@ -76,6 +76,7 @@ public class ReviewControllerTest {
     // when & then
     mockMvc.perform(post("/api/reviews")
             .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(reviewId.toString()))
@@ -101,6 +102,7 @@ public class ReviewControllerTest {
     // when & then
     mockMvc.perform(post("/api/reviews")
             .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
   }
