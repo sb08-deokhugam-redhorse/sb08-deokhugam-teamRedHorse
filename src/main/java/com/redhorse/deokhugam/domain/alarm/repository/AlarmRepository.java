@@ -18,7 +18,8 @@ public interface AlarmRepository extends JpaRepository<Alarm, UUID> {
     @Query(value =
             "DELETE FROM alarms WHERE id IN (" +
                     "  SELECT id FROM alarms " +
-                    "  WHERE created_at < CURRENT_DATE - INTERVAL '7 days' " +
+                    "  WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '7 days' " +
+                    "  ORDER BY created_at DESC "+
                     "  LIMIT :chunkSize" +
                     ")",
             nativeQuery = true)

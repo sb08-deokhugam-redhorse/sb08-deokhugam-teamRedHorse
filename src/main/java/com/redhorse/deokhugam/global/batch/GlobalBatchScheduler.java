@@ -33,7 +33,7 @@ public class GlobalBatchScheduler {
      * 여섯 번째 *: 요일
      */
     // 매일 오전 1시 30분에 동작하게
-    @Scheduled(cron = "0 30 1 * * *")
+    @Scheduled(cron = "0 30 1 * * *", zone = "Asia/Seoul")
     public void runJob() {
         try {
             log.info("[batch] 작업 시작: 오전 1시 예약된 작업 진행");
