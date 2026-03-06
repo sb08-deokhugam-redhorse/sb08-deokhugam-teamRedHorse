@@ -29,3 +29,10 @@ logging:
 auth:
   interceptor:
     enabled: false
+
+# NAVER
+naver:
+  api:
+    client-id: test
+    client-secret: test
+    url: http://localhost

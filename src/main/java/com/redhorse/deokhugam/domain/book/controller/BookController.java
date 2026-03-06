@@ -5,6 +5,8 @@ import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
 import com.redhorse.deokhugam.domain.book.dto.response.CursorPageResponseBookDto;
 import com.redhorse.deokhugam.domain.book.service.BookService;
+import com.redhorse.deokhugam.infra.naver.NaverBookProvider;
+import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class BookController
 {
     private final BookService bookService;
+    private final NaverBookProvider naverBookProvider;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BookDto> createBook(@Valid @RequestPart("bookData") BookCreateRequest bookCreateRequest,
@@ -74,11 +77,20 @@ public class BookController
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> softDeleteBook(@PathVariable UUID bookId) {
-        log.debug("[Book-Controller] 논리 삭제 시작: bookId={}", bookId);
+        log.debug("[Book-Controller] 논리 삭제 요청 시작: bookId={}", bookId);
 
         bookService.softDelete(bookId);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<NaverBookDto> getBookInfo(@RequestParam String isbn) {
+        log.debug("[Book-Controller] 도서 정보 조회 요청 시작: isbn={}", isbn);
+
+        NaverBookDto bookInfo = naverBookProvider.getBookInfoByIsbn(isbn);
+
+        return ResponseEntity.status(HttpStatus.OK).body(bookInfo);
     }
 
     @DeleteMapping("/{bookId}/hard")

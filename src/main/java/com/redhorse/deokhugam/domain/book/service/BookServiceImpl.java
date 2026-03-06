@@ -73,6 +73,17 @@ public class BookServiceImpl implements BookService
         return bookMapper.toBookDto(savedBook);
     }
 
+    /**
+     * 도서 목록을 커서 페이지네이션으로 조회한다.
+     *
+     * @param keyword   검색 키워드 (제목, 저자, ISBN)
+     * @param orderBy   정렬 기준 (title, publishedDate, rating, reviewCount)
+     * @param direction 정렬 방향 (ASC, DESC)
+     * @param cursor    이전 페이지 마지막 요소의 정렬 기준 값 (1차 커서)
+     * @param after     이전 페이지 마지막 요소의 createdAt (2차 커서)
+     * @param limit     페이지 크기
+     * @return 도서 목록과 다음 페이지 존재 여부
+     */
     @Override
     public CursorPageResponseBookDto getBooks(String keyword, String orderBy, String direction, String cursor, Instant after, int limit) {
         if (limit < 1) {

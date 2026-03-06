@@ -2,12 +2,13 @@ package com.redhorse.deokhugam;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @SpringBootTest
-class DeokhugamApplicationTests {
-
+class DeokhugamApplicationTests
+{
 	@Test
 	void contextLoads() {
 	}
-
 }

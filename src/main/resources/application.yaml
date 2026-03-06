@@ -45,5 +45,10 @@ management:
       enabled: true
 
 # Naver API
+naver:
+  api:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+    url: https://openapi.naver.com/v1/search/book_adv.json?d_isbn=
 
 # Spring Batch
