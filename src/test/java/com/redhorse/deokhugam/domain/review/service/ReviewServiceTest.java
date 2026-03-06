@@ -11,9 +11,12 @@ import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
+import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
+import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
@@ -36,6 +39,9 @@ public class ReviewServiceTest {
 
   @Mock
   private ReviewRepository reviewRepository;
+
+  @Mock
+  private ReviewLikeRepository reviewLikeRepository;
 
   @Mock
   private BookRepository bookRepository;
@@ -149,7 +155,8 @@ public class ReviewServiceTest {
         "update", rating
     );
 
-    given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+        Optional.of(review));
 
     ReviewDto updateReviewDto = new ReviewDto(
         reviewId,
@@ -185,7 +192,8 @@ public class ReviewServiceTest {
     );
 
     UUID otherUserId = UUID.randomUUID();
-    given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(review));
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+        Optional.of(review));
 
     // when & then
     assertThatThrownBy(() -> reviewService.update(reviewId, otherUserId, request))
@@ -196,11 +204,11 @@ public class ReviewServiceTest {
   @DisplayName("리뷰 논리 삭제 성공")
   void deleteReview_Success() {
     // given
-    given(reviewRepository.findById(eq(reviewId)))
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
         .willReturn(Optional.of(review));
 
     // when
-    reviewService.delete(reviewId, userId);
+    reviewService.softDelete(reviewId, userId);
 
     // then
     assertThat(review.getDeletedAt()).isNotNull();
@@ -210,11 +218,11 @@ public class ReviewServiceTest {
   @DisplayName("리뷰 논리 삭제 실패 - 존재하지 않는 리뷰일 경우")
   void deleteReview_Failure() {
     // given
-    given(reviewRepository.findById(eq(reviewId)))
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
         .willReturn(Optional.empty());
 
     // when & then
-    assertThatThrownBy(() -> reviewService.delete(reviewId, userId))
+    assertThatThrownBy(() -> reviewService.softDelete(reviewId, userId))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -226,7 +234,7 @@ public class ReviewServiceTest {
         .willReturn(Optional.of(review));
 
     // when
-    reviewService.deleteHard(reviewId, userId);
+    reviewService.hardDelete(reviewId, userId);
 
     // then
     verify(reviewRepository).delete(eq(review));
@@ -242,8 +250,55 @@ public class ReviewServiceTest {
     UUID otherUserId = UUID.randomUUID();
 
     // when & then
-    assertThatThrownBy(() -> reviewService.deleteHard(reviewId, otherUserId))
+    assertThatThrownBy(() -> reviewService.hardDelete(reviewId, otherUserId))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  @DisplayName("리뷰 좋아요 생성 성공")
+  void createReviewLike_Success() {
+    // given
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.of(user));
+
+    ReviewLikeDto request = new ReviewLikeDto(
+        reviewId, userId, true
+    );
+
+    given(reviewLikeRepository.findByReviewIdAndUserId(eq(reviewId), eq(userId)))
+        .willReturn(Optional.empty());
+    given(reviewLikeRepository.save(any(ReviewLike.class)))
+        .willReturn(new ReviewLike(user, review));
+
+    // when
+    ReviewLikeDto result = reviewService.like(reviewId,userId);
+
+    // then
+    assertThat(result).isEqualTo(request);
+    assertThat(result.reviewId()).isEqualTo(reviewId);
+    assertThat(result.userId()).isEqualTo(userId);
+    assertThat(result.like()).isEqualTo(true);
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 생성 실패 - 존재하지 않는 유저일 경우")
+  void createReviewLike_Failure() {
+    // given
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.empty());
+
+    ReviewLikeDto request = new ReviewLikeDto(
+        reviewId, userId, true
+    );
+
+    // when & then
+    assertThatThrownBy(() -> reviewService.like(reviewId,userId))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
 
 }
