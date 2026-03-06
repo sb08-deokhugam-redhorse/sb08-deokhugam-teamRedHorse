@@ -35,4 +35,8 @@ public class ReviewLike extends BaseUpdatableEntity {
         this.user = user;
         this.review = review;
     }
+
+    public void update(Instant deletedAt){
+        this.deletedAt = deletedAt;
+    }
 }

@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.review.service;
 
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import java.util.UUID;
 
@@ -10,7 +11,9 @@ public interface ReviewService {
 
   ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request);
 
-  void delete(UUID reviewId, UUID userId);
+  void softDelete(UUID reviewId, UUID userId);
 
-  void deleteHard(UUID reviewId, UUID userId);
+  void hardDelete(UUID reviewId, UUID userId);
+
+  ReviewLikeDto like(UUID reviewId, UUID userId);
 }

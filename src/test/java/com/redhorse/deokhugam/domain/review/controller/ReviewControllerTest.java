@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
+import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import java.time.Instant;
@@ -170,7 +171,7 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willDoNothing().given(reviewService).delete(eq(reviewId), eq(userId));
+    willDoNothing().given(reviewService).softDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
@@ -187,7 +188,7 @@ public class ReviewControllerTest {
     UUID userId = UUID.randomUUID();
 
     willThrow(new IllegalArgumentException("User did not write review"))
-        .given(reviewService).delete(eq(reviewId), eq(userId));
+        .given(reviewService).softDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
@@ -203,7 +204,7 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willDoNothing().given(reviewService).deleteHard(eq(reviewId), eq(userId));
+    willDoNothing().given(reviewService).hardDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
@@ -219,7 +220,7 @@ public class ReviewControllerTest {
     UUID userId = UUID.randomUUID();
 
     willThrow(new IllegalArgumentException("review not exists"))
-        .given(reviewService).deleteHard(eq(reviewId), eq(userId));
+        .given(reviewService).hardDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
@@ -227,5 +228,41 @@ public class ReviewControllerTest {
             .header("Deokhugam-Request-User-ID", userId))
         .andExpect(status().isInternalServerError());
 
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 성공 테스트")
+  void createReviewLike_Success() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    ReviewLikeDto request = new ReviewLikeDto(reviewId, userId, true);
+
+    given(reviewService.like(reviewId, userId)).willReturn(request);
+
+    // when & then
+    mockMvc.perform(post("/api/reviews/{reviewId}/like", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.like").value(true));
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 실패 테스트 - 존재하지 않는 리뷰일 경우")
+  void createReviewLike_Failure() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    given(reviewService.like(eq(reviewId), eq(userId)))
+        .willThrow(new IllegalArgumentException("Review not exists"));
+
+    // when & then
+    mockMvc.perform(post("/api/reviews/{reviewId}/like", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isInternalServerError());
   }
 }
