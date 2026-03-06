@@ -5,13 +5,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
+import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -95,5 +98,86 @@ class UserServiceImplTest {
         // when & then
         assertThatThrownBy(() -> userService.createUser(request))
             .isInstanceOf(UserDuplicateException.class);
+    }
+
+    @Test
+    @DisplayName("로그인 성공")
+    void login_Success() {
+        // given
+        UserLoginRequest request = new UserLoginRequest(
+            "seongjo.park@gmail.com",
+            "Thisistest123***"
+        );
+
+        User user = new User(
+            request.email(),
+            "박성조",
+            request.password()
+        );
+
+        UserDto userDto = new UserDto(
+            UUID.randomUUID(),
+            user.getEmail(),
+            user.getNickname(),
+            Instant.now()
+        );
+
+        given(
+            userRepository.findByEmail(request.email())
+        ).willReturn(Optional.of(user));
+
+        given(
+            userMapper.toUserDto(user)
+        ).willReturn(userDto);
+
+        // when
+        UserDto result = userService.login(request);
+
+        // then
+        assertThat(result.email()).isEqualTo(request.email());
+        assertThat(result.nickname()).isEqualTo(user.getNickname());
+        verify(userRepository).findByEmail(request.email());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 비밀번호 불일치")
+    void login_WrongPassword() {
+        // given
+        UserLoginRequest request = new UserLoginRequest(
+            "seongjo.park@gmail.com",
+            "Thisistest123***"
+        );
+
+        User user = new User(
+            request.email(),
+            "박성조",
+            "THIS_IS_WRONG_123"
+        );
+
+        given(
+            userRepository.findByEmail(request.email())
+        ).willReturn(Optional.of(user));
+
+        // when & then
+        assertThatThrownBy(() -> userService.login(request))
+            .isInstanceOf(UserLoginFailedException.class);
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 존재하지 않는 유저")
+    void login_UserNotFound() {
+        // given
+        UserLoginRequest request = new UserLoginRequest(
+            "seongjo.park@gmail.com",
+            "Thisistest123***"
+        );
+
+        given(
+            userRepository.findByEmail(request.email())
+        ).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.login(request))
+            .isInstanceOf(UserLoginFailedException.class);
     }
 }

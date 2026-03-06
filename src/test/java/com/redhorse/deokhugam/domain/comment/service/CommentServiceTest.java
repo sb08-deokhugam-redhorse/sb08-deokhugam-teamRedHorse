@@ -227,4 +227,133 @@ class CommentServiceTest {
           .isInstanceOf(IllegalArgumentException.class);
     }
   }
+
+  @Nested
+  @DisplayName("댓글 논리 삭제 관련 테스트")
+  class softDeleteCommentTests {
+
+    @Test
+    @DisplayName("댓글 논리 삭제 성공")
+    void softDelete_Success() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      User mockUser = mock(User.class);
+      given(mockUser.getId()).willReturn(requestUserId);
+
+      Comment mockComment = mock(Comment.class);
+      given(mockComment.getUser()).willReturn(mockUser);
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
+          Optional.of(mockComment));
+
+      // when
+      commentService.softDelete(commentId, requestUserId);
+
+      // then
+      then(commentRepository).should().findByIdAndDeletedAtIsNull(eq(commentId));
+      then(mockComment).should().softDelete();
+    }
+
+    @Test
+    @DisplayName("댓글 논리 삭제 실패 - 댓글 작성자가 아닐 경우")
+    void softDelete_WhenAuthorIsDifferent_ShouldThrowException() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+      UUID authorId = UUID.randomUUID();
+
+      User mockAuthor = mock(User.class);
+      given(mockAuthor.getId()).willReturn(authorId);
+
+      Comment mockComment = mock(Comment.class);
+      given(mockComment.getUser()).willReturn(mockAuthor);
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
+          Optional.of(mockComment));
+
+      // when & then
+      assertThatThrownBy(() -> commentService.softDelete(commentId, requestUserId))
+          .isInstanceOf(IllegalArgumentException.class);
+
+      then(mockComment).should(never()).softDelete();
+    }
+
+    @Test
+    @DisplayName("댓글 논리 삭제 실패 - 유효하지 않은 댓글일 경우")
+    void softDelete_WhenNotFoundComment_ShouldThrowException() {
+      // given
+      UUID invalidCommentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(invalidCommentId))).willReturn(
+          Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> commentService.softDelete(invalidCommentId, requestUserId))
+          .isInstanceOf(IllegalArgumentException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("댓글 물리 삭제 관련 테스트")
+  class hardDeleteCommentTests {
+
+    @Test
+    @DisplayName("댓글 물리 삭제 성공")
+    void hardDelete_Success() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      User mockUser = mock(User.class);
+      given(mockUser.getId()).willReturn(requestUserId);
+
+      Comment mockComment = mock(Comment.class);
+      given(mockComment.getUser()).willReturn(mockUser);
+      given(commentRepository.findById(eq(commentId))).willReturn(Optional.of(mockComment));
+
+      // when
+      commentService.hardDelete(commentId, requestUserId);
+
+      // then
+      then(commentRepository).should().findById(eq(commentId));
+      then(commentRepository).should().delete(eq(mockComment));
+    }
+
+    @Test
+    @DisplayName("댓글 물리 삭제 실패 - 댓글 작성자가 아닐 경우")
+    void hardDelete_WhenAuthorIsDifferent_ShouldThrowException() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+      UUID authorId = UUID.randomUUID();
+
+      User mockAuthor = mock(User.class);
+      given(mockAuthor.getId()).willReturn(authorId);
+
+      Comment mockComment = mock(Comment.class);
+      given(mockComment.getUser()).willReturn(mockAuthor);
+      given(commentRepository.findById(eq(commentId))).willReturn(Optional.of(mockComment));
+
+      // when & then
+      assertThatThrownBy(() -> commentService.hardDelete(commentId, requestUserId))
+          .isInstanceOf(IllegalArgumentException.class);
+
+      then(commentRepository).should(never()).delete(mockComment);
+    }
+
+    @Test
+    @DisplayName("댓글 물리 삭제 실패 - 유효하지 않은 댓글일 경우")
+    void hardDelete_WhenNotFoundComment_ShouldThrowException() {
+      // given
+      UUID invalidCommentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+
+      given(commentRepository.findById(eq(invalidCommentId))).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> commentService.hardDelete(invalidCommentId, requestUserId))
+          .isInstanceOf(IllegalArgumentException.class);
+    }
+  }
 }
