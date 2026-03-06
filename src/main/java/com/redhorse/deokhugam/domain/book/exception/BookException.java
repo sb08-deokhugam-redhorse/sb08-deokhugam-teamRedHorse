@@ -5,9 +5,9 @@ import com.redhorse.deokhugam.global.exception.GlobalException;
 
 import java.util.Map;
 
-public class IsbnException extends GlobalException
+public class BookException extends GlobalException
 {
-    public IsbnException(ErrorCode errorCode, Map<String, Object> details) {
+    public BookException(ErrorCode errorCode, Map<String, Object> details) {
         super(errorCode, details);
     }
 }
