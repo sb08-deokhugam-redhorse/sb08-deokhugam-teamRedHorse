@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, UUID>
+public interface BookRepository extends JpaRepository<Book, UUID>, BookRepositoryCustom
 {
     boolean existsByIsbn(String isbn);
     Optional<Book> findByIsbn(String isbn);
