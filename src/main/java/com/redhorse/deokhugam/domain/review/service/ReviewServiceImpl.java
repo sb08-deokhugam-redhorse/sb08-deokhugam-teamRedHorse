@@ -1,7 +1,5 @@
 package com.redhorse.deokhugam.domain.review.service;
 
-import static com.redhorse.deokhugam.domain.review.entity.QReview.review;
-
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
@@ -26,8 +24,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -124,7 +120,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     boolean like;
 
-    Optional<ReviewLike> reviewLikeOptional = reviewLikeRepository.findByReviewIdAndUserId(reviewId,
+    Optional<ReviewLike> reviewLikeOptional = reviewLikeRepository.findByIdForUpdate(reviewId,
         userId);
 
     // 리뷰 좋아요 테이블에 있는 경우
@@ -155,7 +151,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   @Override
   public CursorPageResponseReviewDto findAll(ReviewSearchRequest request, UUID requestUserId) {
-    if(!userRepository.existsById(requestUserId)){
+    if (!userRepository.existsById(requestUserId)) {
       throw new IllegalArgumentException("User not exists");
     }
 
@@ -166,7 +162,8 @@ public class ReviewServiceImpl implements ReviewService {
     List<UUID> reviewIds = reviews.stream().map(Review::getId).toList();
 
     // 리뷰 좋아요 체크
-    Set<UUID> likedReviewIds = reviewLikeRepository.findAllByUserIdAndReviewIdInAndDeletedAtIsNull(requestUserId, reviewIds)
+    Set<UUID> likedReviewIds = reviewLikeRepository.findAllByUserIdAndReviewIdInAndDeletedAtIsNull(
+            requestUserId, reviewIds)
         .stream()
         .map(like -> like.getReview().getId())
         .collect(Collectors.toSet());
@@ -180,7 +177,7 @@ public class ReviewServiceImpl implements ReviewService {
     String nextCursor = null;
     Instant nextAfter = null;
 
-    if(slice.hasNext() && !reviews.isEmpty()) {
+    if (slice.hasNext() && !reviews.isEmpty()) {
       Review lastReview = reviews.get(reviews.size() - 1);
       nextCursor = getOrderBy(request.orderBy(), lastReview);
       nextAfter = lastReview.getCreatedAt();
@@ -204,12 +201,16 @@ public class ReviewServiceImpl implements ReviewService {
 
   @Transactional(readOnly = true)
   @Override
-  public  ReviewDto findById(UUID reviewId, UUID userId){
+  public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("User not exists"));
-    return reviewMapper.toDto(review);
+
+    boolean likedByMe = reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(reviewId,
+            userId)
+        .isPresent();
+    return reviewMapper.toDto(review, likedByMe);
   }
 
 }

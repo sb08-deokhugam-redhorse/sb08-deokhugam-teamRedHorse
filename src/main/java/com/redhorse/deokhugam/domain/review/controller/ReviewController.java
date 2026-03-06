@@ -8,7 +8,6 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewSearchRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -91,11 +90,9 @@ public class ReviewController {
       @PathVariable UUID reviewId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId) {
 
-    ReviewDto dto = reviewService.findById(reviewId,requestUserId);
+    ReviewDto dto = reviewService.findById(reviewId, requestUserId);
     return ResponseEntity.status(HttpStatus.OK).body(dto);
 
   }
-
-
 
 }
