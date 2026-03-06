@@ -75,8 +75,10 @@ public class UserServiceImpl implements UserService {
     // 사용자 조회
     User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException(userId));
 
-    log.info("[User-Service] 작업 완료: content {}", userMapper.toUserDto(user));
+    UserDto result = userMapper.toUserDto(user);
 
-    return userMapper.toUserDto(user);
+    // 응답
+    log.info("[User-Service] 작업 완료: content {}", result);
+    return result;
   }
 }
