@@ -4,7 +4,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.redhorse.deokhugam.domain.book.entity.Book;
-import com.redhorse.deokhugam.domain.book.exception.InvalidCursorException;
+import com.redhorse.deokhugam.global.exception.InvalidCursorException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -100,7 +100,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom
      * @return QueryDSL 조건식
      */
     private BooleanExpression cursorPageCondition(String orderBy, String cursor, Instant after, boolean isAsc) {
-        if (cursor == null || after == null) return null;
+        if (cursor == null || after == null) {
+            throw new InvalidCursorException("cursor 혹은 after의 값이 없습니다.");
+        }
 
         BooleanExpression primaryEq;   // 일치
         BooleanExpression primaryGtLt; // 대소

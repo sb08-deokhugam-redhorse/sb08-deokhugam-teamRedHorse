@@ -1,7 +1,4 @@
-package com.redhorse.deokhugam.domain.book.exception;
-
-import com.redhorse.deokhugam.global.exception.CommonException;
-import com.redhorse.deokhugam.global.exception.ErrorCode;
+package com.redhorse.deokhugam.global.exception;
 
 import java.util.Map;
 
