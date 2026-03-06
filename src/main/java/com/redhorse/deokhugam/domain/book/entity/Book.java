@@ -55,11 +55,11 @@ public class Book extends BaseUpdatableEntity
     private List<Review> reviews = new ArrayList<>();
 
     public void update(String title, String author, String description, String publisher, LocalDate publishedDate) {
-        this.title = title;
-        this.author = author;
-        this.description = description;
-        this.publisher = publisher;
-        this.publishedDate = publishedDate;
+        if (title != null) this.title = title;
+        if (author != null) this.author = author;
+        if (description != null) this.description = description;
+        if (publisher != null) this.publisher = publisher;
+        if (publishedDate != null) this.publishedDate = publishedDate;
     }
 
     // 논리 삭제

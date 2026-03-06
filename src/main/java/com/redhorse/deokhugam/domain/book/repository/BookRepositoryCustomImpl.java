@@ -4,6 +4,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.exception.InvalidCursorException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import static com.redhorse.deokhugam.domain.book.entity.QBook.book;
@@ -103,26 +105,30 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom
         BooleanExpression primaryEq;   // 일치
         BooleanExpression primaryGtLt; // 대소
 
-        switch (orderBy == null ? "title" : orderBy) {
-            case "publishedDate" -> {
-                LocalDate date = LocalDate.parse(cursor);
-                primaryEq = book.publishedDate.eq(date);
-                primaryGtLt = isAsc ? book.publishedDate.gt(date) : book.publishedDate.lt(date);
+        try {
+            switch (orderBy == null ? "title" : orderBy) {
+                case "publishedDate" -> {
+                    LocalDate date = LocalDate.parse(cursor);
+                    primaryEq = book.publishedDate.eq(date);
+                    primaryGtLt = isAsc ? book.publishedDate.gt(date) : book.publishedDate.lt(date);
+                }
+                case "rating" -> {
+                    Double value = Double.parseDouble(cursor);
+                    primaryEq = book.rating.eq(value);
+                    primaryGtLt = isAsc ? book.rating.gt(value) : book.rating.lt(value);
+                }
+                case "reviewCount" -> {
+                    Long value = Long.parseLong(cursor);
+                    primaryEq = book.reviewCount.eq(value);
+                    primaryGtLt = isAsc ? book.reviewCount.gt(value) : book.reviewCount.lt(value);
+                }
+                default -> {
+                    primaryEq = book.title.eq(cursor);
+                    primaryGtLt = isAsc ? book.title.gt(cursor) : book.title.lt(cursor);
+                }
             }
-            case "rating" -> {
-                Double value = Double.parseDouble(cursor);
-                primaryEq = book.rating.eq(value);
-                primaryGtLt = isAsc ? book.rating.gt(value) : book.rating.lt(value);
-            }
-            case "reviewCount" -> {
-                Long value = Long.parseLong(cursor);
-                primaryEq = book.reviewCount.eq(value);
-                primaryGtLt = isAsc ? book.reviewCount.gt(value) : book.reviewCount.lt(value);
-            }
-            default -> {
-                primaryEq = book.title.eq(cursor);
-                primaryGtLt = isAsc ? book.title.gt(cursor) : book.title.lt(cursor);
-            }
+        } catch (DateTimeParseException | NumberFormatException e) {
+            throw new InvalidCursorException(cursor);
         }
 
         BooleanExpression secondaryGtLt = isAsc ? book.createdAt.gt(after) : book.createdAt.lt(after);

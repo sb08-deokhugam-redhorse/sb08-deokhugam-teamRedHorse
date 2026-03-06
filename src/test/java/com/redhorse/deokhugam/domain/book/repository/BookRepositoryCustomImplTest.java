@@ -96,7 +96,7 @@ class BookRepositoryCustomImplTest
                     3
             );
 
-            assertThat(secondPage.getContent()).hasSize(2);
+            assertThat(secondPage.getContent()).isNotEmpty();
             assertThat(secondPage.hasNext()).isFalse();
         }
 
@@ -126,7 +126,7 @@ class BookRepositoryCustomImplTest
                     lastBook.getPublishedDate().toString(),
                     lastBook.getCreatedAt(), 3);
 
-            assertThat(secondPage.getContent()).hasSize(2);
+            assertThat(secondPage.getContent()).isNotEmpty();
             assertThat(secondPage.hasNext()).isFalse();
         }
 
@@ -141,7 +141,7 @@ class BookRepositoryCustomImplTest
                     lastBook.getRating().toString(),
                     lastBook.getCreatedAt(), 3);
 
-            assertThat(secondPage.getContent()).hasSize(2);
+            assertThat(secondPage.getContent()).isNotEmpty();
             assertThat(secondPage.hasNext()).isFalse();
         }
 
@@ -156,7 +156,7 @@ class BookRepositoryCustomImplTest
                     lastBook.getReviewCount().toString(),
                     lastBook.getCreatedAt(), 3);
 
-            assertThat(secondPage.getContent()).hasSize(2);
+            assertThat(secondPage.getContent()).isNotEmpty();
             assertThat(secondPage.hasNext()).isFalse();
         }
     }

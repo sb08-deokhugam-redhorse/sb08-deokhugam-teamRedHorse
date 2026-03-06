@@ -75,6 +75,9 @@ public class BookServiceImpl implements BookService
 
     @Override
     public CursorPageResponseBookDto getBooks(String keyword, String orderBy, String direction, String cursor, Instant after, int limit) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit 값은 반드시 0보다 커야 합니다.");
+        }
         Slice<Book> slice = bookRepository.getAllBooks(keyword, orderBy, direction, cursor, after, limit);
 
         List<Book> books = slice.getContent();
@@ -83,7 +86,7 @@ public class BookServiceImpl implements BookService
         String nextCursor = null;
         Instant nextAfter = null;
 
-        if (slice.hasNext()) {
+        if (slice.hasNext() && !books.isEmpty()) {
             Book lastBook = books.get(books.size() - 1);
             nextCursor = resolveNextCursor(orderBy, lastBook);
             nextAfter = lastBook.getCreatedAt();
@@ -111,8 +114,12 @@ public class BookServiceImpl implements BookService
      */
     @Override
     public BookDto findById(UUID bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
         log.info("[Book-Service] 단건 조회 작업 완료: bookId={}", bookId);
-        return bookMapper.toBookDto(bookRepository.findById(bookId).orElse(null));
+
+         return bookMapper.toBookDto(book);
     }
 
     /**
