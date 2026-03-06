@@ -1,14 +1,15 @@
 package com.redhorse.deokhugam.domain.user.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.global.config.JpaConfig;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import(JpaConfig.class)
@@ -80,6 +81,29 @@ class UserRepositoryTest {
     assertThat(
         foundUser.get().getEmail()
     ).isEqualTo(email);
+    assertThat(notFoundUser).isEmpty();
+  }
+
+  @Test
+  @DisplayName("ID로 사용자 조회")
+  void findById() {
+    // given
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+    User findUser = userRepository.save(user);
+
+    // when
+    var foundUser = userRepository.findById(findUser.getId());
+    var notFoundUser = userRepository.findById(UUID.randomUUID());
+
+    // then
+    assertThat(foundUser).isPresent();
+    assertThat(
+        foundUser.get().getEmail()
+    ).isEqualTo(user.getEmail());
     assertThat(notFoundUser).isEmpty();
   }
 }
