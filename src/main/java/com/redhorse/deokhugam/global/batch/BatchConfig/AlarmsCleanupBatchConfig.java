@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
+import com.redhorse.deokhugam.global.batch.repository.AlarmBatchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.*;
@@ -21,19 +22,19 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class AlarmsCleanupBatchConfig {
 
     /**
-    * 배치에서 제공하는 bean들
-    * JobRepository: 배치 실행 기록,
-    *                 실패 지점 기억해 이어서 동작하게 해줌,
-    *                 실행 기록있으면 추가 실행 멈춤
-    * PlatformTransactionManager
-    *         트랜잭션 관리, JobRepository의 삑사리 대비용 겸
-    *         특정 버전 이후는 필수
+     * 배치에서 제공하는 bean들
+     * JobRepository: 배치 실행 기록,
+     * 실패 지점 기억해 이어서 동작하게 해줌,
+     * 실행 기록있으면 추가 실행 멈춤
+     * PlatformTransactionManager
+     * 트랜잭션 관리, JobRepository의 삑사리 대비용 겸
+     * 특정 버전 이후는 필수
      */
-    private final JobRepository jobRepository;  
+    private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    
+
     // 배치에 쓸 레포짓
-    private final AlarmRepository alarmRepository;
+    private final AlarmBatchRepository alarmRepository;
 
     @Bean
     public Job cleanupAlarmJob() {
@@ -77,7 +78,7 @@ public class AlarmsCleanupBatchConfig {
 
             // DB 삭제 로직을 RetryTemplate으로 감쌈
             int deletedRows = retryTemplate.execute(context ->
-                 alarmRepository.deleteOldAlarmsInBulk(chunkSize));
+                    alarmRepository.deleteOldAlarmsInBulk(chunkSize));
 
             // 지운 건수를 누적 기록
             contribution.getStepExecution().setWriteCount(

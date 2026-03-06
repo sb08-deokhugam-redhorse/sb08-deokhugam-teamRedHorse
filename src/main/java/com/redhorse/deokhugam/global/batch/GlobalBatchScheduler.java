@@ -3,7 +3,6 @@ package com.redhorse.deokhugam.global.batch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -24,14 +23,15 @@ public class GlobalBatchScheduler {
     private final Job cleanupAlarmJob;
 
     /**
-     * 매일 새벽 1시에 실행 (초 분 시 일 월 요일)
-     * 첫 번째 *: 초
-     * 두 번째 *: 분
-     * 세 번째 *: 시 (24시 표기)
-     * 네 번째 *: 일
-     * 다섯 번째 *: 월
-     * 여섯 번째 *: 요일
+     * cron 표현식: (초 분 시 일 월 요일)
+     *  첫 번째 *: 초
+     *  두 번째 *: 분
+     *  세 번째 *: 시 (24시 표기)
+     *  네 번째 *: 일
+     * 다섯번째 *: 월
+     * 여섯번째 *: 요일
      */
+
     // 매일 오전 1시 30분에 동작하게
     @Scheduled(cron = "0 30 1 * * *", zone = "Asia/Seoul")
     public void runJob() {
