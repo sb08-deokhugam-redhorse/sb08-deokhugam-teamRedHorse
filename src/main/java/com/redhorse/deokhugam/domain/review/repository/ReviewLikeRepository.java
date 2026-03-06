@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.review.repository;
 
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import jakarta.persistence.LockModeType;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, UUID> {
   Optional<ReviewLike> findByReviewIdAndUserId(
       @Param("reviewId") UUID reviewId,
       @Param("userId") UUID userId);
+
+  List<ReviewLike> findAllByUserIdAndReviewIdInAndDeletedAtIsNull(UUID userId, List<UUID> reviewIds);
 }

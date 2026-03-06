@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ReviewRepository extends JpaRepository<Review, UUID> {
+public interface ReviewRepository extends JpaRepository<Review, UUID>,ReviewRepositoryCustom {
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select r from Review r where r.id= :id AND r.deletedAt is null")

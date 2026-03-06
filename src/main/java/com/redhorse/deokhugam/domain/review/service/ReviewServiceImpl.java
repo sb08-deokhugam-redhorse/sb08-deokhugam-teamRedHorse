@@ -1,7 +1,10 @@
 package com.redhorse.deokhugam.domain.review.service;
 
+import static com.redhorse.deokhugam.domain.review.entity.QReview.review;
+
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
+import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -17,9 +20,12 @@ import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -148,11 +154,48 @@ public class ReviewServiceImpl implements ReviewService {
 
   @Transactional(readOnly = true)
   @Override
-  public List<ReviewDto> findAll(ReviewSearchRequest request, UUID requestUserId) {
-    int limit = request.limit() != null ? request.limit() : 50;
-    String orderBy = request.orderBy() != null ? request.orderBy():  "createdAt";
+  public CursorPageResponseReviewDto findAll(ReviewSearchRequest request, UUID requestUserId) {
+    Slice<Review> slice = reviewRepository.getAllReviews(request);
 
-    return reviewRepository.findAll().stream().map(reviewMapper::toDto).toList();
+    List<Review> reviews = slice.getContent();
+
+    List<UUID> reviewIds = reviews.stream().map(Review::getId).toList();
+
+    // 리뷰 좋아요 체크
+    Set<UUID> likedReviewIds = reviewLikeRepository.findAllByUserIdAndReviewIdInAndDeletedAtIsNull(requestUserId, reviewIds)
+        .stream()
+        .map(like -> like.getReview().getId())
+        .collect(Collectors.toSet());
+
+    // 리뷰 좋아요 합치기
+    List<ReviewDto> content = reviews
+        .stream()
+        .map(review -> reviewMapper.toDto(review, likedReviewIds.contains(review.getId())))
+        .toList();
+
+    String nextCursor = null;
+    Instant nextAfter = null;
+
+    if(slice.hasNext() && !reviews.isEmpty()) {
+      Review lastReview = reviews.get(reviews.size() - 1);
+      nextCursor = getOrderBy(request.orderBy(), lastReview);
+      nextAfter = lastReview.getCreatedAt();
+    }
+
+    long totalElements = reviewRepository.getTotal(request);
+
+    CursorPageResponseReviewDto dto = new CursorPageResponseReviewDto(
+        content, nextCursor, nextAfter, content.size(), totalElements, slice.hasNext()
+    );
+
+    return dto;
+  }
+
+  private String getOrderBy(String orderBy, Review lastReview) {
+    if ("rating".equals(orderBy)) {
+      return String.valueOf(lastReview.getRating());
+    }
+    return lastReview.getCreatedAt().toString();
   }
 
 }

@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.review.service;
 
+import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -19,5 +20,5 @@ public interface ReviewService {
 
   ReviewLikeDto like(UUID reviewId, UUID userId);
 
-  List<ReviewDto> findAll(ReviewSearchRequest request,UUID requestUserId);
+  CursorPageResponseReviewDto findAll(ReviewSearchRequest request,UUID requestUserId);
 }

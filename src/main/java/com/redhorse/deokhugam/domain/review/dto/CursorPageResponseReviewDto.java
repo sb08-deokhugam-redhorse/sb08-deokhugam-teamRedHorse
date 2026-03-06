@@ -1,13 +1,14 @@
 package com.redhorse.deokhugam.domain.review.dto;
 
+import java.time.Instant;
 import java.util.List;
 
 public record CursorPageResponseReviewDto(
     List<ReviewDto> content,
     String nextCursor,
-    String nextAfter,
+    Instant nextAfter,
     int size,
-    int totalElements,
+    long totalElements,
     boolean hasNext
 ) {
 

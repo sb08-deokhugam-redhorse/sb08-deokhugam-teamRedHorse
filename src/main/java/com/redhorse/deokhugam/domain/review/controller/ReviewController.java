@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.review.controller;
 
+import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -76,12 +77,12 @@ public class ReviewController {
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
-  @GetMapping("/reviews")
-  public ResponseEntity<List<ReviewDto>> findAll(
+  @GetMapping()
+  public ResponseEntity<CursorPageResponseReviewDto> findAll(
       @ParameterObject ReviewSearchRequest request,
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId) {
 
-    List<ReviewDto> dto = reviewService.findAll(request, requestUserId);
+    CursorPageResponseReviewDto dto = reviewService.findAll(request, requestUserId);
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
