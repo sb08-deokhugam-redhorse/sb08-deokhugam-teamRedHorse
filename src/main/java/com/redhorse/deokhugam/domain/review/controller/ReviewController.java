@@ -86,5 +86,16 @@ public class ReviewController {
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
+  @GetMapping("/{reviewId}")
+  public ResponseEntity<ReviewDto> findById(
+      @PathVariable UUID reviewId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId) {
+
+    ReviewDto dto = reviewService.findById(reviewId,requestUserId);
+    return ResponseEntity.status(HttpStatus.OK).body(dto);
+
+  }
+
+
 
 }

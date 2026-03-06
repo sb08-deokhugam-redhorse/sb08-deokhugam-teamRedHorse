@@ -21,4 +21,6 @@ public interface ReviewService {
   ReviewLikeDto like(UUID reviewId, UUID userId);
 
   CursorPageResponseReviewDto findAll(ReviewSearchRequest request,UUID requestUserId);
+
+  ReviewDto findById(UUID reviewId, UUID userId);
 }

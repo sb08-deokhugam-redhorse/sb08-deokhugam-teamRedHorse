@@ -76,7 +76,7 @@ public class ReviewServiceImpl implements ReviewService {
       throw new IllegalArgumentException("content cannot be empty");
     }
 
-    Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+    Review review = reviewRepository.findByIdForUpdate(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 
     if (!review.getUser().getId().equals(userId)) {
@@ -90,7 +90,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional
   @Override
   public void softDelete(UUID reviewId, UUID userId) {
-    Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+    Review review = reviewRepository.findByIdForUpdate(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 
     if (!review.getUser().getId().equals(userId)) {
@@ -116,7 +116,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional
   @Override
   public ReviewLikeDto like(UUID reviewId, UUID userId) {
-    Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+    Review review = reviewRepository.findByIdForUpdate(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
 
     User user = userRepository.findById(userId)
@@ -196,6 +196,16 @@ public class ReviewServiceImpl implements ReviewService {
       return String.valueOf(lastReview.getRating());
     }
     return lastReview.getCreatedAt().toString();
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public  ReviewDto findById(UUID reviewId, UUID userId){
+    Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
+    return reviewMapper.toDto(review);
   }
 
 }

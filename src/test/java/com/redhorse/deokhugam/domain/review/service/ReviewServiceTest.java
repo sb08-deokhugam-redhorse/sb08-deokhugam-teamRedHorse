@@ -155,7 +155,7 @@ public class ReviewServiceTest {
         "update", rating
     );
 
-    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+    given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(
         Optional.of(review));
 
     ReviewDto updateReviewDto = new ReviewDto(
@@ -192,7 +192,7 @@ public class ReviewServiceTest {
     );
 
     UUID otherUserId = UUID.randomUUID();
-    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+    given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(
         Optional.of(review));
 
     // when & then
@@ -204,7 +204,7 @@ public class ReviewServiceTest {
   @DisplayName("리뷰 논리 삭제 성공")
   void deleteReview_Success() {
     // given
-    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+    given(reviewRepository.findByIdForUpdate(eq(reviewId)))
         .willReturn(Optional.of(review));
 
     // when
@@ -218,7 +218,7 @@ public class ReviewServiceTest {
   @DisplayName("리뷰 논리 삭제 실패 - 존재하지 않는 리뷰일 경우")
   void deleteReview_Failure() {
     // given
-    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+    given(reviewRepository.findByIdForUpdate(eq(reviewId)))
         .willReturn(Optional.empty());
 
     // when & then
@@ -258,7 +258,7 @@ public class ReviewServiceTest {
   @DisplayName("리뷰 좋아요 생성 성공")
   void createReviewLike_Success() {
     // given
-    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+    given(reviewRepository.findByIdForUpdate(eq(reviewId)))
         .willReturn(Optional.of(review));
     given(userRepository.findById(eq(userId)))
         .willReturn(Optional.of(user));
@@ -286,7 +286,7 @@ public class ReviewServiceTest {
   @DisplayName("리뷰 좋아요 생성 실패 - 존재하지 않는 유저일 경우")
   void createReviewLike_Failure() {
     // given
-    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+    given(reviewRepository.findByIdForUpdate(eq(reviewId)))
         .willReturn(Optional.of(review));
     given(userRepository.findById(eq(userId)))
         .willReturn(Optional.empty());
@@ -297,6 +297,36 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.like(reviewId,userId))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  @DisplayName("리뷰 상제 조회 성공")
+  void findByIdReview_Success() {
+    // given
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+    .willReturn(Optional.of(user));
+    given(reviewMapper.toDto(any(Review.class)))
+        .willReturn(reviewDto);
+
+    // when
+    ReviewDto result = reviewService.findById(reviewId, userId);
+
+    // then
+    assertThat(result).isEqualTo(reviewDto);
+  }
+
+  @Test
+  @DisplayName("리뷰 상세 조회 실패 - 존재하지 않는 리뷰일 경우")
+  void findByIdReview_Failur() {
+    // given
+    given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId)))
+        .willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(() -> reviewService.findById(reviewId,userId))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

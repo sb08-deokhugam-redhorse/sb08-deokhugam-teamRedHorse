@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -266,5 +267,61 @@ public class ReviewControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId))
         .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  @DisplayName("리뷰 상세 조회 성공 테스트 ")
+  void findAllReview_Success() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UUID bookId = UUID.randomUUID();
+
+    ReviewDto request = new ReviewDto(
+        reviewId,
+        bookId,
+        "testBook",
+        "testUrl",
+        userId,
+        "testName",
+        "content",
+        3,
+        0,
+        0,
+        false,
+        Instant.now(),
+        Instant.now()
+    );
+
+    given(reviewService.findById(eq(reviewId),eq(userId)))
+        .willReturn(request);
+
+    // when & then
+    mockMvc.perform(get("/api/reviews/{reviewId}", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(reviewId.toString()))
+        .andExpect(jsonPath("$.content").value("content"))
+        .andExpect(jsonPath("$.rating").value(3));
+
+  }
+
+  @Test
+  @DisplayName("리뷰 상세 조회 실패 테스트 - 존재하지 않는 리뷰일 경우")
+  void findAllReview_Failure() throws Exception {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new IllegalArgumentException("review not exists"))
+        .given(reviewService).findById(eq(reviewId), eq(userId));
+
+    // when & then
+    mockMvc.perform(get("/api/reviews/{reviewId}", reviewId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Deokhugam-Request-User-ID", userId))
+        .andExpect(status().isInternalServerError());
+
   }
 }
