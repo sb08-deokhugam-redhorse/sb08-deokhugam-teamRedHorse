@@ -11,6 +11,7 @@ import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
@@ -180,4 +181,53 @@ class UserServiceImplTest {
         assertThatThrownBy(() -> userService.login(request))
             .isInstanceOf(UserLoginFailedException.class);
     }
+
+  @Test
+  @DisplayName("사용자 조회 성공")
+  void read_user() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+    UserDto expectedDto = new UserDto(
+        userId,
+        user.getEmail(),
+        user.getNickname(),
+        Instant.now()
+    );
+
+    given(
+        userRepository.findById(userId)
+    ).willReturn(Optional.of(user));
+
+    given(
+        userMapper.toUserDto(user)
+    ).willReturn(expectedDto);
+
+    // when & Then
+    UserDto result = userService.getUser(userId);
+
+    assertThat(result.email()).isEqualTo(expectedDto.email());
+    assertThat(result.nickname()).isEqualTo(expectedDto.nickname());
+
+    verify(userRepository).findById(userId);
+  }
+
+  @Test
+  @DisplayName("사용자 조회 실패 - 없는 사용자 ID")
+  void read_user_failed() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    given(
+        userRepository.findById(userId)
+    ).willThrow(new UserNotFoundException(userId));
+
+    // when & Then
+    assertThatThrownBy(()-> userService.getUser(userId))
+        .isInstanceOf(UserNotFoundException.class);
+  }
 }
