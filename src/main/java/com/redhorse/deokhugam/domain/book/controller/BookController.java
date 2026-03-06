@@ -51,7 +51,7 @@ public class BookController
                                                                  @RequestParam(required = false, defaultValue = "DESC") String direction,
                                                                  @RequestParam(required = false) String cursor,
                                                                  @RequestParam(required = false) Instant after,
-                                                                 @RequestParam(required = false, defaultValue = "10") int limit)
+                                                                 @RequestParam(required = false, defaultValue = "50") int limit)
     {
         log.debug("[Book-Controller] 다건 조회 요청 시작: keyword={}, orderBy={}, direction={}, cursor={}, after={}", keyword, orderBy, direction, cursor, after);
 
