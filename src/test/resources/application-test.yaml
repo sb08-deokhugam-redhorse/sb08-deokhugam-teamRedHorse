@@ -29,3 +29,16 @@ logging:
 auth:
   interceptor:
     enabled: false
+
+# NAVER
+naver:
+  api:
+    client-id: test
+    client-secret: test
+    url: http://localhost
+
+# ocr
+ocr:
+  space:
+    api-key: test
+    url: https://test-api.ocr.space/parse/image

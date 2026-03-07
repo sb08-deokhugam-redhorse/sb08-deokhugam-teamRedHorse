@@ -74,7 +74,7 @@ public class BookController
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> softDeleteBook(@PathVariable UUID bookId) {
-        log.debug("[Book-Controller] 논리 삭제 시작: bookId={}", bookId);
+        log.debug("[Book-Controller] 논리 삭제 요청 시작: bookId={}", bookId);
 
         bookService.softDelete(bookId);
 
