@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -63,11 +64,12 @@ public class UserController {
   @PatchMapping("/{userId}")
   public ResponseEntity<UserDto> updateUser(
       @PathVariable UUID userId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId,
       @Valid @RequestBody UserUpdateRequest request
   ) {
     log.info("[User-Controller] 요청 시작: content = userId: {}, request = {}", userId, request);
 
-    UserDto userDto = userService.updateUser(userId, request);
+    UserDto userDto = userService.updateUser(userId, requestUserId ,request);
 
     return ResponseEntity
         .status(HttpStatus.OK)

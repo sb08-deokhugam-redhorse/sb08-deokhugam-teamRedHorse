@@ -11,6 +11,7 @@ import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
+import com.redhorse.deokhugam.global.exception.AuthenticationException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -85,14 +86,19 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public UserDto updateUser(UUID userId, UserUpdateRequest request) {
+  public UserDto updateUser(UUID userId, UUID requestUserId, UserUpdateRequest request) {
 
     // 유저 체크
     User findUser = userRepository.findById(userId)
         .orElseThrow(()-> new UserNotFoundException(userId));
 
+    // 헤더의 ID와 비교
+    if (!findUser.getId().equals(requestUserId)) {
+      throw new AuthenticationException();
+    }
+
+    // 변경하려는 닉네임이 기존과 다를 경우에만 수정
     if (!findUser.getNickname().equals(request.nickname())) {
-      // 변경하려는 닉네임이 기존과 다를 경우에만 수정
       findUser.updateNickname(request.nickname());
     }
 

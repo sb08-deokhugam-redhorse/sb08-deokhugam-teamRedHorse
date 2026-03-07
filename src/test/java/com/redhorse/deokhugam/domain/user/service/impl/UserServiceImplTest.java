@@ -26,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserServiceImpl 단위 테스트")
@@ -255,6 +256,9 @@ class UserServiceImplTest {
         "Thisistest123***"
     );
 
+    // ID임시 주입
+    ReflectionTestUtils.setField(user, "id", userId);
+
     given(
         userRepository.findById(userId)
     ).willReturn(Optional.of(user));
@@ -272,7 +276,7 @@ class UserServiceImplTest {
     ).willReturn(expectedDto);
 
     // When & Then
-    UserDto result = userService.updateUser(userId, request);
+    UserDto result = userService.updateUser(userId, userId, request);
 
     assertThat(user.getNickname()).isEqualTo(request.nickname());
     assertThat(result.nickname()).isEqualTo(request.nickname());

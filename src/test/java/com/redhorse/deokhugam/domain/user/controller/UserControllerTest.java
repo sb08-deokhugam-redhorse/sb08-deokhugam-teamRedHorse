@@ -291,7 +291,10 @@ class UserControllerTest {
     );
 
     given(
-        userService.updateUser(eq(userId), eq(request))
+        userService.updateUser(
+            eq(userId),
+            eq(userId),
+            eq(request))
     ).willReturn(response);
 
     // when
