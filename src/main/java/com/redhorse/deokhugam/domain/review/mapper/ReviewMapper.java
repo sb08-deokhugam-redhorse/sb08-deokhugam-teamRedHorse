@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.review.mapper;
 
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.entity.Review;
+import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,4 +16,8 @@ public interface ReviewMapper {
   @Mapping(source = "user.nickname", target="userNickname")
   @Mapping(target = "likedByMe", ignore = true)
   ReviewDto toDto(Review review);
+
+  @InheritConfiguration(name = "toDto")
+  @Mapping(source = "likedByMe", target = "likedByMe")
+  ReviewDto toDto(Review review, boolean likedByMe);
 }
