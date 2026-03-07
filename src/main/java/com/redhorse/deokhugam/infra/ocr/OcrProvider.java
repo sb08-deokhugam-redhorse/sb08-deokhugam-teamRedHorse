@@ -14,11 +14,16 @@ import java.util.regex.Pattern;
 @Component
 public class OcrProvider
 {
-    private final OcrSpaceClientImpl ocrSpaceClient;
+    private final OcrClient ocrClient;
 
+    /**
+     * 이미지로부터 ISBN을 추출한다.
+     *
+     * @param image 추출하고자 하는 이미지
+     * @return ISBN
+     */
     public String extractIsbn(MultipartFile image) {
-        String text = ocrSpaceClient.extractText(image);
-
+        String text = ocrClient.extractText(image);
         String isbn = parseIsbn(normalize(text));
 
         if (isbn == null) {
