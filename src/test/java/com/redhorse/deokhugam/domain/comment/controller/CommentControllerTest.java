@@ -360,8 +360,9 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(get("/api/comments")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)))
+              .param("reviewId", reviewId.toString())
+              .param("direction", "DESC")
+              .param("limit", "5"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.size").value(5))
           .andExpect(jsonPath("$.hasNext").value(false));
@@ -370,13 +371,11 @@ class CommentControllerTest {
     @Test
     @DisplayName("댓글 목록 조회 실패 - reviewId가 누락되면 400 에러를 반환한다")
     void findAll_WhenInvalidRequest_ShouldReturnBadRequest() throws Exception {
-      // given
-      CommentPageRequest invalidRequest = new CommentPageRequest(null, "DESC", null, null, 5);
-
-      // when & then
+      // given & when & then
+      // review Id 파라미터 누락
       mockMvc.perform(get("/api/comments")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(invalidRequest)))
+              .param("direction", "DESC")
+              .param("limit", "5"))
           .andExpect(status().isBadRequest());
     }
   }
