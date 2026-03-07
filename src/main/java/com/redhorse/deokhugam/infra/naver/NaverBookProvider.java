@@ -1,8 +1,8 @@
 package com.redhorse.deokhugam.infra.naver;
 
-import com.redhorse.deokhugam.domain.book.exception.NaverBookNotFoundException;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
+import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

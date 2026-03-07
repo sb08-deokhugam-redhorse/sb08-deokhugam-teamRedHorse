@@ -1,9 +1,9 @@
 package com.redhorse.deokhugam.infra.naver;
 
 import com.redhorse.deokhugam.domain.book.exception.InValidIsbnException;
-import com.redhorse.deokhugam.domain.book.exception.NaverApiException;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
+import com.redhorse.deokhugam.infra.naver.exception.NaverApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
