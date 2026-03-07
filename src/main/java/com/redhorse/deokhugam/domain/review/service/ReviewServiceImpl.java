@@ -16,6 +16,7 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -162,7 +163,8 @@ public class ReviewServiceImpl implements ReviewService {
     List<UUID> reviewIds = reviews.stream().map(Review::getId).toList();
 
     // 리뷰 좋아요 체크
-    Set<UUID> likedReviewIds = reviewLikeRepository.findAllByUserIdAndReviewIdInAndDeletedAtIsNull(
+    Set<UUID> likedReviewIds = reviewIds.isEmpty() ?  Collections.emptySet()
+        : reviewLikeRepository.findAllByUserIdAndReviewIdInAndDeletedAtIsNull(
             requestUserId, reviewIds)
         .stream()
         .map(like -> like.getReview().getId())
