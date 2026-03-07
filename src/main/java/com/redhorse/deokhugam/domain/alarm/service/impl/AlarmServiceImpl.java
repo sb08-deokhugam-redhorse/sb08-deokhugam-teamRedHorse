@@ -1,6 +1,8 @@
 package com.redhorse.deokhugam.domain.alarm.service.impl;
 
+import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
+import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
 import com.redhorse.deokhugam.domain.alarm.exception.AlarmNotFoundException;
 import com.redhorse.deokhugam.domain.alarm.exception.NoAlarmException;
@@ -16,9 +18,14 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -139,11 +146,48 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public void deleteAlarm() {
-    }
+    public CursorPageResponseNotificationDto getAlarmList(NotificationListRequest request) {
 
-    @Override
-    public void getAlarmList() {
+        /**
+         * DESC와 ASC가 달라지면 쿼리의 부등호 방향이 달라지기에 쿼리가 2개 필요,
+         * 추후에 queryDSL쓰면 해결 가능
+         */
+        Sort.Direction direction = "ASC".equalsIgnoreCase(request.direction())
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
 
+        Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
+
+        Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
+
+        Slice<Alarm> alarmSlice = "ASC".equalsIgnoreCase(request.direction())
+                ? alarmRepository.getAllAlarmsAsc(request, pageable)
+                : alarmRepository.getAllAlarmsDesc(request, pageable);
+
+        List<Alarm> alarmList = alarmSlice.getContent();
+        Long alarmCount = alarmRepository.countAlarmsByUserId(request.userId());
+
+        String nextCursor = null;
+        Instant nextAfter = null;
+        boolean hasNext = alarmList.size() > request.limit();
+
+        if (hasNext) {
+            Alarm last = alarmList.get(request.limit() - 1);
+            nextCursor = last.getId().toString();
+            nextAfter = last.getCreatedAt();
+            alarmList = alarmList.subList(0, request.limit());
+        }
+
+        List<NotificationDto> content = alarmList.stream()
+                .map(alarmMapper::alarmToNotificationDto)
+                .toList();
+
+        return new CursorPageResponseNotificationDto(
+                content,
+                nextCursor,
+                nextAfter,
+                content.size(),
+                alarmCount,
+                hasNext
+        );
     }
 }
