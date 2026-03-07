@@ -1,6 +1,8 @@
 package com.redhorse.deokhugam.domain.alarm.service;
 
+import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
+import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.PopularReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -18,7 +20,5 @@ public interface AlarmService {
 
     void checkAllAlarm(UUID userId);
 
-    void deleteAlarm();
-
-    void getAlarmList();
+    CursorPageResponseNotificationDto getAlarmList(NotificationListRequest request);
 }

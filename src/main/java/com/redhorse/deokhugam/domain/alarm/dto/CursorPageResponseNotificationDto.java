@@ -5,10 +5,10 @@ import java.util.List;
 
 public record CursorPageResponseNotificationDto(
         List<NotificationDto> contents,
-        Instant nextCursor,
+        String nextCursor,
         Instant nextAfter,
         int size,
-        int totalElements,
+        Long totalElements,
         boolean hasNext
 ) {
 }
