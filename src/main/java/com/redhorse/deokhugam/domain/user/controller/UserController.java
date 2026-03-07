@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +31,7 @@ public class UserController {
 
   @PostMapping()
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserRegisterRequest request) {
-    log.info("[User-Controller] 요청 시작: content = {}", request);
+    log.info("[User-Controller] 생성 요청 시작: content = {}", request);
 
     UserDto userDto = userService.createUser(request);
 
@@ -41,7 +42,7 @@ public class UserController {
 
   @PostMapping("/login")
   public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginRequest request) {
-    log.info("[User-Controller] 요청 시작: content = {}", request);
+    log.info("[User-Controller] 로그인 요청 시작: content = {}", request);
 
     UserDto userDto = userService.login(request);
 
@@ -52,7 +53,7 @@ public class UserController {
 
   @GetMapping("/{userId}")
   public ResponseEntity<UserDto> getUser(@PathVariable UUID userId) {
-    log.info("[User-Controller] 요청 시작: content = {}", userId);
+    log.info("[User-Controller] 조회 요청 시작: userId = {}", userId);
 
     UserDto userDto = userService.getUser(userId);
 
@@ -67,12 +68,26 @@ public class UserController {
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId,
       @Valid @RequestBody UserUpdateRequest request
   ) {
-    log.info("[User-Controller] 요청 시작: content = userId: {}, request = {}", userId, request);
+    log.info("[User-Controller] 수정 요청 시작: content = userId: {}, request = {}", userId, request);
 
     UserDto userDto = userService.updateUser(userId, requestUserId ,request);
 
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(userDto);
+  }
+
+  @DeleteMapping("/{userId}")
+  public ResponseEntity deleteUserSoft(
+      @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId,
+      @PathVariable UUID userId
+  ) {
+    log.info("[User-Controller] 삭제 요청 시작: content = userId: {}", userId);
+
+    userService.deleteUserSoft(requestUserId, userId);
+
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 }

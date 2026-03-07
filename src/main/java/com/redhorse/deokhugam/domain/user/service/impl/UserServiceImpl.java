@@ -107,4 +107,19 @@ public class UserServiceImpl implements UserService {
     // @Transactional로 인해 명시적인 repository.save()불필요. 바로 리턴
     return userMapper.toUserDto(findUser);
   }
+
+  @Override
+  @Transactional
+  public void deleteUserSoft(UUID requestUserId ,UUID userId) {
+    // 유저 체크
+    User findUser = userRepository.findById(userId)
+        .orElseThrow(()-> new UserNotFoundException(userId));
+
+    // 헤더의 ID와 비교
+    if (!findUser.getId().equals(requestUserId)) {
+      throw new AuthenticationException();
+    }
+
+    findUser.softDelete();
+  }
 }
