@@ -10,8 +10,8 @@ public record UserRegisterRequest(
     @Email(message = "이메일 형식이 올바르지 않습니다.")
     String email,
 
-    @NotBlank(message = "이름은 필수 입력값입니다.")
-    @Size(min = 2, max = 20, message = "이름은 2 ~ 20자 이내여야 합니다.")
+    @NotBlank(message = "닉네임은 필수 입력값입니다.")
+    @Size(min = 2, max = 20, message = "닉네임은 2 ~ 20자 이내여야 합니다.")
     String nickname,
 
     @NotBlank(message = "비밀번호는 필수 입력값입니다.")
