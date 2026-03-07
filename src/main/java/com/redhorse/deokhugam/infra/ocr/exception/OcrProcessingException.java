@@ -10,4 +10,8 @@ public class OcrProcessingException extends ApiException
     public OcrProcessingException() {
         super(ErrorCode.OCR_PROCESSING_FAILED, Map.of());
     }
+
+    public OcrProcessingException(Throwable cause) {
+        super(ErrorCode.OCR_PROCESSING_FAILED, Map.of(), cause);
+    }
 }

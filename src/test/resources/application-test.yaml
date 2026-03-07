@@ -41,4 +41,4 @@ naver:
 ocr:
   space:
     api-key: test
-    url: https://api.ocr.space/parse/image
+    url: https://test-api.ocr.space/parse/image

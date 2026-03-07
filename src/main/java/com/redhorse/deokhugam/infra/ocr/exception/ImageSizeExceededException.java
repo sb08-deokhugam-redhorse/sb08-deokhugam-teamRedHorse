@@ -8,6 +8,6 @@ import java.util.Map;
 public class ImageSizeExceededException extends ApiException
 {
     public ImageSizeExceededException(long imageSize) {
-        super(ErrorCode.IMAGE_SIZE_EXCEEDED, Map.of("imageSize: ", imageSize));
+        super(ErrorCode.IMAGE_SIZE_EXCEEDED, Map.of("imageSize", imageSize));
     }
 }

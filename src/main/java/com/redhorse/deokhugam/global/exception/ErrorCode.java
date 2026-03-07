@@ -30,7 +30,7 @@ public enum ErrorCode {
     INVALID_CURSOR("유효하지 않은 cursor 값 입니다.", HttpStatus.BAD_REQUEST),
 
     // api
-    ISBN_NOT_FOUND("존재하지 않는 ISBN입니다.", HttpStatus.NOT_FOUND),
+    ISBN_NOT_FOUND("이미지에서 ISBN을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
     NAVER_BOOK_NOT_FOUND("네이버에서 도서를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NAVER_API_ERROR("네이버 API 호출 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     IMAGE_SIZE_EXCEEDED("이미지 크기가 1MB를 초과합니다.", HttpStatus.BAD_REQUEST),

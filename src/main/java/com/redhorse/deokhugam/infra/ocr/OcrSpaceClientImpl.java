@@ -70,7 +70,7 @@ public class OcrSpaceClientImpl implements OcrClient
             throw e;
         } catch (Exception e) {
             log.error("[OCR-Api] OCR 작업 실패: fileName={}, error={}", image.getOriginalFilename(), e.getMessage());
-            throw new OcrProcessingException();
+            throw new OcrProcessingException(e);
         }
     }
 }
