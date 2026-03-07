@@ -19,6 +19,8 @@ public record NotificationListRequest(
 
         if (limit <= 0) {
             limit = 20;
+        } else if (limit > 100) {
+            limit = 100;
         }
     }
 }

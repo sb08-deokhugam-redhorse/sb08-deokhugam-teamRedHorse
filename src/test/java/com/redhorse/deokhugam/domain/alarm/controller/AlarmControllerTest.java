@@ -83,22 +83,28 @@ class AlarmControllerTest {
     @Test
     @DisplayName("알림 목록 조회 테스트 - 서비스 호출 및 응답 반환 검증")
     void getAlarmList_Success() throws Exception {
-        // given
+        // 1. Given: 테스트 데이터 및 Mock 서비스 동작 정의
         UUID userId = UUID.fromString("10000000-0000-0000-0000-000000000005");
 
-        // NotificationListRequest 객체 매칭을 위해 any()를 사용하거나 필드를 정확히 맞춰야 합니다.
         CursorPageResponseNotificationDto expectedResponse = new CursorPageResponseNotificationDto(
                 List.of(), null, null, 0, 0L, false
         );
 
+        // AlarmService가 어떤 NotificationListRequest를 받더라도 준비된 응답을 반환하도록 설정
         when(alarmService.getAlarmList(any(NotificationListRequest.class))).thenReturn(expectedResponse);
 
-        // when & then
+        // 2. When & Then: MockMvc를 통해 컨트롤러 엔드포인트 호출 및 검증
         mockMvc.perform(get("/api/notifications")
                         .param("userId", userId.toString())
                         .param("direction", "DESC")
-                        .param("limit", "20")
+                        .param("limit", "20") // "size"에서 DTO 필드명인 "limit"으로 수정됨
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()) // 200 OK 응답 확인
+                .andExpect(jsonPath("$.hasNext").value(false)) // 응답 바디의 특정 필드 값 검증
+                .andExpect(jsonPath("$.size").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0));
+
+        // 서비스 메서드가 실제로 1번 호출되었는지 검증
+        verify(alarmService, times(1)).getAlarmList(any(NotificationListRequest.class));
     }
 }

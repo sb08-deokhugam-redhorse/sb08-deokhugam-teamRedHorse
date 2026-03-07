@@ -17,7 +17,8 @@ public interface AlarmRepository extends JpaRepository<Alarm, UUID> {
 
     @Query("SELECT a FROM Alarm a " +
             "WHERE a.user.id = :#{#request.userId} " +
-            "AND (CAST(:#{#request.after} AS instant) IS NULL OR a.createdAt < :#{#request.after}) " +
+            "AND (CAST(:#{#request.after} AS instant) IS NULL OR a.createdAt < :#{#request.after} " +
+                "AND a.id < :#{request.cursor})"+
             "ORDER BY a.createdAt DESC")
     Slice<Alarm> getAllAlarms(@Param("request") NotificationListRequest request, Pageable pageable);
 
