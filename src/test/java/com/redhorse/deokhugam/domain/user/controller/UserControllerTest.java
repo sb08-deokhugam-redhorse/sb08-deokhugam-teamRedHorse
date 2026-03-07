@@ -3,6 +3,7 @@ package com.redhorse.deokhugam.domain.user.controller;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
+import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
@@ -271,5 +273,35 @@ class UserControllerTest {
     // then
     result.andExpect(status().isNotFound());
     result.andExpect(jsonPath("$.message").value("사용자를 찾을 수 없습니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 수정 성공")
+  void update_user() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    UserUpdateRequest request = new UserUpdateRequest("박성조-수정");
+
+    UserDto response = new UserDto(
+        userId,
+        "seongjo.park@gmail.com",
+        "박성조-수정",
+        Instant.now()
+    );
+
+    given(
+        userService.updateUser(eq(userId), eq(request))
+    ).willReturn(response);
+
+    // when
+    var result = mockMvc.perform(patch("/api/users/{userId}", userId)
+        .header("Deokhugam-Request-User-ID", userId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+
+    // then
+    result.andExpect(status().isOk());
+    result.andExpect(jsonPath("$.nickname").value(response.nickname()));
   }
 }
