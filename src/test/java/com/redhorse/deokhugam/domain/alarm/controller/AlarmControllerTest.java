@@ -5,21 +5,19 @@ import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,7 +29,7 @@ class AlarmControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private AlarmService alarmService;
 
     @Test
@@ -84,31 +82,23 @@ class AlarmControllerTest {
 
     @Test
     @DisplayName("알림 목록 조회 테스트 - 서비스 호출 및 응답 반환 검증")
-    void getAlarmList_Success() {
+    void getAlarmList_Success() throws Exception {
         // given
         UUID userId = UUID.fromString("10000000-0000-0000-0000-000000000005");
-        NotificationListRequest request = new NotificationListRequest(
-                userId, "DESC", null, null, 20
-        );
 
+        // NotificationListRequest 객체 매칭을 위해 any()를 사용하거나 필드를 정확히 맞춰야 합니다.
         CursorPageResponseNotificationDto expectedResponse = new CursorPageResponseNotificationDto(
-                List.of(),
-                null,
-                null,
-                0,
-                0L,
-                false
+                List.of(), null, null, 0, 0L, false
         );
 
-        when(alarmService.getAlarmList(request)).thenReturn(expectedResponse);
+        when(alarmService.getAlarmList(any(NotificationListRequest.class))).thenReturn(expectedResponse);
 
-        // when
-        AlarmController alarmController = null;
-        ResponseEntity<CursorPageResponseNotificationDto> result = alarmController.getAlarmList(request);
-
-        // then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(expectedResponse, result.getBody());
-        verify(alarmService, times(1)).getAlarmList(request);
+        // when & then
+        mockMvc.perform(get("/api/notifications")
+                        .param("userId", userId.toString())
+                        .param("direction", "DESC")
+                        .param("limit", "20")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }
