@@ -157,7 +157,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
 
-        Pageable pageable = PageRequest.of(0, request.limit(), sort);
+        Pageable pageable = PageRequest.of(0, request.limit()+1, sort);
 
         Slice<Alarm> alarmSlice="ASC".equalsIgnoreCase(request.direction())
                 ?alarmRepository.getAllAlarmsAsc(request, pageable)

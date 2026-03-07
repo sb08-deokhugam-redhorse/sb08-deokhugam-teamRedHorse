@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("알림 목록 조회 테스트")
 class AlarmServiceGetListTest {
 
     @Mock

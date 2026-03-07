@@ -22,8 +22,8 @@ public class AlarmController implements AlarmApi {
 
     @PatchMapping("/{notificationId}")
     public ResponseEntity<NotificationUpdateRequest> updateAlarmToRead(
-            @NotNull @PathVariable(value = "notificationId", required = true) UUID notificationId,
-            @NotNull @RequestHeader(value = "Deokhugam-Request-Id", required = true) UUID deokhugamRequestUserID
+            @PathVariable(value = "notificationId", required = true) UUID notificationId,
+            @RequestHeader(value = "Deokhugam-Request-Id", required = true) UUID deokhugamRequestUserID
     ) {
         alarmService.checkAlarm(notificationId, deokhugamRequestUserID);
 
