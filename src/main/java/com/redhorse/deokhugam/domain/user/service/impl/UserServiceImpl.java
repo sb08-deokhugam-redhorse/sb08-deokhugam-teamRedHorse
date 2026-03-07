@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.user.service.impl;
 
 import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
+import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
@@ -80,5 +81,24 @@ public class UserServiceImpl implements UserService {
     // 응답
     log.info("[User-Service] 작업 완료: content {}", result.id());
     return result;
+  }
+
+  @Override
+  @Transactional
+  public UserDto updateUser(UUID userId, UserUpdateRequest request) {
+
+    // 유저 체크
+    User findUser = userRepository.findById(userId)
+        .orElseThrow(()-> new UserNotFoundException(userId));
+
+    if (!findUser.getNickname().equals(request.nickname())) {
+      // 변경하려는 닉네임이 기존과 다를 경우에만 수정
+      findUser.updateNickname(request.nickname());
+    }
+
+    log.info("[User-Service] 사용자 정보 수정 완료: userId = {}, nickname = {}", userId, request.nickname());
+
+    // @Transactional로 인해 명시적인 repository.save()불필요. 바로 리턴
+    return userMapper.toUserDto(findUser);
   }
 }
