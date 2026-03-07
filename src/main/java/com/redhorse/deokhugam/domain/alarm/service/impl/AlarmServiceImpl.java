@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,8 +148,21 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public CursorPageResponseNotificationDto getAlarmList(NotificationListRequest request) {
 
-        Pageable pageable = PageRequest.of(0, request.limit());
-        Slice<Alarm> alarmSlice = alarmRepository.getAllAlarms(request, pageable);
+        /**
+         * DESC와 ASC가 달라지면 쿼리의 부등호 방향이 달라지기에 쿼리가 2개 필요,
+         * 추후에 queryDSL쓰면 해결 가능
+         */
+        Sort.Direction direction = "ASC".equalsIgnoreCase(request.direction())
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
+
+        Pageable pageable = PageRequest.of(0, request.limit(), sort);
+
+        Slice<Alarm> alarmSlice="ASC".equalsIgnoreCase(request.direction())
+                ?alarmRepository.getAllAlarmsAsc(request, pageable)
+                :alarmRepository.getAllAlarmsDesc(request, pageable);
+
         List<Alarm> alarmList = alarmSlice.getContent();
         Long alarmCount = alarmRepository.countAlarmsByUserId(request.userId());
 

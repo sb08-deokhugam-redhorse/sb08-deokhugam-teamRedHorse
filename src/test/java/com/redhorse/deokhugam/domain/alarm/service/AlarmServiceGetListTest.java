@@ -59,7 +59,7 @@ class AlarmServiceGetListTest {
         List<Alarm> alarmList = List.of(alarm1, alarm2);
         Slice<Alarm> alarmSlice = new SliceImpl<>(alarmList, PageRequest.of(0, 2), true);
 
-        given(alarmRepository.getAllAlarms(any(), any())).willReturn(alarmSlice);
+        given(alarmRepository.getAllAlarmsDesc(any(), any())).willReturn(alarmSlice);
         given(alarmRepository.countAlarmsByUserId(userId)).willReturn(10L);
         given(alarmMapper.alarmToNotificationDto(any())).willReturn(mock(NotificationDto.class));
 
@@ -75,7 +75,7 @@ class AlarmServiceGetListTest {
                 () -> assertEquals(lastCreatedAt, result.nextAfter(), "마지막 데이터의 createdAt이 nextAfter가 되어야 함")
         );
 
-        verify(alarmRepository).getAllAlarms(eq(request), any(Pageable.class));
+        verify(alarmRepository).getAllAlarmsDesc(eq(request), any(Pageable.class));
     }
 
     @Test
@@ -86,7 +86,7 @@ class AlarmServiceGetListTest {
         NotificationListRequest request = new NotificationListRequest(userId, "DESC", null, null, 20);
 
         Slice<Alarm> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, 20), false);
-        given(alarmRepository.getAllAlarms(any(), any())).willReturn(emptySlice);
+        given(alarmRepository.getAllAlarmsDesc(any(), any())).willReturn(emptySlice);
         given(alarmRepository.countAlarmsByUserId(userId)).willReturn(0L);
 
         // when

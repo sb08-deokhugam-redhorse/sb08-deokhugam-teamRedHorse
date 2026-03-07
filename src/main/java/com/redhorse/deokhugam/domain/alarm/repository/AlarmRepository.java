@@ -17,10 +17,20 @@ public interface AlarmRepository extends JpaRepository<Alarm, UUID> {
 
     @Query("SELECT a FROM Alarm a " +
             "WHERE a.user.id = :#{#request.userId} " +
-            "AND (CAST(:#{#request.after} AS instant) IS NULL " +
-            "OR (a.createdAt < :#{#request.after} AND a.id < :#{#request.cursor}))"+
-            "ORDER BY a.createdAt :#{#request.direction}")
-    Slice<Alarm> getAllAlarms(@Param("request") NotificationListRequest request, Pageable pageable);
+            "AND (" +
+            "  (:#{#request.after == null ? true : false} = true) OR " +
+            "  (a.createdAt < :#{#request.after}) OR " +
+            "  (a.createdAt = :#{#request.after} AND a.id < :#{#request.cursor}) " +
+            ")")
+    Slice<Alarm> getAllAlarmsDesc(@Param("request") NotificationListRequest request, Pageable pageable);
 
+    @Query("SELECT a FROM Alarm a " +
+            "WHERE a.user.id = :#{#request.userId} " +
+            "AND (" +
+            "  (:#{#request.after == null ? true : false} = true) OR " +
+            "  (a.createdAt > :#{#request.after}) " +
+            "  OR (a.createdAt = :#{#request.after} AND a.id > :#{#request.cursor})" +
+            ")")
+    Slice<Alarm> getAllAlarmsAsc(@Param("request") NotificationListRequest request, Pageable pageable);
     Long countAlarmsByUserId(UUID userId);
 }
