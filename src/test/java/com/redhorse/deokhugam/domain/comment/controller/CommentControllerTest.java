@@ -15,9 +15,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
+import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
 import com.redhorse.deokhugam.domain.comment.service.CommentService;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -107,7 +110,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("입력값 검증 실패 시 - 400 Bad Request")
+    @DisplayName("입력값 검증 실패 - valid 검증을 실패하면 400을 반환한다.")
     void create_InvalidInput_ShouldThrowException() throws Exception {
       // given
       CommentCreateRequest invalidRequest = new CommentCreateRequest(null, null, "");
@@ -335,6 +338,46 @@ class CommentControllerTest {
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId))
           .andExpect(status().isInternalServerError());
+    }
+  }
+
+  @Nested
+  @DisplayName("댓글 목록 조회 관련 테스트")
+  class findAllCommentTests {
+
+    @Test
+    @DisplayName("댓글 목록 조회 요청이 성공적으로 처리되어야 한다.")
+    void findAll_Success() throws Exception {
+      // given
+      UUID reviewId = UUID.randomUUID();
+      CommentPageRequest request = new CommentPageRequest(reviewId, "DESC", null, null, 5);
+
+      CursorPageResponseCommentDto responseDto = new CursorPageResponseCommentDto(
+          List.of(), null, null, 5, 3L, false
+      );
+
+      given(commentService.findAll(any(CommentPageRequest.class))).willReturn(responseDto);
+
+      // when & then
+      mockMvc.perform(get("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.size").value(5))
+          .andExpect(jsonPath("$.hasNext").value(false));
+    }
+
+    @Test
+    @DisplayName("댓글 목록 조회 실패 - reviewId가 누락되면 400 에러를 반환한다")
+    void findAll_WhenInvalidRequest_ShouldReturnBadRequest() throws Exception {
+      // given
+      CommentPageRequest invalidRequest = new CommentPageRequest(null, "DESC", null, null, 5);
+
+      // when & then
+      mockMvc.perform(get("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(invalidRequest)))
+          .andExpect(status().isBadRequest());
     }
   }
 }

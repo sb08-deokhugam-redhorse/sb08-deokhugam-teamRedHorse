@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
 import com.redhorse.deokhugam.domain.comment.entity.Comment;
 import com.redhorse.deokhugam.domain.comment.mapper.CommentMapper;
@@ -22,6 +23,8 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -69,15 +72,14 @@ class CommentServiceTest {
       Review mockReview = mock(Review.class);
       User mockUser = mock(User.class);
 
-      given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(mockReview));
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(Optional.of(mockReview));
       given(userRepository.findById(eq(userId))).willReturn(Optional.of(mockUser));
       given(mockUser.getNickname()).willReturn("감자");
       given(commentRepository.save(any(Comment.class)))
           .willAnswer(invocation -> invocation.getArgument(0));
 
       CommentDto commentDto = new CommentDto(commentId, reviewId, userId, mockUser.getNickname(),
-          "하이",
-          now, now);
+          "하이", now, now);
       given(commentMapper.toDto(any(Comment.class))).willReturn(commentDto);
 
       // when
@@ -98,7 +100,7 @@ class CommentServiceTest {
       UUID userId = UUID.randomUUID();
       CommentCreateRequest commentReq = new CommentCreateRequest(invalidReviewId, userId, "하이");
 
-      given(reviewRepository.findById(eq(invalidReviewId))).willReturn(Optional.empty());
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> commentService.create(commentReq))
@@ -117,7 +119,7 @@ class CommentServiceTest {
       CommentCreateRequest commentReq = new CommentCreateRequest(reviewId, invalidUserId, "하이");
 
       Review mockReview = mock(Review.class);
-      given(reviewRepository.findById(eq(reviewId))).willReturn(Optional.of(mockReview));
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(Optional.of(mockReview));
       given(userRepository.findById(eq(invalidUserId))).willReturn(Optional.empty());
 
       // when & then
@@ -220,7 +222,8 @@ class CommentServiceTest {
       // given
       UUID invalidCommentId = UUID.randomUUID();
 
-      given(commentRepository.findByIdAndDeletedAtIsNull(eq(invalidCommentId))).willReturn(Optional.empty());
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(invalidCommentId))).willReturn(
+          Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> commentService.find(invalidCommentId))
@@ -354,6 +357,66 @@ class CommentServiceTest {
       // when & then
       assertThatThrownBy(() -> commentService.hardDelete(invalidCommentId, requestUserId))
           .isInstanceOf(IllegalArgumentException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("댓글 목록 조회 관련 테스트")
+  class findAllCommentTests {
+
+    @Test
+    @DisplayName("댓글 목록 조회 성공 - 다음 페이지가 존재하는 경우")
+    void findAll_WhenHasNextPAge_ShouldReturnResponse() {
+      // given
+      UUID reviewId = UUID.randomUUID();
+      int limit = 5;
+      CommentPageRequest request = new CommentPageRequest(reviewId, "DESC", null, null, limit);
+
+      Review mockReview = mock(Review.class);
+      given(mockReview.getId()).willReturn(reviewId);
+      given(reviewRepository.findByIdAndDeletedAtIsNull(reviewId)).willReturn(Optional.of(mockReview));
+
+      List<Comment> mockComments = new ArrayList<>();
+      for (int i = 0; i < 6; i++) {
+        Comment mockComment = mock(Comment.class);
+        mockComments.add(mockComment);
+      }
+
+      Comment lastCommentOfContent = mockComments.get(4);
+      given(lastCommentOfContent.getId()).willReturn(UUID.randomUUID());
+      given(lastCommentOfContent.getCreatedAt()).willReturn(Instant.now());
+
+      given(commentRepository.findAllByCursorDesc(eq(reviewId), any(), any(), any()))
+          .willReturn(mockComments);
+      given(commentRepository.countByReviewIdAndDeletedAtIsNull(eq(reviewId))).willReturn(10L);
+      given(commentMapper.toDto(any(Comment.class))).willReturn(mock(CommentDto.class));
+
+      // when
+      var result = commentService.findAll(request);
+
+      // then
+      assertThat(result.content()).hasSize(limit);
+      assertThat(result.hasNext()).isTrue();
+      assertThat(result.nextCursor()).isEqualTo(lastCommentOfContent.getId().toString());
+      assertThat(result.nextAfter()).isEqualTo(lastCommentOfContent.getCreatedAt());
+
+      then(commentRepository).should().findAllByCursorDesc(eq(reviewId), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("댓글 목록 조회 실패 - 리뷰가 존재하지 않는 경우")
+    void findAll_WhenReviewNotFound_ShouldThrowException() {
+      // given
+      UUID invalidReviewId = UUID.randomUUID();
+      CommentPageRequest request = new CommentPageRequest(invalidReviewId, "DESC", null, null, 5);
+
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> commentService.findAll(request))
+          .isInstanceOf(IllegalArgumentException.class);
+
+      then(commentRepository).should(never()).findAllByCursorDesc(any(), any(), any(), any());
     }
   }
 }

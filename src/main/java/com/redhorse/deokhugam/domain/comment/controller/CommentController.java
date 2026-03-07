@@ -2,7 +2,9 @@ package com.redhorse.deokhugam.domain.comment.controller;
 
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
+import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
 import com.redhorse.deokhugam.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -82,5 +84,15 @@ public class CommentController {
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
+  }
+
+  @GetMapping
+  public ResponseEntity<CursorPageResponseCommentDto> findAll(
+      @Valid @RequestBody CommentPageRequest commentPageRequest) {
+    CursorPageResponseCommentDto commentDto = commentService.findAll(commentPageRequest);
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(commentDto);
   }
 }

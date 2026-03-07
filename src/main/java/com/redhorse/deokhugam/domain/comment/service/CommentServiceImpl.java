@@ -2,7 +2,9 @@ package com.redhorse.deokhugam.domain.comment.service;
 
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
+import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
 import com.redhorse.deokhugam.domain.comment.entity.Comment;
 import com.redhorse.deokhugam.domain.comment.mapper.CommentMapper;
 import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
@@ -10,6 +12,10 @@ import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
+import java.time.Instant;
+import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
     UUID userId = commentCreateRequest.userId();
     String content = commentCreateRequest.content();
 
-    Review review = reviewRepository.findById(reviewId)
+    Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new IllegalArgumentException("Review Not Found"));
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("User Not Found"));
@@ -92,5 +98,61 @@ public class CommentServiceImpl implements CommentService {
     }
 
     commentRepository.delete(comment);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public CursorPageResponseCommentDto findAll(CommentPageRequest commentPageRequest) {
+    Review review = reviewRepository.findByIdAndDeletedAtIsNull(commentPageRequest.reviewId())
+        .orElseThrow(() -> new IllegalArgumentException("Review Not Found"));
+
+    int limit = commentPageRequest.limit() != null && commentPageRequest.limit() > 0
+        ? commentPageRequest.limit() : 50;
+
+    boolean isAsc = "ASC".equalsIgnoreCase(commentPageRequest.direction());
+
+    UUID cursorId =
+        (commentPageRequest.cursor() != null) ? UUID.fromString(commentPageRequest.cursor()) : null;
+
+    Pageable pageable = PageRequest.of(0, limit + 1);
+
+    List<Comment> comments;
+    if (isAsc) {
+      comments = commentRepository.findAllByCursorAsc(
+          review.getId(),
+          cursorId,
+          commentPageRequest.after(),
+          pageable);
+    } else {
+      comments = commentRepository.findAllByCursorDesc(
+          review.getId(),
+          cursorId,
+          commentPageRequest.after(),
+          pageable);
+    }
+
+    boolean hasNext = comments.size() > limit;
+    List<Comment> content = hasNext ? comments.subList(0, limit) : comments;
+
+    String nextCursor = null;
+    Instant nextAfter = null;
+
+    if (!content.isEmpty() && hasNext) {
+      Comment lastComment = content.get(content.size() - 1);
+      nextCursor = lastComment.getId().toString();
+      nextAfter = lastComment.getCreatedAt();
+    }
+
+    long totalElements = commentRepository.countByReviewIdAndDeletedAtIsNull(
+        commentPageRequest.reviewId());
+
+    return new CursorPageResponseCommentDto(
+        content.stream().map(commentMapper::toDto).toList(),
+        nextCursor,
+        nextAfter,
+        limit,
+        totalElements,
+        hasNext
+    );
   }
 }
