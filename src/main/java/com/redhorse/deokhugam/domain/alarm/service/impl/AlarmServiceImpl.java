@@ -157,25 +157,27 @@ public class AlarmServiceImpl implements AlarmService {
 
         Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
 
-        Pageable pageable = PageRequest.of(0, request.limit()+1, sort);
+        Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
 
-        Slice<Alarm> alarmSlice="ASC".equalsIgnoreCase(request.direction())
-                ?alarmRepository.getAllAlarmsAsc(request, pageable)
-                :alarmRepository.getAllAlarmsDesc(request, pageable);
+        Slice<Alarm> alarmSlice = "ASC".equalsIgnoreCase(request.direction())
+                ? alarmRepository.getAllAlarmsAsc(request, pageable)
+                : alarmRepository.getAllAlarmsDesc(request, pageable);
 
         List<Alarm> alarmList = alarmSlice.getContent();
         Long alarmCount = alarmRepository.countAlarmsByUserId(request.userId());
 
         String nextCursor = null;
         Instant nextAfter = null;
+        boolean hasNext = alarmList.size() > request.limit();
 
-        if (alarmSlice.hasNext() && !alarmList.isEmpty()) {
-            Alarm last = alarmList.get(alarmList.size() - 1);
+        if (hasNext) {
+            Alarm last = alarmList.get(request.limit() - 1);
             nextCursor = last.getId().toString();
             nextAfter = last.getCreatedAt();
+            alarmList = alarmList.subList(0, request.limit());
         }
 
-        List<NotificationDto> content = alarmSlice.stream()
+        List<NotificationDto> content = alarmList.stream()
                 .map(alarmMapper::alarmToNotificationDto)
                 .toList();
 
@@ -185,7 +187,7 @@ public class AlarmServiceImpl implements AlarmService {
                 nextAfter,
                 content.size(),
                 alarmCount,
-                alarmSlice.hasNext()
+                hasNext
         );
     }
 }
