@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
+import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
@@ -25,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserServiceImpl 단위 테스트")
@@ -239,5 +241,44 @@ class UserServiceImplTest {
     // when & Then
     assertThatThrownBy(() -> userService.getUser(userId))
         .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("사용자 업데이트 성공 - 닉네임만 수정 가능")
+  void update_user() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UserUpdateRequest request = new UserUpdateRequest("박성조-수정");
+
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    // ID임시 주입
+    ReflectionTestUtils.setField(user, "id", userId);
+
+    given(
+        userRepository.findById(userId)
+    ).willReturn(Optional.of(user));
+
+
+    UserDto expectedDto = new UserDto(
+        userId,
+        user.getEmail(),
+        request.nickname(),
+        Instant.now()
+    );
+
+    given(
+        userMapper.toUserDto(user)
+    ).willReturn(expectedDto);
+
+    // When & Then
+    UserDto result = userService.updateUser(userId, userId, request);
+
+    assertThat(user.getNickname()).isEqualTo(request.nickname());
+    assertThat(result.nickname()).isEqualTo(request.nickname());
   }
 }
