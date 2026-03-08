@@ -6,8 +6,11 @@ import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 @RequiredArgsConstructor
 @Component
@@ -33,7 +36,7 @@ public class NaverBookProvider
                 item.description(),
                 parseDate(item.pubdate()),
                 parseIsbn13(item.isbn()),
-                item.image()
+                toBase64(item.image())
         );
     }
 
@@ -63,5 +66,21 @@ public class NaverBookProvider
         }
 
         return null;
+    }
+
+    /**
+     * 이미지 URL로부터 이미지를 다운로드하여 Base64로 인코딩한다.
+     *
+     * @param imageUrl 다운로드할 이미지 URL
+     * @return Base64로 인코딩된 이미지 문자열
+     */
+    private String toBase64(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) return null;
+
+        try (InputStream is = URI.create(imageUrl).toURL().openStream()) {
+            return Base64.getEncoder().encodeToString(is.readAllBytes());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
