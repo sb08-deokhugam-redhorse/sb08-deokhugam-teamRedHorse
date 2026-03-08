@@ -4,19 +4,25 @@ import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLConnection;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class NaverBookProvider
 {
     private final NaverBookClient naverBookClient;
+
+    private static final int CONNECTION_TIMEOUT_MS = 5000; // 5초
+    private static final int READ_TIMEOUT_MS = 10000;      // 10초
 
     /**
      * ISBN으로 네이버 도서 정보를 조회하여 NaverBooktDto로 반환한다.
@@ -28,6 +34,8 @@ public class NaverBookProvider
     public NaverBookDto getBookInfoByIsbn(String isbn) {
         NaverBookItem item = naverBookClient.fetchInfoByIsbn(isbn)
                 .orElseThrow(() -> new NaverBookNotFoundException(isbn));
+
+        log.info("[Book-Api] 네이버 도서 정보 조회 작업 완료: isbn={}", isbn);
 
         return new NaverBookDto(
                 item.title(),
@@ -76,10 +84,15 @@ public class NaverBookProvider
      */
     private String toBase64(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) return null;
-
-        try (InputStream is = URI.create(imageUrl).toURL().openStream()) {
-            return Base64.getEncoder().encodeToString(is.readAllBytes());
+        try {
+            URLConnection connection = URI.create(imageUrl).toURL().openConnection();
+            connection.setConnectTimeout(CONNECTION_TIMEOUT_MS);
+            connection.setReadTimeout(READ_TIMEOUT_MS);
+            try (InputStream is = connection.getInputStream()) {
+                return Base64.getEncoder().encodeToString(is.readAllBytes());
+            }
         } catch (Exception e) {
+            log.warn("[Naver-Api] 썸네일 다운로드 작업 실패: url={}, error={}", imageUrl, e.getMessage());
             return null;
         }
     }
