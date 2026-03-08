@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.domain.review.service;
 
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
@@ -10,10 +11,14 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewSearchRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
+import com.redhorse.deokhugam.domain.review.exception.BookIdUserIdExistsException;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
+import com.redhorse.deokhugam.domain.review.exception.UserNotWriteReviewException;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.Collections;
@@ -45,16 +50,16 @@ public class ReviewServiceImpl implements ReviewService {
     UUID userId = request.userId();
 
     Book book = bookRepository.findById(bookId)
-        .orElseThrow(() -> new IllegalArgumentException("Book not exists"));
+        .orElseThrow(() -> new BookNotFoundException(bookId));
     User user = userRepository
-        .findById(userId).orElseThrow(() -> new IllegalArgumentException("User not exists"));
+        .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
       return reviewMapper.toDto(review);
     } catch (DataIntegrityViolationException e) {
-      throw new IllegalStateException("bookId, userId exists");
+      throw new BookIdUserIdExistsException(bookId, userId);
     }
 
   }
@@ -66,18 +71,18 @@ public class ReviewServiceImpl implements ReviewService {
     Integer rating = request.rating();
 
     if (content == null && rating == null) {
-      throw new IllegalArgumentException("Both content and rating are null");
+      throw new IllegalArgumentException("내용과 별점을 작성해야 합니다.");
     }
 
     if (content != null && content.isBlank()) {
-      throw new IllegalArgumentException("content cannot be empty");
+      throw new IllegalArgumentException("내용이 비면 안됩니다.");
     }
 
     Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new IllegalArgumentException("User did not write review");
+      throw new UserNotWriteReviewException(userId);
     }
 
     review.update(content, rating);
@@ -88,10 +93,10 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   public void softDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new IllegalArgumentException("User did not write review");
+      throw new UserNotWriteReviewException(userId);
     }
 
     review.delete();
@@ -101,10 +106,10 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   public void hardDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new IllegalArgumentException("User did not write review");
+      throw new UserNotWriteReviewException(userId);
     }
 
     reviewRepository.delete(review);
@@ -114,10 +119,10 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   public ReviewLikeDto like(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     boolean like;
 
@@ -153,7 +158,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   public CursorPageResponseReviewDto findAll(ReviewSearchRequest request, UUID requestUserId) {
     if (!userRepository.existsById(requestUserId)) {
-      throw new IllegalArgumentException("User not exists");
+      throw new UserNotFoundException(requestUserId);
     }
 
     Slice<Review> slice = reviewRepository.getAllReviews(request);
@@ -163,12 +168,12 @@ public class ReviewServiceImpl implements ReviewService {
     List<UUID> reviewIds = reviews.stream().map(Review::getId).toList();
 
     // 리뷰 좋아요 체크
-    Set<UUID> likedReviewIds = reviewIds.isEmpty() ?  Collections.emptySet()
+    Set<UUID> likedReviewIds = reviewIds.isEmpty() ? Collections.emptySet()
         : reviewLikeRepository.findAllByUserIdAndReviewIdInAndDeletedAtIsNull(
-            requestUserId, reviewIds)
-        .stream()
-        .map(like -> like.getReview().getId())
-        .collect(Collectors.toSet());
+                requestUserId, reviewIds)
+            .stream()
+            .map(like -> like.getReview().getId())
+            .collect(Collectors.toSet());
 
     // 리뷰 좋아요 합치기
     List<ReviewDto> content = reviews
@@ -205,9 +210,9 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
-        .orElseThrow(() -> new IllegalArgumentException("Review not exists"));
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     boolean likedByMe = reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(reviewId,
             userId)
