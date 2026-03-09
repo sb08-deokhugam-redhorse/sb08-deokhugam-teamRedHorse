@@ -10,6 +10,8 @@ public enum ErrorCode {
     USER_DUPLICATE("이미 존재하는 사용자입니다.", HttpStatus.CONFLICT),
     LOGIN_FAILED("아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED_USER("로그인이 필요한 서비스입니다.", HttpStatus.UNAUTHORIZED),
+    USER_NOT_SOFT_DELETED("탈퇴 처리되지 않은 사용자입니다.", HttpStatus.BAD_REQUEST),
+    HARD_DELETE_NOT_ALLOWED_YET("탈퇴 후 24시간이 지나야 영구 삭제가 가능합니다.", HttpStatus.BAD_REQUEST),
 
     // review
     REVIEW_NOT_FOUND("리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
