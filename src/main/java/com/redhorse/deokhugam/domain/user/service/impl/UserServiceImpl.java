@@ -5,13 +5,18 @@ import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserDeletedNotYetException;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
+import com.redhorse.deokhugam.domain.user.exception.UserHardDeletedException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
 import com.redhorse.deokhugam.global.exception.AuthenticationException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -127,16 +132,35 @@ public class UserServiceImpl implements UserService {
   public void deleteUserHard(UUID requestUserId, UUID userId) {
     // 유저 체크 - Soft Delete 여부와 상관없이 유저 조회 (Native Query 사용)
     User findUser = userRepository.findByIdIncludeDeleted(userId)
-        .orElseThrow(()-> new UserNotFoundException(userId));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
       throw new AuthenticationException();
     }
 
-    // 삭제
-    userRepository.deleteHardById(findUser.getId());
+    // 소프트 삭제 여부 확인
+    if (!findUser.isDeleted()) {
+        log.warn("[User-Service] 물리 삭제 실패: 소프트 삭제되지 않은 유저. userId = {}", userId);
+        throw new UserNotSoftDeletedException();
+    }
 
-    log.info("[User-Service] 사용자 물리 삭제 완료: userId = {}", userId);
+    // 유예 기간 확인 (현재 - 1일 이전이어야 함)
+    Instant oneDayAgo = Instant.now().minus(Duration.ofDays(1));
+
+    if (findUser.getDeletedAt().isAfter(oneDayAgo)) {
+        log.warn("[User-Service] 물리 삭제 실패: 유예 기간(1일) 미경과. userId = {}, 삭제일시 = {}", 
+                 userId, findUser.getDeletedAt());
+        throw new UserDeletedNotYetException();
+    }
+
+    // 삭제 처리
+    int deletedCount = userRepository.deleteHardById(findUser.getId());
+
+    if (deletedCount > 0) {
+      log.info("[User-Service] 사용자 물리 삭제 완료: userId = {}", userId);
+    } else {
+        throw new UserHardDeletedException();
+    }
   }
 }
