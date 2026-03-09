@@ -17,4 +17,11 @@ public class GlobalException extends RuntimeException {
         this.errorCode = errorCode;
         this.details = details != null ? details : Map.of();
     }
+
+    public GlobalException(ErrorCode errorCode, Map<String, Object> details, Throwable cause) {
+        super(errorCode.getMessage(), cause);
+        this.timestamp = Instant.now();
+        this.errorCode = errorCode;
+        this.details = details != null ? details : Map.of();
+    }
 }
