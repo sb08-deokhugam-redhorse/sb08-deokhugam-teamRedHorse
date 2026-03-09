@@ -9,6 +9,7 @@ import com.redhorse.deokhugam.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comments")
@@ -33,6 +35,9 @@ public class CommentController {
   @PostMapping
   public ResponseEntity<CommentDto> create(
       @Valid @RequestBody CommentCreateRequest commentCreateRequest) {
+    log.info("[Comment-Controller] 생성 요청 시작: reviewId={}, userId={}",
+        commentCreateRequest.reviewId(), commentCreateRequest.userId());
+
     CommentDto comment = commentService.create(commentCreateRequest);
 
     return ResponseEntity
@@ -46,6 +51,9 @@ public class CommentController {
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId,
       @Valid @RequestBody CommentUpdateRequest commentUpdateRequest
   ) {
+    log.info("[Comment-Controller] 수정 요청 시작: commentId={}, requestUserId={}", commentId,
+        requestUserId);
+
     CommentDto comment = commentService.update(commentId, requestUserId, commentUpdateRequest);
 
     return ResponseEntity
@@ -57,6 +65,8 @@ public class CommentController {
   public ResponseEntity<CommentDto> find(
       @PathVariable UUID commentId
   ) {
+    log.debug("[Comment-Controller] 단건 조회 요청 시작: commentId={}", commentId);
+
     CommentDto comment = commentService.find(commentId);
 
     return ResponseEntity
@@ -69,6 +79,8 @@ public class CommentController {
       @PathVariable UUID commentId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId
   ) {
+    log.info("[Comment-Controller] 논리 삭제 요청 시작: commentId={}, requestUserId={}", commentId,
+        requestUserId);
     commentService.softDelete(commentId, requestUserId);
 
     return ResponseEntity
@@ -81,6 +93,9 @@ public class CommentController {
       @PathVariable UUID commentId,
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId
   ) {
+    log.info("[Comment-Controller] 물리 삭제 요청 시작: commentId={}, requestUserId={}", commentId,
+        requestUserId);
+
     commentService.hardDelete(commentId, requestUserId);
 
     return ResponseEntity
@@ -91,6 +106,14 @@ public class CommentController {
   @GetMapping
   public ResponseEntity<CursorPageResponseCommentDto> findAll(
       @Valid @ModelAttribute @ParameterObject CommentPageRequest commentPageRequest) {
+    log.debug(
+        "[Comment-Controller] 다건 조회 요청 시작 - reviewId: {}, cursor: {}, after: {}, limit: {}, direction: {}",
+        commentPageRequest.reviewId(),
+        commentPageRequest.cursor(),
+        commentPageRequest.after(),
+        commentPageRequest.limit(),
+        commentPageRequest.direction());
+
     CursorPageResponseCommentDto commentDto = commentService.findAll(commentPageRequest);
 
     return ResponseEntity
