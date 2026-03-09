@@ -69,7 +69,7 @@ class AlarmControllerTest {
     }
 
     @Test
-    @DisplayName("단건 알림 읽음 처리 실패 - 필수 헤더 누락 시 500 Server Error 반환")
+    @DisplayName("단건 알림 읽음 처리 실패 - 필수 헤더 누락 시 400 Bad Request 반환")
     void updateAlarmToRead_Single_MissingHeader() throws Exception {
         // given
         String testAlarmId = UUID.randomUUID().toString();
@@ -77,7 +77,7 @@ class AlarmControllerTest {
         // when & then
         mockMvc.perform(patch("/api/notifications/{notificationId}", testAlarmId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
