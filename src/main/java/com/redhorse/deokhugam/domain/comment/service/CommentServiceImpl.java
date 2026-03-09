@@ -48,7 +48,7 @@ public class CommentServiceImpl implements CommentService {
 
     Comment savedComment = commentRepository.save(comment);
 
-    log.info("[Comment-Service] 등록 작업 완료: comment={}", savedComment);
+    log.info("[Comment-Service] 등록 작업 완료: commentId={}", savedComment.getId());
 
     return commentMapper.toDto(savedComment);
   }
@@ -65,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
 
     comment.update(commentUpdateRequest.content());
 
-    log.info("[Comment-Service] 수정 작업 완료: comment={}", comment);
+    log.info("[Comment-Service] 수정 작업 완료: commentId={}", comment.getId());
 
     return commentMapper.toDto(comment);
   }
