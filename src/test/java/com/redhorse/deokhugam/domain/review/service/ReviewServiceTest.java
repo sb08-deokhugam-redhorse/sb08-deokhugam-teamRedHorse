@@ -284,7 +284,7 @@ public class ReviewServiceTest {
     assertThat(result).isEqualTo(request);
     assertThat(result.reviewId()).isEqualTo(reviewId);
     assertThat(result.userId()).isEqualTo(userId);
-    assertThat(result.like()).isEqualTo(true);
+    assertThat(result.liked()).isEqualTo(true);
   }
 
   @Test
