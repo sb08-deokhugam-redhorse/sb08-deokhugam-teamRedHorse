@@ -24,6 +24,9 @@ public enum ErrorCode {
     INVALID_ISBN("ISBN이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
 
     // comment
+    COMMENT_NOT_FOUND("댓글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COMMENT_UPDATE_NOT_ALLOWED("자신이 작성한 댓글만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    COMMENT_DELETE_NOT_ALLOWED("자신이 작성한 댓글만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
 
     // alarm
     ALARM_NOT_FOUND("알림을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),

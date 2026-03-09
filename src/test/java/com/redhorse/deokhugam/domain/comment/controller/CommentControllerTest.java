@@ -18,7 +18,12 @@ import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
+import com.redhorse.deokhugam.domain.comment.exception.CommentDeleteNotAllowedException;
+import com.redhorse.deokhugam.domain.comment.exception.CommentNotFoundException;
+import com.redhorse.deokhugam.domain.comment.exception.CommentUpdateNotAllowedException;
 import com.redhorse.deokhugam.domain.comment.service.CommentService;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -75,7 +80,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 500 반환")
+    @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 404 Not Found를 반환한다.")
     void create_WhenReviewNotFound_ShouldThrowException() throws Exception {
       // given
       UUID invalidReviewId = UUID.randomUUID();
@@ -83,34 +88,36 @@ class CommentControllerTest {
       CommentCreateRequest request = new CommentCreateRequest(invalidReviewId, userId, "하이루");
 
       given(commentService.create(any(CommentCreateRequest.class)))
-          .willThrow(new IllegalArgumentException("Review Not Found"));
+          .willThrow(new ReviewNotFoundException(invalidReviewId));
 
       // when & then
       mockMvc.perform(post("/api/comments")
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("댓글 등록 실패 - 존재하지 않는 사용자 ID인 경우 500 반환")
+    @DisplayName("댓글 등록 실패 - 존재하지 않는 사용자 ID인 경우 404 Not Found를 반환한다.")
     void create_WhenUserNotFound_ShouldThrowException() throws Exception {
       // given
-      CommentCreateRequest request = new CommentCreateRequest(UUID.randomUUID(), UUID.randomUUID(),
+      UUID reviewId = UUID.randomUUID();
+      UUID invalidUserID = UUID.randomUUID();
+      CommentCreateRequest request = new CommentCreateRequest(reviewId, invalidUserID,
           "하이루");
 
       given(commentService.create(any(CommentCreateRequest.class)))
-          .willThrow(new IllegalArgumentException("User Not Found"));
+          .willThrow(new UserNotFoundException(invalidUserID));
 
       // when & then
       mockMvc.perform(post("/api/comments")
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("입력값 검증 실패 - valid 검증을 실패하면 400을 반환한다.")
+    @DisplayName("입력값 검증 실패 - valid 검증을 실패하면 400 Bad Request를 반환한다.")
     void create_InvalidInput_ShouldThrowException() throws Exception {
       // given
       CommentCreateRequest invalidRequest = new CommentCreateRequest(null, null, "");
@@ -155,7 +162,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다")
+    @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다")
     void update_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
@@ -164,14 +171,14 @@ class CommentControllerTest {
 
       given(
           commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class)))
-          .willThrow(new IllegalArgumentException("자신이 작성한 댓글만 수정할 수 있습니다."));
+          .willThrow(new CommentUpdateNotAllowedException(commentId));
 
       // when & then
       mockMvc.perform(patch("/api/comments/{commentId}", commentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isForbidden());
     }
   }
 
@@ -200,18 +207,18 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 단건 조회 실패 - 존재하지 않은 댓글 Id인 경우 500을 반환한다.")
+    @DisplayName("댓글 단건 조회 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
     void find_WhenCommentNotFound_ShouldThrowException() throws Exception {
       // given
       UUID invalidCommentId = UUID.randomUUID();
 
       given(commentService.find(eq(invalidCommentId)))
-          .willThrow(new IllegalArgumentException("Comment Not Found"));
+          .willThrow(new CommentNotFoundException(invalidCommentId));
 
       // when & then
       mockMvc.perform(get("/api/comments/{commentId}", invalidCommentId)
               .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isNotFound());
     }
   }
 
@@ -235,46 +242,46 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 논리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 500을 반환한다.")
+    @DisplayName("댓글 논리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
     void softDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
-      doThrow(new IllegalArgumentException("Comment Not Found"))
+      doThrow(new CommentNotFoundException(commentId))
           .when(commentService).softDelete(eq(commentId), eq(requestUserId));
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}", commentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("댓글 논리 삭제 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다.")
+    @DisplayName("댓글 논리 삭제 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다.")
     void softDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
-      doThrow(new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다."))
+      doThrow(new CommentDeleteNotAllowedException(commentId))
           .when(commentService).softDelete(eq(commentId), eq(requestUserId));
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}", commentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 400을 반환한다")
+    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
     void softDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}", commentId))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isBadRequest());
     }
   }
 
@@ -298,46 +305,46 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 물리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 500을 반환한다.")
+    @DisplayName("댓글 물리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
     void hardDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
-      doThrow(new IllegalArgumentException("Comment Not Found"))
+      doThrow(new CommentNotFoundException(commentId))
           .when(commentService).hardDelete(eq(commentId), eq(requestUserId));
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("댓글 물리 삭제 실패 - 작성자가 아닌 유저가 요청하면 500을 반환한다.")
+    @DisplayName("댓글 물리 삭제 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다.")
     void hardDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
-      doThrow(new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다."))
+      doThrow(new CommentDeleteNotAllowedException(commentId))
           .when(commentService).hardDelete(eq(commentId), eq(requestUserId));
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 400을 반환한다")
+    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
     void hardDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
       // given
       UUID commentId = UUID.randomUUID();
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId))
-          .andExpect(status().isInternalServerError());
+          .andExpect(status().isBadRequest());
     }
   }
 
@@ -369,7 +376,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 목록 조회 실패 - reviewId가 누락되면 400 에러를 반환한다")
+    @DisplayName("댓글 목록 조회 실패 - reviewId가 누락되면 400 BadRequest를 반환한다")
     void findAll_WhenInvalidRequest_ShouldReturnBadRequest() throws Exception {
       // given & when & then
       // review Id 파라미터 누락
