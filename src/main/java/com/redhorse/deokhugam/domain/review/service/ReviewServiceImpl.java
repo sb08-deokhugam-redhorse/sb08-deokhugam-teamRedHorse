@@ -13,6 +13,7 @@ import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.domain.review.exception.BookIdUserIdExistsException;
 import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
+import com.redhorse.deokhugam.domain.review.exception.ReviewValidationException;
 import com.redhorse.deokhugam.domain.review.exception.UserNotWriteReviewException;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
@@ -74,11 +75,11 @@ public class ReviewServiceImpl implements ReviewService {
     Integer rating = request.rating();
 
     if (content == null && rating == null) {
-      throw new IllegalArgumentException("내용과 별점을 작성해야 합니다.");
+      throw new ReviewValidationException("내용과 별점을 작성해야 합니다.");
     }
 
     if (content != null && content.isBlank()) {
-      throw new IllegalArgumentException("내용이 비면 안됩니다.");
+      throw new ReviewValidationException("내용이 비면 안됩니다.");
     }
 
     Review review = reviewRepository.findByIdForUpdate(reviewId)
