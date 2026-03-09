@@ -6,11 +6,16 @@ import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
 import com.redhorse.deokhugam.domain.comment.entity.Comment;
+import com.redhorse.deokhugam.domain.comment.exception.CommentDeleteNotAllowedException;
+import com.redhorse.deokhugam.domain.comment.exception.CommentNotFoundException;
+import com.redhorse.deokhugam.domain.comment.exception.CommentUpdateNotAllowedException;
 import com.redhorse.deokhugam.domain.comment.mapper.CommentMapper;
 import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
 import com.redhorse.deokhugam.domain.review.entity.Review;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.List;
@@ -40,9 +45,9 @@ public class CommentServiceImpl implements CommentService {
     String content = commentCreateRequest.content();
 
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
-        .orElseThrow(() -> new IllegalArgumentException("Review Not Found"));
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User Not Found"));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     Comment comment = new Comment(content, review, user);
 
@@ -57,10 +62,10 @@ public class CommentServiceImpl implements CommentService {
   public CommentDto update(UUID commentId, UUID requestUserId,
       CommentUpdateRequest commentUpdateRequest) {
     Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
-        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+        .orElseThrow(() -> new CommentNotFoundException(commentId));
 
     if (!comment.getUser().getId().equals(requestUserId)) {
-      throw new IllegalArgumentException("자신이 작성한 댓글만 수정할 수 있습니다.");
+      throw new CommentUpdateNotAllowedException(commentId);
     }
 
     comment.update(commentUpdateRequest.content());
@@ -74,7 +79,7 @@ public class CommentServiceImpl implements CommentService {
   @Transactional(readOnly = true)
   public CommentDto find(UUID commentId) {
     Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
-        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+        .orElseThrow(() -> new CommentNotFoundException(commentId));
 
     log.debug("[Comment-Service] 단건 조회 작업 완료: commentId={}", commentId);
 
@@ -84,10 +89,10 @@ public class CommentServiceImpl implements CommentService {
   @Override
   public void softDelete(UUID commentId, UUID requestUserId) {
     Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
-        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+        .orElseThrow(() -> new CommentNotFoundException(commentId));
 
     if (!comment.getUser().getId().equals(requestUserId)) {
-      throw new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다.");
+      throw new CommentDeleteNotAllowedException(commentId);
     }
 
     comment.softDelete();
@@ -99,10 +104,10 @@ public class CommentServiceImpl implements CommentService {
   public void hardDelete(UUID commentId, UUID requestUserId) {
     // 물리 삭제인 경우 논리 삭제된 댓글까지 지울 수 있어야 함.
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+        .orElseThrow(() -> new CommentNotFoundException(commentId));
 
     if (!comment.getUser().getId().equals(requestUserId)) {
-      throw new IllegalArgumentException("자신이 작성한 댓글만 삭제할 수 있습니다.");
+      throw new CommentDeleteNotAllowedException(commentId);
     }
 
     commentRepository.delete(comment);
@@ -114,7 +119,7 @@ public class CommentServiceImpl implements CommentService {
   @Transactional(readOnly = true)
   public CursorPageResponseCommentDto findAll(CommentPageRequest commentPageRequest) {
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(commentPageRequest.reviewId())
-        .orElseThrow(() -> new IllegalArgumentException("Review Not Found"));
+        .orElseThrow(() -> new ReviewNotFoundException(commentPageRequest.reviewId()));
 
     int limit = commentPageRequest.limit() != null && commentPageRequest.limit() > 0
         ? commentPageRequest.limit() : 50;

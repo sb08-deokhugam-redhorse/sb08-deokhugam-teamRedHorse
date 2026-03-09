@@ -16,11 +16,16 @@ import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
 import com.redhorse.deokhugam.domain.comment.entity.Comment;
+import com.redhorse.deokhugam.domain.comment.exception.CommentDeleteNotAllowedException;
+import com.redhorse.deokhugam.domain.comment.exception.CommentNotFoundException;
+import com.redhorse.deokhugam.domain.comment.exception.CommentUpdateNotAllowedException;
 import com.redhorse.deokhugam.domain.comment.mapper.CommentMapper;
 import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
 import com.redhorse.deokhugam.domain.review.entity.Review;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -104,7 +109,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.create(commentReq))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ReviewNotFoundException.class);
 
       then(commentRepository).should(never()).save(any(Comment.class));
       then(userRepository).should(never()).findById(eq(userId));
@@ -124,7 +129,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.create(commentReq))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(UserNotFoundException.class);
 
       // then
       then(commentRepository).should(never()).save(any(Comment.class));
@@ -181,7 +186,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.update(commentId, requestUserId, commentReq))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(CommentUpdateNotAllowedException.class);
 
       verify(mockComment, never()).update(anyString());
     }
@@ -227,7 +232,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.find(invalidCommentId))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(CommentNotFoundException.class);
     }
   }
 
@@ -276,7 +281,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.softDelete(commentId, requestUserId))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(CommentDeleteNotAllowedException.class);
 
       then(mockComment).should(never()).softDelete();
     }
@@ -293,7 +298,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.softDelete(invalidCommentId, requestUserId))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(CommentNotFoundException.class);
     }
   }
 
@@ -340,7 +345,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.hardDelete(commentId, requestUserId))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(CommentDeleteNotAllowedException.class);
 
       then(commentRepository).should(never()).delete(mockComment);
     }
@@ -356,7 +361,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.hardDelete(invalidCommentId, requestUserId))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(CommentNotFoundException.class);
     }
   }
 
@@ -414,7 +419,7 @@ class CommentServiceTest {
 
       // when & then
       assertThatThrownBy(() -> commentService.findAll(request))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ReviewNotFoundException.class);
 
       then(commentRepository).should(never()).findAllByCursorDesc(any(), any(), any(), any());
     }
