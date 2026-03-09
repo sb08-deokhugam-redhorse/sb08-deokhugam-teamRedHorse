@@ -12,9 +12,9 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.domain.review.exception.BookIdUserIdExistsException;
+import com.redhorse.deokhugam.domain.review.exception.OnlyTheReviewAuthorException;
 import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.domain.review.exception.ReviewValidationException;
-import com.redhorse.deokhugam.domain.review.exception.UserNotWriteReviewException;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
@@ -60,7 +60,7 @@ public class ReviewServiceImpl implements ReviewService {
     try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
-      log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(),userId);
+      log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(), userId);
       return reviewMapper.toDto(review);
     } catch (DataIntegrityViolationException e) {
       throw new BookIdUserIdExistsException(bookId, userId);
@@ -86,7 +86,7 @@ public class ReviewServiceImpl implements ReviewService {
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new UserNotWriteReviewException(userId);
+      throw new OnlyTheReviewAuthorException(userId);
     }
 
     review.update(content, rating);
@@ -101,7 +101,7 @@ public class ReviewServiceImpl implements ReviewService {
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new UserNotWriteReviewException(userId);
+      throw new OnlyTheReviewAuthorException(userId);
     }
 
     review.delete();
@@ -115,7 +115,7 @@ public class ReviewServiceImpl implements ReviewService {
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
     if (!review.getUser().getId().equals(userId)) {
-      throw new UserNotWriteReviewException(userId);
+      throw new OnlyTheReviewAuthorException(userId);
     }
 
     reviewRepository.delete(review);

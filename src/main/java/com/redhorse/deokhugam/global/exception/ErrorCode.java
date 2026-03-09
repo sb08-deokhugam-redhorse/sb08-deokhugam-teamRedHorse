@@ -14,7 +14,7 @@ public enum ErrorCode {
     // review
     REVIEW_NOT_FOUND("리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     BOOKID_USERID_EXISTS("이미 해당 책에 리뷰를 작성했습니다.",HttpStatus.CONFLICT),
-    USER_NOT_WRITE_REVIEW("리뷰 작성자만 수정/삭제할 수 있습니다.",HttpStatus.FORBIDDEN),
+    ONLY_THE_REVIEW_AUTHOR("리뷰 작성자만 수정/삭제할 수 있습니다.",HttpStatus.FORBIDDEN),
     REVIEW_VALIDATION("내용과 별점을 작성해야 합니다.", HttpStatus.BAD_REQUEST),
 
 

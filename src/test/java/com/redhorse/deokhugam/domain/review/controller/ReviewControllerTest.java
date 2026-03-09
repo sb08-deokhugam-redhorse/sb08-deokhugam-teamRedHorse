@@ -18,7 +18,7 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
-import com.redhorse.deokhugam.domain.review.exception.UserNotWriteReviewException;
+import com.redhorse.deokhugam.domain.review.exception.OnlyTheReviewAuthorException;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import java.time.Instant;
 import java.util.UUID;
@@ -192,7 +192,7 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willThrow(new UserNotWriteReviewException(userId))
+    willThrow(new OnlyTheReviewAuthorException(userId))
         .given(reviewService).softDelete(eq(reviewId), eq(userId));
 
     // when & then

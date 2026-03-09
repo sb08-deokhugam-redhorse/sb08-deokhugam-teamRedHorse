@@ -17,8 +17,8 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
+import com.redhorse.deokhugam.domain.review.exception.OnlyTheReviewAuthorException;
 import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
-import com.redhorse.deokhugam.domain.review.exception.UserNotWriteReviewException;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
@@ -202,7 +202,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.update(reviewId, otherUserId, request))
-        .isInstanceOf(UserNotWriteReviewException.class);
+        .isInstanceOf(OnlyTheReviewAuthorException.class);
   }
 
   @Test
@@ -256,7 +256,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.hardDelete(reviewId, otherUserId))
-        .isInstanceOf(UserNotWriteReviewException.class);
+        .isInstanceOf(OnlyTheReviewAuthorException.class);
   }
 
   @Test
