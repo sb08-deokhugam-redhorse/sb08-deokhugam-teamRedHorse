@@ -44,9 +44,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   @Transactional
   @Query(value = """
       DELETE FROM users u 
-      WHERE u.id = :id AND
-        u.is_deleted = TRUE AND
-        u.deleted_at < CURRENT_TIMESTAMP - INTERVAL '1 day'
+      WHERE u.id = :id
       """, nativeQuery = true)
   int deleteHardById(@Param("id") UUID id);
 }

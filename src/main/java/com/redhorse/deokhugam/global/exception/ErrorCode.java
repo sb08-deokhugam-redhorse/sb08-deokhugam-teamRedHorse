@@ -12,7 +12,6 @@ public enum ErrorCode {
     UNAUTHORIZED_USER("로그인이 필요한 서비스입니다.", HttpStatus.UNAUTHORIZED),
     USER_NOT_SOFT_DELETED("탈퇴 처리되지 않은 사용자입니다.", HttpStatus.BAD_REQUEST),
     HARD_DELETE_NOT_ALLOWED_YET("탈퇴 후 24시간이 지나야 영구 삭제가 가능합니다.", HttpStatus.BAD_REQUEST),
-    HARD_DELETE_FAILED("사용자 영구 삭제 처리에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // review
     REVIEW_NOT_FOUND("리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

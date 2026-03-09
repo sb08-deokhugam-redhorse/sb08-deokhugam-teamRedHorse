@@ -7,7 +7,6 @@ import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserDeletedNotYetException;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
-import com.redhorse.deokhugam.domain.user.exception.UserHardDeletedException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
@@ -157,10 +156,13 @@ public class UserServiceImpl implements UserService {
     // 삭제 처리
     int deletedCount = userRepository.deleteHardById(findUser.getId());
 
-    if (deletedCount > 0) {
-      log.info("[User-Service] 사용자 물리 삭제 완료: userId = {}", userId);
-    } else {
-        throw new UserHardDeletedException();
+    if (deletedCount == 0) {
+      // 이미 다른 경로(배치 등)에서 삭제된 경우
+      log.warn("[User-Service] 물리 삭제 대상 없음(이미 삭제됨): userId = {}", userId);
+
+      return;
     }
+
+    log.info("[User-Service] 사용자 물리 삭제 완료: userId = {}", userId);
   }
 }
