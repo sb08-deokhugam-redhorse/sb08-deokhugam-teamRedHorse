@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("OcrProvider Unit Test")
 class OcrProviderTest
 {
     @InjectMocks private OcrProvider ocrProvider;
