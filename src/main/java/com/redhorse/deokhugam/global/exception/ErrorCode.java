@@ -12,6 +12,11 @@ public enum ErrorCode {
     UNAUTHORIZED_USER("로그인이 필요한 서비스입니다.", HttpStatus.UNAUTHORIZED),
 
     // review
+    REVIEW_NOT_FOUND("리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    BOOKID_USERID_EXISTS("이미 해당 책에 리뷰를 작성했습니다.",HttpStatus.CONFLICT),
+    ONLY_THE_REVIEW_AUTHOR("리뷰 작성자만 수정/삭제할 수 있습니다.",HttpStatus.FORBIDDEN),
+    REVIEW_VALIDATION("내용과 별점을 작성해야 합니다.", HttpStatus.BAD_REQUEST),
+
 
     // book
     BOOK_NOT_FOUND("도서를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

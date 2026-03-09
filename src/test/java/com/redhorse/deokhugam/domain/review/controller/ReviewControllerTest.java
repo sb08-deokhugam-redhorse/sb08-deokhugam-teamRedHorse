@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -17,6 +17,8 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
+import com.redhorse.deokhugam.domain.review.exception.OnlyTheReviewAuthorException;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import java.time.Instant;
 import java.util.UUID;
@@ -157,14 +159,14 @@ public class ReviewControllerTest {
     ReviewUpdateRequest request = new ReviewUpdateRequest("update", 3);
 
     given(reviewService.update(eq(reviewId), eq(userId), any(ReviewUpdateRequest.class)))
-        .willThrow(new IllegalArgumentException("Review not exists"));
+        .willThrow(new ReviewNotFoundException(reviewId));
 
     //when & then
     mockMvc.perform(patch("/api/reviews/{reviewId}", reviewId)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -190,14 +192,14 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willThrow(new IllegalArgumentException("User did not write review"))
+    willThrow(new OnlyTheReviewAuthorException(userId))
         .given(reviewService).softDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}", reviewId)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId))
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -222,14 +224,14 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willThrow(new IllegalArgumentException("review not exists"))
+    willThrow(new ReviewNotFoundException(reviewId))
         .given(reviewService).hardDelete(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(delete("/api/reviews/{reviewId}/hard", reviewId)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId))
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isNotFound());
 
   }
 
@@ -260,13 +262,13 @@ public class ReviewControllerTest {
     UUID userId = UUID.randomUUID();
 
     given(reviewService.like(eq(reviewId), eq(userId)))
-        .willThrow(new IllegalArgumentException("Review not exists"));
+        .willThrow(new ReviewNotFoundException(reviewId));
 
     // when & then
     mockMvc.perform(post("/api/reviews/{reviewId}/like", reviewId)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId))
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -293,7 +295,7 @@ public class ReviewControllerTest {
         Instant.now()
     );
 
-    given(reviewService.findById(eq(reviewId),eq(userId)))
+    given(reviewService.findById(eq(reviewId), eq(userId)))
         .willReturn(request);
 
     // when & then
@@ -314,14 +316,14 @@ public class ReviewControllerTest {
     UUID reviewId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    willThrow(new IllegalArgumentException("review not exists"))
+    willThrow(new ReviewNotFoundException(reviewId))
         .given(reviewService).findById(eq(reviewId), eq(userId));
 
     // when & then
     mockMvc.perform(get("/api/reviews/{reviewId}", reviewId)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId))
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isNotFound());
 
   }
 }
