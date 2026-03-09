@@ -28,11 +28,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
@@ -57,6 +59,7 @@ public class ReviewServiceImpl implements ReviewService {
     try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
+      log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(),userId);
       return reviewMapper.toDto(review);
     } catch (DataIntegrityViolationException e) {
       throw new BookIdUserIdExistsException(bookId, userId);
@@ -86,6 +89,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     review.update(content, rating);
+    log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
     return reviewMapper.toDto(review);
   }
 
@@ -100,6 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     review.delete();
+    log.info("[Review-Service] 논리 삭제 작업 완료: reviewId = {}", reviewId);
   }
 
   @Transactional
@@ -113,6 +118,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     reviewRepository.delete(review);
+    log.info("[Review-Service] 물리 삭제 작업 완료: reviewId = {}", reviewId);
   }
 
   @Transactional
@@ -151,6 +157,7 @@ public class ReviewServiceImpl implements ReviewService {
       like = true;
     }
     ReviewLikeDto dto = new ReviewLikeDto(reviewId, userId, like);
+    log.info("[Review-Service] 좋아요 작업 완료: reviewId = {}", reviewId);
     return dto;
   }
 
@@ -196,6 +203,7 @@ public class ReviewServiceImpl implements ReviewService {
         content, nextCursor, nextAfter, content.size(), totalElements, slice.hasNext()
     );
 
+    log.info("[Review-Service] 목록 조회 작업 완료");
     return dto;
   }
 
@@ -217,6 +225,8 @@ public class ReviewServiceImpl implements ReviewService {
     boolean likedByMe = reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(reviewId,
             userId)
         .isPresent();
+
+    log.info("[Review-Service] 상세 정보 조회 작업 완료: reviewId = {}", reviewId);
     return reviewMapper.toDto(review, likedByMe);
   }
 
