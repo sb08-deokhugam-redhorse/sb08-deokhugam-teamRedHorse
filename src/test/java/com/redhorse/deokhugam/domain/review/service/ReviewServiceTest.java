@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
@@ -16,10 +17,13 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
+import com.redhorse.deokhugam.domain.review.exception.UserNotWriteReviewException;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -144,7 +148,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.create(request))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(BookNotFoundException.class);
 
   }
 
@@ -198,7 +202,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.update(reviewId, otherUserId, request))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(UserNotWriteReviewException.class);
   }
 
   @Test
@@ -224,7 +228,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.softDelete(reviewId, userId))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(ReviewNotFoundException.class);
   }
 
   @Test
@@ -252,7 +256,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.hardDelete(reviewId, otherUserId))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(UserNotWriteReviewException.class);
   }
 
   @Test
@@ -298,7 +302,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.like(reviewId, userId))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(UserNotFoundException.class);
   }
 
   @Test
@@ -330,7 +334,7 @@ public class ReviewServiceTest {
 
     // when & then
     assertThatThrownBy(() -> reviewService.findById(reviewId, userId))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(ReviewNotFoundException.class);
   }
 
 
