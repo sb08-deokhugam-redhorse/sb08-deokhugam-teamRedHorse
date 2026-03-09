@@ -7,9 +7,9 @@ public record CursorPageResponseCommentDto(
     List<CommentDto> content,
     String nextCursor,
     Instant nextAfter,
-    Integer size,
-    Long totalElements,
-    Boolean hasNext
+    int size,
+    long totalElements,
+    boolean hasNext
 ) {
 
 }
