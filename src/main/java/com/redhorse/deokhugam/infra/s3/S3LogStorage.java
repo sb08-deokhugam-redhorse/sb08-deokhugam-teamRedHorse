@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.nio.file.Path;
 
@@ -36,7 +36,7 @@ public class S3LogStorage
             );
 
             log.info("[S3-Log] S3 로그 업로드 작업 완료: key={}", key);
-        } catch (S3Exception e) {
+        } catch (SdkException e) {
             log.error("[S3-Log] S3 로그 업로드 작업 실패: Key={}", key);
             throw new S3UploadException(e);
         }
