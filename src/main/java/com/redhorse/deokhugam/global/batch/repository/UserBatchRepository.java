@@ -12,8 +12,13 @@ public interface UserBatchRepository extends JpaRepository<User, UUID> {
   @Modifying(clearAutomatically = true)
   @Query(value = """
       DELETE FROM users 
-      WHERE is_deleted = TRUE 
-      AND deleted_at < CURRENT_TIMESTAMP - INTERVAL '1 day'
+      WHERE id IN (
+        SELECT id 
+        FROM users 
+        WHERE is_deleted = TRUE 
+        AND deleted_at < CURRENT_TIMESTAMP - INTERVAL '1 day'
+        LIMIT 500
+      )
       """, nativeQuery = true)
   int deleteSoftDeletedUsersInBulk();
 }
