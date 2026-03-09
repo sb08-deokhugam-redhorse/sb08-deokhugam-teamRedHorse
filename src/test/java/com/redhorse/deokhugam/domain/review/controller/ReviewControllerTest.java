@@ -251,7 +251,7 @@ public class ReviewControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Deokhugam-Request-User-ID", userId))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.like").value(true));
+        .andExpect(jsonPath("$.liked").value(true));
   }
 
   @Test
