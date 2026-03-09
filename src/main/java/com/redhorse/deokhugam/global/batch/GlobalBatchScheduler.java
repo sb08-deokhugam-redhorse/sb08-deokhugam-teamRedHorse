@@ -21,6 +21,7 @@ public class GlobalBatchScheduler {
     // 작성한 배치 Config에서 @Bean으로 등록한 Job을 주입
     // 메서드 이름과 동일하게 변수명을 지으면 자동으로 매핑
     private final Job cleanupAlarmJob;
+    private final Job cleanupUserJob;
 
     /**
      * cron 표현식: (초 분 시 일 월 요일)
@@ -66,4 +67,20 @@ public class GlobalBatchScheduler {
             log.error("[batch] 에러 <배치 실행 중 에러 발생>: detail = {}", e.getMessage());
         }
     }
+
+  @Scheduled(cron = "0 30 1 * * *", zone = "Asia/Seoul")
+  public void runUserCleanupJob() {
+      try {
+          // batch_job_execution_params에 time컬럼으로 기록 저장됨
+          JobParameters params = new JobParametersBuilder()
+              .addLong("time", System.currentTimeMillis())
+              .toJobParameters();
+
+          jobLauncher.run(cleanupUserJob, params);
+      } catch (JobExecutionAlreadyRunningException e) {
+          log.warn("[User-batch] 이미 실행 중인 작업이 있어 이번 회차는 건너뜁니다.");
+      } catch (Exception e) {
+          log.error("[User-batch] 실행 에러: {}", e.getMessage());
+      }
+  }
 }
