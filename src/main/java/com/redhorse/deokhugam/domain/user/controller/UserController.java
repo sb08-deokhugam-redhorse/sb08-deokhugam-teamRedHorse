@@ -90,4 +90,18 @@ public class UserController {
         .status(HttpStatus.NO_CONTENT)
         .build();
   }
+
+  @DeleteMapping("/{userId}/hard")
+  public ResponseEntity deleteUserHard(
+      @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId,
+      @PathVariable UUID userId
+  ){
+    log.info("[User-Controller] 강제 삭제 요청 시작: content = userId: {}", userId);
+
+    userService.deleteUserHard(requestUserId, userId);
+
+    return  ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
 }

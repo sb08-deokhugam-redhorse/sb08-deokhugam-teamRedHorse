@@ -122,4 +122,21 @@ public class UserServiceImpl implements UserService {
 
     findUser.softDelete();
   }
+
+  @Override
+  public void deleteUserHard(UUID requestUserId, UUID userId) {
+    // 유저 체크 - Soft Delete 여부와 상관없이 유저 조회 (Native Query 사용)
+    User findUser = userRepository.findByIdIncludeDeleted(userId)
+        .orElseThrow(()-> new UserNotFoundException(userId));
+
+    // 헤더의 ID와 비교
+    if (!findUser.getId().equals(requestUserId)) {
+      throw new AuthenticationException();
+    }
+
+    // 삭제
+    userRepository.deleteHardById(findUser.getId());
+
+    log.info("[User-Service] 사용자 물리 삭제 완료: userId = {}", userId);
+  }
 }
