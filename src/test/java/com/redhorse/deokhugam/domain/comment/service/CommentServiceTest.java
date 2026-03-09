@@ -77,7 +77,8 @@ class CommentServiceTest {
       Review mockReview = mock(Review.class);
       User mockUser = mock(User.class);
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(Optional.of(mockReview));
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+          Optional.of(mockReview));
       given(userRepository.findById(eq(userId))).willReturn(Optional.of(mockUser));
       given(mockUser.getNickname()).willReturn("감자");
       given(commentRepository.save(any(Comment.class)))
@@ -105,7 +106,8 @@ class CommentServiceTest {
       UUID userId = UUID.randomUUID();
       CommentCreateRequest commentReq = new CommentCreateRequest(invalidReviewId, userId, "하이");
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(Optional.empty());
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(
+          Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> commentService.create(commentReq))
@@ -124,7 +126,8 @@ class CommentServiceTest {
       CommentCreateRequest commentReq = new CommentCreateRequest(reviewId, invalidUserId, "하이");
 
       Review mockReview = mock(Review.class);
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(Optional.of(mockReview));
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+          Optional.of(mockReview));
       given(userRepository.findById(eq(invalidUserId))).willReturn(Optional.empty());
 
       // when & then
@@ -203,7 +206,8 @@ class CommentServiceTest {
       given(userRepository.existsById(requestUserId)).willReturn(false);
 
       // when & then
-      assertThatThrownBy(() -> commentService.update(UUID.randomUUID(), requestUserId, mock(CommentUpdateRequest.class)))
+      assertThatThrownBy(() -> commentService.update(UUID.randomUUID(), requestUserId,
+          mock(CommentUpdateRequest.class)))
           .isInstanceOf(UserNotFoundException.class);
     }
   }
@@ -321,6 +325,21 @@ class CommentServiceTest {
       assertThatThrownBy(() -> commentService.softDelete(invalidCommentId, requestUserId))
           .isInstanceOf(CommentNotFoundException.class);
     }
+
+    @Test
+    @DisplayName("댓글 논리 삭제 실패 - 요청한 유저가 존재하지 않을 경우")
+    void softDelete_WhenUserNotFound_ShouldThrowException() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+      given(userRepository.existsById(requestUserId)).willReturn(false);
+
+      // when & then
+      assertThatThrownBy(() -> commentService.softDelete(commentId, requestUserId))
+          .isInstanceOf(UserNotFoundException.class);
+
+      then(commentRepository).should(never()).findByIdAndDeletedAtIsNull(any());
+    }
   }
 
   @Nested
@@ -389,6 +408,21 @@ class CommentServiceTest {
       assertThatThrownBy(() -> commentService.hardDelete(invalidCommentId, requestUserId))
           .isInstanceOf(CommentNotFoundException.class);
     }
+
+    @Test
+    @DisplayName("댓글 물리 삭제 실패 - 요청한 유저가 존재하지 않을 경우")
+    void hardDelete_WhenUserNotFound_ShouldThrowException() {
+      // given
+      UUID commentId = UUID.randomUUID();
+      UUID requestUserId = UUID.randomUUID();
+      given(userRepository.existsById(requestUserId)).willReturn(false);
+
+      // when & then
+      assertThatThrownBy(() -> commentService.hardDelete(commentId, requestUserId))
+          .isInstanceOf(UserNotFoundException.class);
+
+      then(commentRepository).should(never()).findById(any());
+    }
   }
 
   @Nested
@@ -397,7 +431,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 목록 조회 성공 - 다음 페이지가 존재하는 경우")
-    void findAll_WhenHasNextPAge_ShouldReturnResponse() {
+    void findAll_WhenHasNextPage_ShouldReturnResponse() {
       // given
       UUID reviewId = UUID.randomUUID();
       int limit = 5;
@@ -405,7 +439,8 @@ class CommentServiceTest {
 
       Review mockReview = mock(Review.class);
       given(mockReview.getId()).willReturn(reviewId);
-      given(reviewRepository.findByIdAndDeletedAtIsNull(reviewId)).willReturn(Optional.of(mockReview));
+      given(reviewRepository.findByIdAndDeletedAtIsNull(reviewId)).willReturn(
+          Optional.of(mockReview));
 
       List<Comment> mockComments = new ArrayList<>();
       for (int i = 0; i < 6; i++) {
@@ -441,7 +476,8 @@ class CommentServiceTest {
       UUID invalidReviewId = UUID.randomUUID();
       CommentPageRequest request = new CommentPageRequest(invalidReviewId, "DESC", null, null, 5);
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(Optional.empty());
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(
+          Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> commentService.findAll(request))
