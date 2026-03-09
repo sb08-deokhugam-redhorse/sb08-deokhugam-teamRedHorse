@@ -57,4 +57,13 @@ ocr:
     api-key: ${OCR_SPACE_API_KEY}
     url: https://api.ocr.space/parse/image
 
+# s3
+storage:
+  s3:
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+    expiration-duration-in-minutes: ${AWS_S3_PRESIGNED_URL_EXPIRATION_MINUTES:10}
+
 # Spring Batch

@@ -2,6 +2,7 @@ package com.redhorse.deokhugam.domain.book;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
+import com.redhorse.deokhugam.infra.s3.S3ImageStorage;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -30,6 +32,7 @@ class BookIntegrationTest
 {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
+    @MockitoBean private S3ImageStorage s3ImageStorage;
 
     private BookCreateRequest bookCreateRequest;
 
