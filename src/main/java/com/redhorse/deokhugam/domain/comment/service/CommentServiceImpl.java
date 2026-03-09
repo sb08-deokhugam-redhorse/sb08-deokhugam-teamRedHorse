@@ -92,7 +92,7 @@ public class CommentServiceImpl implements CommentService {
 
     comment.softDelete();
 
-    log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}",commentId);
+    log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
 
   @Override
@@ -107,7 +107,7 @@ public class CommentServiceImpl implements CommentService {
 
     commentRepository.delete(comment);
 
-    log.info("[Comment-Service] 물리 삭제 작업 완료: commentId={}",commentId);
+    log.info("[Comment-Service] 물리 삭제 작업 완료: commentId={}", commentId);
   }
 
   @Override
