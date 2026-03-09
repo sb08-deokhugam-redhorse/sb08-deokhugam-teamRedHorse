@@ -42,3 +42,12 @@ ocr:
   space:
     api-key: test
     url: https://test-api.ocr.space/parse/image
+
+# s3
+storage:
+  s3:
+    access-key: test-access-key
+    secret-key: test-secret-key
+    region: ap-northeast-2
+    bucket: test-bucket
+    expiration-duration-in-minutes: 10

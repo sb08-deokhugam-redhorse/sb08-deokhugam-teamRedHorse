@@ -44,7 +44,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         )
         .orderBy(
             orderByCondition(orderBy, isAsc),
-            isAsc ? review.createdAt.asc() : review.createdAt.desc()
+            isAsc ? review.createdAt.asc() : review.createdAt.desc(),
+            isAsc ? review.id.asc() : review.id.desc()
         )
         .limit(limit + 1)
         .fetch();

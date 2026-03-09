@@ -14,11 +14,11 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.List;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +48,8 @@ public class CommentServiceImpl implements CommentService {
 
     Comment savedComment = commentRepository.save(comment);
 
+    log.info("[Comment-Service] 등록 작업 완료: commentId={}", savedComment.getId());
+
     return commentMapper.toDto(savedComment);
   }
 
@@ -63,6 +65,8 @@ public class CommentServiceImpl implements CommentService {
 
     comment.update(commentUpdateRequest.content());
 
+    log.info("[Comment-Service] 수정 작업 완료: commentId={}", comment.getId());
+
     return commentMapper.toDto(comment);
   }
 
@@ -71,6 +75,8 @@ public class CommentServiceImpl implements CommentService {
   public CommentDto find(UUID commentId) {
     Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
         .orElseThrow(() -> new IllegalArgumentException("Comment Not Found"));
+
+    log.debug("[Comment-Service] 단건 조회 작업 완료: commentId={}", commentId);
 
     return commentMapper.toDto(comment);
   }
@@ -85,6 +91,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     comment.softDelete();
+
+    log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
 
   @Override
@@ -98,6 +106,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     commentRepository.delete(comment);
+
+    log.info("[Comment-Service] 물리 삭제 작업 완료: commentId={}", commentId);
   }
 
   @Override
@@ -145,6 +155,9 @@ public class CommentServiceImpl implements CommentService {
 
     long totalElements = commentRepository.countByReviewIdAndDeletedAtIsNull(
         commentPageRequest.reviewId());
+
+    log.debug("[Comment-Service] 다건 조회 작업 완료: 결과 건수={}, 전체 건수={}, 다음 커서 존재={}",
+        content.size(), totalElements, hasNext);
 
     return new CursorPageResponseCommentDto(
         content.stream().map(commentMapper::toDto).toList(),

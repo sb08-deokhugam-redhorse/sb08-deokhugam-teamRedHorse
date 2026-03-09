@@ -9,6 +9,7 @@ import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.exception.IsbnDuplicateException;
 import com.redhorse.deokhugam.domain.book.mapper.BookMapper;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
+import com.redhorse.deokhugam.infra.s3.S3ImageStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
@@ -29,6 +30,7 @@ public class BookServiceImpl implements BookService
 {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final S3ImageStorage s3ImageStorage;
 
     /**
      * 도서를 등록한다.
@@ -49,7 +51,7 @@ public class BookServiceImpl implements BookService
         }
 
         String thumbnailUrl = (thumbnailImage != null && !thumbnailImage.isEmpty())
-                ? thumbnailImage.getOriginalFilename()
+                ? s3ImageStorage.upload(thumbnailImage)
                 : null;
 
         Book book = new Book(
