@@ -1,6 +1,5 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
-import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.global.batch.repository.AlarmBatchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,11 +44,11 @@ public class AlarmsCleanupBatchConfig {
                     public void afterJob(JobExecution jobExecution) {
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
-                            log.error("[Alarm-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
+                            log.error("[Alarm-Batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
                                     jobExecution.getAllFailureExceptions());
 
                         } else if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-                            log.info("[Alarm-batch] 작업 완료: {} 건 삭제",
+                            log.info("[Alarm-Batch] 작업 완료: {} 건 삭제",
                                     jobExecution.getStepExecutions().iterator().next().getWriteCount());
                         }
                     }

@@ -18,7 +18,7 @@ public class PowerUser extends BaseEntity {
     private PeriodType period;
 
     @Column(name = "ranking", nullable = false)
-    private Integer ranking;
+    private Long ranking;
 
     @Column(name = "score", nullable = false)
     private Double score = 0.0;
@@ -27,12 +27,22 @@ public class PowerUser extends BaseEntity {
     private Double reviewScoreSum = 0.0;
 
     @Column(name = "like_count", nullable = false)
-    private Integer likeCount = 0;
+    private Long likeCount = 0l;
 
     @Column(name = "comment_count", nullable = false)
-    private Integer commentCount = 0;
+    private Long commentCount = 0l;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_power_users_users"))
     private User user;
+
+    public PowerUser(PeriodType period, Long ranking, Double score, Double reviewScoreSum, Long likeCount, Long commentCount, User user) {
+        this.period = period;
+        this.ranking = ranking;
+        this.score = score;
+        this.reviewScoreSum = reviewScoreSum;
+        this.likeCount = likeCount;
+        this.commentCount = commentCount;
+        this.user = user;
+    }
 }

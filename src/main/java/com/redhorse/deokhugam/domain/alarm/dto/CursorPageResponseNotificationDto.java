@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record CursorPageResponseNotificationDto(
-        List<NotificationDto> contents,
+        List<NotificationDto> content,
         String nextCursor,
         Instant nextAfter,
         int size,
