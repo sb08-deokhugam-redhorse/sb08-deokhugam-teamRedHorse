@@ -2,7 +2,9 @@ package com.redhorse.deokhugam.domain.comment.service;
 
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
+import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
 import java.util.UUID;
 
 public interface CommentService {
@@ -17,6 +19,7 @@ public interface CommentService {
   CommentDto find(UUID commentId);
 
   // 댓글 목록 조회
+  CursorPageResponseCommentDto findAll(CommentPageRequest commentPageRequest);
 
   // 댓글 논리 삭제
   void softDelete(UUID commentId, UUID requestUserId);
