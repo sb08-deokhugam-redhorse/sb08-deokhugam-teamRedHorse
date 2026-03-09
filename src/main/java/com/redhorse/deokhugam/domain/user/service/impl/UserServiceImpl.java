@@ -128,6 +128,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void deleteUserHard(UUID requestUserId, UUID userId) {
     // 유저 체크 - Soft Delete 여부와 상관없이 유저 조회 (Native Query 사용)
     User findUser = userRepository.findByIdIncludeDeleted(userId)
