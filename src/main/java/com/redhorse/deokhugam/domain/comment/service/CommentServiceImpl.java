@@ -61,6 +61,8 @@ public class CommentServiceImpl implements CommentService {
   @Override
   public CommentDto update(UUID commentId, UUID requestUserId,
       CommentUpdateRequest commentUpdateRequest) {
+    validateRequestUser(requestUserId);
+
     Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
         .orElseThrow(() -> new CommentNotFoundException(commentId));
 
@@ -88,6 +90,8 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public void softDelete(UUID commentId, UUID requestUserId) {
+    validateRequestUser(requestUserId);
+
     Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
         .orElseThrow(() -> new CommentNotFoundException(commentId));
 
@@ -102,6 +106,8 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public void hardDelete(UUID commentId, UUID requestUserId) {
+    validateRequestUser(requestUserId);
+
     // 물리 삭제인 경우 논리 삭제된 댓글까지 지울 수 있어야 함.
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> new CommentNotFoundException(commentId));
@@ -172,5 +178,11 @@ public class CommentServiceImpl implements CommentService {
         totalElements,
         hasNext
     );
+  }
+
+  private void validateRequestUser(UUID requestUserId) {
+    if (!userRepository.existsById(requestUserId)) {
+      throw new UserNotFoundException(requestUserId);
+    }
   }
 }

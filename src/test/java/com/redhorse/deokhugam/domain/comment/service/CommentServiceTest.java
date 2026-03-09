@@ -148,6 +148,8 @@ class CommentServiceTest {
       UUID requestUserId = UUID.randomUUID();
       CommentUpdateRequest commentReq = new CommentUpdateRequest("댓글 수정 테스트");
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
+
       User mockUser = mock(User.class);
       given(mockUser.getId()).willReturn(requestUserId);
 
@@ -176,6 +178,8 @@ class CommentServiceTest {
       UUID authorId = UUID.randomUUID();
       CommentUpdateRequest commentReq = new CommentUpdateRequest("댓글 수정 테스트");
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
+
       User mockAuthor = mock(User.class);
       given(mockAuthor.getId()).willReturn(authorId);
 
@@ -189,6 +193,18 @@ class CommentServiceTest {
           .isInstanceOf(CommentUpdateNotAllowedException.class);
 
       verify(mockComment, never()).update(anyString());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 요청한 유저가 존재하지 않을 경우")
+    void update_WhenUserNotFound_ShouldThrowException() {
+      // given
+      UUID requestUserId = UUID.randomUUID();
+      given(userRepository.existsById(requestUserId)).willReturn(false);
+
+      // when & then
+      assertThatThrownBy(() -> commentService.update(UUID.randomUUID(), requestUserId, mock(CommentUpdateRequest.class)))
+          .isInstanceOf(UserNotFoundException.class);
     }
   }
 
@@ -247,6 +263,8 @@ class CommentServiceTest {
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
+
       User mockUser = mock(User.class);
       given(mockUser.getId()).willReturn(requestUserId);
 
@@ -271,6 +289,8 @@ class CommentServiceTest {
       UUID requestUserId = UUID.randomUUID();
       UUID authorId = UUID.randomUUID();
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
+
       User mockAuthor = mock(User.class);
       given(mockAuthor.getId()).willReturn(authorId);
 
@@ -293,6 +313,7 @@ class CommentServiceTest {
       UUID invalidCommentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
       given(commentRepository.findByIdAndDeletedAtIsNull(eq(invalidCommentId))).willReturn(
           Optional.empty());
 
@@ -312,6 +333,8 @@ class CommentServiceTest {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
+
+      given(userRepository.existsById(requestUserId)).willReturn(true);
 
       User mockUser = mock(User.class);
       given(mockUser.getId()).willReturn(requestUserId);
@@ -336,6 +359,8 @@ class CommentServiceTest {
       UUID requestUserId = UUID.randomUUID();
       UUID authorId = UUID.randomUUID();
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
+
       User mockAuthor = mock(User.class);
       given(mockAuthor.getId()).willReturn(authorId);
 
@@ -357,6 +382,7 @@ class CommentServiceTest {
       UUID invalidCommentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
 
+      given(userRepository.existsById(requestUserId)).willReturn(true);
       given(commentRepository.findById(eq(invalidCommentId))).willReturn(Optional.empty());
 
       // when & then
