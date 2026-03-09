@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -51,7 +52,7 @@ public class S3ImageStorage
                             .build(),
                     RequestBody.fromBytes(file.getBytes())
             );
-        } catch (IOException e) {
+        } catch (IOException | SdkException e) {
             throw new S3UploadException(e);
         }
 
@@ -68,12 +69,17 @@ public class S3ImageStorage
     public String generatePresignedUrl(String key) {
         if (key == null || key.isBlank()) return null;
 
-        GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(expirationDurationInMinutes))
-                .getObjectRequest(r -> r.bucket(bucket).key(key))
-                .build();
+        try {
+            GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofMinutes(expirationDurationInMinutes))
+                    .getObjectRequest(r -> r.bucket(bucket).key(key))
+                    .build();
 
-        return s3Presigner.presignGetObject(getObjectPresignRequest).url().toString();
+            return s3Presigner.presignGetObject(getObjectPresignRequest).url().toString();
+        } catch (Exception e) {
+            log.warn("[S3-Api] Presigned URL 발급 실패: key={}", key, e);
+            return null;
+        }
     }
 
 

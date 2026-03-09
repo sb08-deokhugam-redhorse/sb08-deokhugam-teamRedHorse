@@ -32,7 +32,7 @@ class BookControllerTest
 {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
-    @MockitoBean private S3ImageStorage s3ImageStorage;;
+    @MockitoBean private S3ImageStorage s3ImageStorage;
 
     private BookCreateRequest bookCreateRequest;
     @BeforeEach

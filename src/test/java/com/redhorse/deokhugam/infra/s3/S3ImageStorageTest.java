@@ -11,14 +11,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
-import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -87,16 +89,20 @@ class S3ImageStorageTest
     @DisplayName("Presigned URL 테스트")
     class GeneratePresignedUrl {
         @Test
-        @DisplayName("성공 - S3 키로 presigned URL 발급을 요청한다")
-        void success_requestsPresignedUrl() {
+        @DisplayName("성공 - S3로 Presigned URL을 반환한다.")
+        void success_requestsPresignedUrl() throws MalformedURLException {
+            // given
+            PresignedGetObjectRequest presignedRequest = mock(PresignedGetObjectRequest.class);
+
+            given(presignedRequest.url()).willReturn(URI.create("https://s3.amazonaws.com/test").toURL());
             given(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class)))
-                    .willThrow(SdkClientException.create("not needed"));
+                    .willReturn(presignedRequest);
 
-            assertThatThrownBy(() -> s3ImageStorage.generatePresignedUrl("thumbnail/test.jpg"))
-                    .isInstanceOf(SdkClientException.class);
+            String url = s3ImageStorage.generatePresignedUrl("thumbnail/test.jpg");
 
-            verify(s3Presigner).presignGetObject(any(GetObjectPresignRequest.class));
+            assertThat(url).isEqualTo("https://s3.amazonaws.com/test");
         }
+
         @Test
         @DisplayName("성공 - key가 null이면 null을 반환한다")
         void success_withNullKey_returnsNull() {
