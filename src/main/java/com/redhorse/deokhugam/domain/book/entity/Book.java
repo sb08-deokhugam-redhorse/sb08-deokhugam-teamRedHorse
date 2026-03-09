@@ -39,8 +39,8 @@ public class Book extends BaseUpdatableEntity
     @Column(name = "isbn", length = 13, unique = true)
     private String isbn;
 
-    @Column(name = "thumbnail_url", length = 255)
-    private String thumbnailUrl;
+    @Column(name = "thumbnail_key", length = 100)
+    private String thumbnailKey;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
