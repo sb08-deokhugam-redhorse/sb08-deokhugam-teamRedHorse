@@ -3,6 +3,7 @@ package com.redhorse.deokhugam.domain.review.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.doNothing;
@@ -269,6 +270,8 @@ public class ReviewControllerTest {
             .header("Deokhugam-Request-User-ID", userId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.liked").value(true));
+
+    then(alarmService).should().createLikeAlarm(request);
   }
 
   @Test
