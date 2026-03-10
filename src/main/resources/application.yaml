@@ -16,6 +16,18 @@ spring:
       max-file-size: 10MB
       max-request-size: 30MB
 
+  flyway:
+    enabled: true
+    locations:
+      - classpath:db/migration # 스키마 저장 위치 - 관례
+
+  batch:
+    jdbc:
+      # 앱 시작 시 스프링 배치가 메타데이터 테이블을 자동으로 생성하도록 설정
+      initialize-schema: always
+    job:
+      enabled: false # 다수 Job 빈 존재로 인한 기동 오류 방지 - 스케줄러(`@Scheduled`)로 별도 실행
+
 # Common Logging
 logging:
   level:
@@ -35,5 +47,25 @@ management:
       enabled: true
 
 # Naver API
+naver:
+  api:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+    url: https://openapi.naver.com/v1/search/book_adv.json?d_isbn=
+
+# OCR Space API
+ocr:
+  space:
+    api-key: ${OCR_SPACE_API_KEY}
+    url: https://api.ocr.space/parse/image
+
+# s3
+storage:
+  s3:
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+    expiration-duration-in-minutes: ${AWS_S3_PRESIGNED_URL_EXPIRATION_MINUTES:10}
 
 # Spring Batch

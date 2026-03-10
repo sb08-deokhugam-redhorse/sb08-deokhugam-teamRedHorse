@@ -1,0 +1,53 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.springframework.test: debug
+
+# 인증 인터셉터
+auth:
+  interceptor:
+    enabled: false
+
+# NAVER
+naver:
+  api:
+    client-id: test
+    client-secret: test
+    url: http://localhost
+
+# ocr
+ocr:
+  space:
+    api-key: test
+    url: https://test-api.ocr.space/parse/image
+
+# s3
+storage:
+  s3:
+    access-key: test-access-key
+    secret-key: test-secret-key
+    region: ap-northeast-2
+    bucket: test-bucket
+    expiration-duration-in-minutes: 10

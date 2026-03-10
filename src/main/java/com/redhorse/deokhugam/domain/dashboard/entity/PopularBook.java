@@ -12,8 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "popular_books")
 @Entity
-public class PopularBook extends BaseEntity
-{
+public class PopularBook extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "period", length = 20, nullable = false)
     private PeriodType period = PeriodType.DAILY;
@@ -22,7 +21,7 @@ public class PopularBook extends BaseEntity
     private Double rating = 0.0;
 
     @Column(name = "score", nullable = false)
-    private Long score = 0L;
+    private double score = 0;
 
     @Column(name = "review_count", nullable = false)
     private Long reviewCount = 0L;
@@ -34,7 +33,7 @@ public class PopularBook extends BaseEntity
     @JoinColumn(name = "book_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_popular_books_books"))
     private Book book;
 
-    public PopularBook(PeriodType period, Double rating, Long score, Long reviewCount, Long ranking, Book book) {
+    public PopularBook(PeriodType period, Double rating, double score, Long reviewCount, Long ranking, Book book) {
         this.period = period;
         this.rating = rating;
         this.score = score;
@@ -42,4 +41,5 @@ public class PopularBook extends BaseEntity
         this.ranking = ranking;
         this.book = book;
     }
+
 }
