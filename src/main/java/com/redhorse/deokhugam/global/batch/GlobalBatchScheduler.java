@@ -24,13 +24,14 @@ public class GlobalBatchScheduler {
     private final Job reivewRankingBatchJob;
     private final Job bookRankingBatchJob;
     private final Job userRankingBatchJob;
+    private final Job cleanupUserJob;
 
     /**
      * cron 표현식: (초 분 시 일 월 요일)
-     * 첫 번째 *: 초
-     * 두 번째 *: 분
-     * 세 번째 *: 시 (24시 표기)
-     * 네 번째 *: 일
+     *  첫 번째 *: 초
+     *  두 번째 *: 분
+     *  세 번째 *: 시 (24시 표기)
+     *  네 번째 *: 일
      * 다섯번째 *: 월
      * 여섯번째 *: 요일
      */
@@ -40,15 +41,16 @@ public class GlobalBatchScheduler {
     public void runDeleteAlarmJob() {
         log.info("[Alarm-Batch] 작업 시작: 오전 1시 예약된 작업 진행");
 
+        // thread Pool이 아니면 순차적으로 실행됨
         runJob(cleanupAlarmJob);
+        runJob(cleanupUserJob);
     }
 
     // 매일 오전 2시에 동작하게
-    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
     public void runDailyDashboardJob() {
         log.info("[DoashDoard-Batch] 작업 시작: 오전 2시 예약된 작업 진행");
 
-        // thread Pool이 아니면 순차적으로 실행됨
         runJob(reivewRankingBatchJob);
         runJob(bookRankingBatchJob);
         runJob(userRankingBatchJob);
@@ -61,6 +63,7 @@ public class GlobalBatchScheduler {
                     .addLong("time", System.currentTimeMillis())
                     .toJobParameters();
 
+            // thread Pool이 아니면 순차적으로 실행됨
             log.info("[{}] 배치 시작", job.getName());
             jobLauncher.run(job, params);
 
