@@ -166,7 +166,7 @@
 <br/>
 
 ## 🌐 배포 URL
-[![discodeit](https://img.shields.io/badge/deokhugam-0288D1?style=for-the-badge&logo=bookstack&logoColor=white)](https://example.com)
+[![deokhugam](https://img.shields.io/badge/deokhugam-0288D1?style=for-the-badge&logo=bookstack&logoColor=white)](https://naver.com)
 
 
 ## 프로젝트 구조
