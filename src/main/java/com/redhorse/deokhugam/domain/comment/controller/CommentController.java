@@ -41,7 +41,11 @@ public class CommentController {
         commentCreateRequest.reviewId(), commentCreateRequest.userId());
 
     CommentDto comment = commentService.create(commentCreateRequest);
-    alarmService.createCommentAlarm(comment);
+    try {
+      alarmService.createCommentAlarm(comment);
+    } catch (Exception e) {
+      log.warn("[Comment-Controller] 알림 생성 실패: commentId={}", comment.id(), e);
+    }
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
