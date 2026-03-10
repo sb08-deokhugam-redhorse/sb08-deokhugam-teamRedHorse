@@ -97,7 +97,7 @@ class AlarmServiceGetListTest {
 
         // then
         assertAll(
-                () -> assertTrue(result.contents().isEmpty()),
+                () -> assertTrue(result.content().isEmpty()),
                 () -> assertNull(result.nextCursor()),
                 () -> assertNull(result.nextAfter()),
                 () -> assertFalse(result.hasNext()),
