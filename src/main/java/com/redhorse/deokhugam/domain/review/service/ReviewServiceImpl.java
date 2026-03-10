@@ -187,10 +187,15 @@ public class ReviewServiceImpl implements ReviewService {
             .collect(Collectors.toSet());
 
     // 댓글 조회
-    List<Object[]> commentCounts = commentRepository.commentCount(reviewIds);
-    Map<UUID, Long> commentCountsMap = commentCounts.stream()
-        .collect(Collectors.toMap(row -> (UUID) row[0],
-            row -> ((Long) row[1])));
+    Map<UUID, Long> commentCountsMap;
+    if (reviewIds.isEmpty()) {
+      commentCountsMap = Collections.emptyMap();
+    } else {
+      List<Object[]> commentCounts = commentRepository.commentCount(reviewIds);
+      commentCountsMap = commentCounts.stream()
+          .collect(Collectors.toMap(row -> (UUID) row[0],
+              row -> ((Long) row[1])));
+    }
 
     // 리뷰 좋아요 합치기
     List<ReviewDto> content = reviews
