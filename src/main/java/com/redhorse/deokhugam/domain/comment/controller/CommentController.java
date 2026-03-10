@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.comment.controller;
 
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
 
   private final CommentService commentService;
+  private final AlarmService alarmService;
 
   @PostMapping
   public ResponseEntity<CommentDto> create(
@@ -39,6 +41,7 @@ public class CommentController {
         commentCreateRequest.reviewId(), commentCreateRequest.userId());
 
     CommentDto comment = commentService.create(commentCreateRequest);
+    alarmService.createCommentAlarm(comment);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)

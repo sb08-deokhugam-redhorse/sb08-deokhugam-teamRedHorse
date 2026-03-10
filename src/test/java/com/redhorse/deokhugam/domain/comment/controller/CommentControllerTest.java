@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
@@ -51,6 +54,9 @@ class CommentControllerTest {
   @MockitoBean
   private CommentService commentService;
 
+  @MockitoBean
+  private AlarmService alarmService;
+
   @Nested
   @DisplayName("댓글 등록 관련 테스트")
   class createCommentsTests {
@@ -77,6 +83,8 @@ class CommentControllerTest {
           .andExpect(status().isCreated())
           .andExpect(jsonPath("$.content").value("하이루"))
           .andExpect(jsonPath("$.userNickname").value("감자"));
+
+      verify(alarmService, times(1)).createCommentAlarm(any(CommentDto.class));
     }
 
     @Test
