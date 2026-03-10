@@ -1,6 +1,8 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
 
+import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.UserBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PowerUser;
 import com.redhorse.deokhugam.domain.dashboard.repository.PowerUserRepository;
@@ -16,10 +18,12 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
+import org.springframework.batch.item.support.builder.CompositeItemWriterBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
@@ -44,6 +48,8 @@ public class PowerUserBatchConfig {
     private final UserBatchRepository userBatchRepository;
     private final PowerUserRepository powerUserRepository;
     private final UserRepository userRepository;
+    private final AlarmService alarmService;
+    private final AlarmMapper alarmMapper;
 
     @Bean
     public Job userRankingBatchJob() {
@@ -167,10 +173,20 @@ public class PowerUserBatchConfig {
     }
 
     @Bean
-    public RepositoryItemWriter<PowerUser> userWriter() {
-        return new RepositoryItemWriterBuilder<PowerUser>()
+    public ItemWriter<PowerUser> userWriter() {
+        RepositoryItemWriter<PowerUser> repositoryItemWriter =
+                new RepositoryItemWriterBuilder<PowerUser>()
                 .repository(powerUserRepository)
                 .methodName("save")
+                .build();
+
+        ItemWriter<PowerUser> serviceCallWriter = chunk ->
+            chunk.getItems().stream()
+                    .filter(item -> item.getRanking() <= 10)
+                    .forEach(item -> alarmService.createPowerUserAlarm(alarmMapper.toPowerUserDto(item)));
+
+        return new CompositeItemWriterBuilder<PowerUser>()
+                .delegates(repositoryItemWriter, serviceCallWriter)
                 .build();
     }
 

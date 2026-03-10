@@ -56,6 +56,15 @@ public class GlobalBatchScheduler {
         runJob(cleanupUserJob);
     }
 
+
+    // 매일 오전 2시에 동작하게, 테스트 동안에는 매분
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    public void runTestJob() {
+        log.info("[DoashDoard-Batch] 테스트용");
+
+        runJob(cleanupUserJob);
+    }
+
     private void runJob(Job job) {
         try {
             // 실행 시점마다 고유한 파라미터 생성
