@@ -88,6 +88,33 @@ class CommentControllerTest {
     }
 
     @Test
+    @DisplayName("댓글 등록 성공 - 알림 서비스에서 예외가 발생해도 댓글 생성은 유지되어야 한다.")
+    void create_WhenAlarmServiceFails_ShouldStillReturnCreated() throws Exception {
+      // given
+      UUID reviewId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+      CommentCreateRequest request = new CommentCreateRequest(reviewId, userId, "알람실패테스트");
+      CommentDto responseDto = new CommentDto(
+          UUID.randomUUID(), reviewId, userId, "감자", "알람실패테스트",
+          Instant.now(), Instant.now()
+      );
+
+      given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);
+
+      doThrow(new RuntimeException("알람 서버 장애"))
+          .when(alarmService).createCommentAlarm(any(CommentDto.class));
+
+      // when & then
+      mockMvc.perform(post("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.content").value("알람실패테스트"));
+
+      verify(alarmService, times(1)).createCommentAlarm(any(CommentDto.class));
+    }
+
+    @Test
     @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 404 Not Found를 반환한다.")
     void create_WhenReviewNotFound_ShouldThrowException() throws Exception {
       // given
