@@ -188,15 +188,15 @@ public class ReviewServiceImpl implements ReviewService {
 
     // 댓글 조회
     List<Object[]> commentCounts = commentRepository.commentCount(reviewIds);
-    Map<UUID, Integer> commentCountsMap = commentCounts.stream()
+    Map<UUID, Long> commentCountsMap = commentCounts.stream()
         .collect(Collectors.toMap(row -> (UUID) row[0],
-            row -> ((Long) row[1]).intValue()));
+            row -> ((Long) row[1])));
 
     // 리뷰 좋아요 합치기
     List<ReviewDto> content = reviews
         .stream()
         .map(review -> reviewMapper.toDto(review, likedReviewIds.contains(review.getId()),
-            commentCountsMap.getOrDefault(review.getId(), 0)))
+            commentCountsMap.getOrDefault(review.getId(), 0L)))
         .toList();
 
     String nextCursor = null;
@@ -240,7 +240,7 @@ public class ReviewServiceImpl implements ReviewService {
     long commentCount = commentRepository.countByReviewIdAndDeletedAtIsNull(reviewId);
 
     log.info("[Review-Service] 상세 정보 조회 작업 완료: reviewId = {}", reviewId);
-    return reviewMapper.toDto(review, likedByMe, (int) commentCount);
+    return reviewMapper.toDto(review, likedByMe, commentCount);
   }
 
 }
