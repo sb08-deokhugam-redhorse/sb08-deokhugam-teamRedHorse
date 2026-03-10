@@ -56,9 +56,6 @@ public class ReviewServiceTest {
   private UserRepository userRepository;
 
   @Mock
-  private CommentRepository commentRepository;
-
-  @Mock
   private ReviewMapper reviewMapper;
 
   @InjectMocks
@@ -319,9 +316,7 @@ public class ReviewServiceTest {
         .willReturn(Optional.of(user));
     given(reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(eq(reviewId), eq(userId)))
         .willReturn(Optional.of(mock(ReviewLike.class)));
-    given(commentRepository.countByReviewIdAndDeletedAtIsNull(reviewId))
-        .willReturn(0L);
-    given(reviewMapper.toDto(eq(review), eq(true),eq(0L)))
+    given(reviewMapper.toDto(eq(review), eq(true)))
         .willReturn(reviewDto);
 
     // when
