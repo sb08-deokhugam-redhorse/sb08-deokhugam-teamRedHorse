@@ -136,7 +136,6 @@ class BookServiceImplTest
     @Nested
     @DisplayName("도서 조회")
     class Read {
-
         @Test
         @DisplayName("성공 - 키워드 없이 전체 도서 목록을 반환한다")
         void success_withNoKeyword_returnsAllBooks() {
@@ -274,7 +273,6 @@ class BookServiceImplTest
     @Nested
     @DisplayName("hardDelete 메서드")
     class HardDelete {
-
         @Test
         @DisplayName("성공 - 도서를 물리 삭제한다")
         void success_hardDelete() {

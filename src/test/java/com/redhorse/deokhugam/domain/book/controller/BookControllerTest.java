@@ -366,6 +366,8 @@ class BookControllerTest
             mockMvc.perform(delete("/api/books/{bookId}/hard", bookId)
                             .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isNoContent());
+
+            then(bookService).should().hardDelete(bookId);
         }
 
         @Test
@@ -378,6 +380,8 @@ class BookControllerTest
             mockMvc.perform(delete("/api/books/{bookId}/hard", bookId)
                             .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isNotFound());
+
+            then(bookService).should().hardDelete(bookId);
         }
     }
 }
