@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:17
     container_name: postgres
+    restart: unless-stopped
 
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -9,12 +10,69 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
       TZ: "Asia/Seoul"
+
     ports:
       - "${POSTGRES_PORT}:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      # 스키마 실행은 flyway가 실행하도록 하기 위해 주석
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    networks:
+      - deokhugam-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: deokhugam:latest
+    container_name: deokhugam
+    restart: unless-stopped
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      SERVER_PORT: ${SERVER_PORT}
+
+      TZ: "Asia/Seoul"
+
+    ports:
+      - "${APP_PORT}:${SERVER_PORT}"
+
+    env_file:
+      - .env
+
+    volumes:
+      - app_logs:/app/.logs
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${SERVER_PORT}/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - deokhugam-network
 
 volumes:
   postgres_data:
+  app_logs:
+
+networks:
+  deokhugam-network:
