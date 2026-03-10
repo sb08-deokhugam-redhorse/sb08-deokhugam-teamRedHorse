@@ -183,7 +183,6 @@ class BookControllerTest
     @Nested
     @DisplayName("GET /api/books/{bookId}")
     class GetBookById {
-
         @Test
         @DisplayName("성공 - 유효한 bookId로 조회하면 200 OK를 반환한다")
         void success_withValidBookId_returns200() throws Exception {
@@ -214,7 +213,6 @@ class BookControllerTest
     @Nested
     @DisplayName("GET /api/books")
     class GetAllBooks {
-
         @Test
         @DisplayName("성공 - 파라미터 없이 조회하면 200 OK를 반환한다")
         void success_withNoParams_returns200() throws Exception {
@@ -330,7 +328,6 @@ class BookControllerTest
     @Nested
     @DisplayName("도서 삭제(논리) DELETE /api/books/{bookId}")
     class SoftDeleteBook {
-
         @Test
         @DisplayName("성공 - 도서를 논리 삭제하면 204 No Content를 반환한다")
         void success_softDelete_returns204() throws Exception {
@@ -359,7 +356,6 @@ class BookControllerTest
     @Nested
     @DisplayName("도서 삭제(물리) DELETE /api/books/{bookId}/hard")
     class HardDeleteBook {
-
         @Test
         @DisplayName("성공 - 도서를 물리 삭제하면 204 No Content를 반환한다")
         void success_hardDelete_returns204() throws Exception {

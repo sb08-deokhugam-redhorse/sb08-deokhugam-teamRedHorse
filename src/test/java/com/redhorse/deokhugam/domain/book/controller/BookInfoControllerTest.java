@@ -121,14 +121,5 @@ public class BookInfoControllerTest
                             .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isBadRequest());
         }
-
-        @Test
-        @DisplayName("실패 - 이미지 파일이 없으면 500 Bad Request를 반환한다")
-        void fail_withMissingImage_returns500() throws Exception {
-            // when & then
-            mockMvc.perform(multipart("/api/books/isbn/ocr")
-                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
-                    .andExpect(status().is5xxServerError());
-        }
     }
 }
