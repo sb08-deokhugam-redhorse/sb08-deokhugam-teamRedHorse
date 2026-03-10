@@ -17,8 +17,8 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
-import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.domain.review.exception.OnlyTheReviewAuthorException;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.domain.review.service.ReviewService;
 import java.time.Instant;
 import java.util.UUID;
@@ -66,8 +66,8 @@ public class ReviewControllerTest {
         "testName",
         "테스트",
         5,
-        0,
-        0,
+        0L,
+        0L,
         false,
         Instant.now(),
         Instant.now()
@@ -128,8 +128,8 @@ public class ReviewControllerTest {
         "testName",
         "update",
         3,
-        0,
-        0,
+        0L,
+        0L,
         false,
         Instant.now(),
         Instant.now()
@@ -288,8 +288,8 @@ public class ReviewControllerTest {
         "testName",
         "content",
         3,
-        0,
-        0,
+        0L,
+        0L,
         false,
         Instant.now(),
         Instant.now()

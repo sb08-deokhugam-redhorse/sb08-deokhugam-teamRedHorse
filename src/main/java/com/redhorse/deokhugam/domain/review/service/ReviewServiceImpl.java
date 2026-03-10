@@ -3,6 +3,7 @@ package com.redhorse.deokhugam.domain.review.service;
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
+import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
 import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
@@ -24,6 +25,7 @@ import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -45,6 +47,7 @@ public class ReviewServiceImpl implements ReviewService {
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
   private final ReviewMapper reviewMapper;
+  private final CommentRepository commentRepository;
 
   @Transactional
   @Override
@@ -183,10 +186,22 @@ public class ReviewServiceImpl implements ReviewService {
             .map(like -> like.getReview().getId())
             .collect(Collectors.toSet());
 
+    // 댓글 조회
+    Map<UUID, Long> commentCountsMap;
+    if (reviewIds.isEmpty()) {
+      commentCountsMap = Collections.emptyMap();
+    } else {
+      List<Object[]> commentCounts = commentRepository.commentCount(reviewIds);
+      commentCountsMap = commentCounts.stream()
+          .collect(Collectors.toMap(row -> (UUID) row[0],
+              row -> ((Long) row[1])));
+    }
+
     // 리뷰 좋아요 합치기
     List<ReviewDto> content = reviews
         .stream()
-        .map(review -> reviewMapper.toDto(review, likedReviewIds.contains(review.getId())))
+        .map(review -> reviewMapper.toDto(review, likedReviewIds.contains(review.getId()),
+            commentCountsMap.getOrDefault(review.getId(), 0L)))
         .toList();
 
     String nextCursor = null;
@@ -220,15 +235,17 @@ public class ReviewServiceImpl implements ReviewService {
   public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-    User user = userRepository.findById(userId)
+    userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
 
     boolean likedByMe = reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(reviewId,
             userId)
         .isPresent();
 
+    long commentCount = commentRepository.countByReviewIdAndDeletedAtIsNull(reviewId);
+
     log.info("[Review-Service] 상세 정보 조회 작업 완료: reviewId = {}", reviewId);
-    return reviewMapper.toDto(review, likedByMe);
+    return reviewMapper.toDto(review, likedByMe, commentCount);
   }
 
 }

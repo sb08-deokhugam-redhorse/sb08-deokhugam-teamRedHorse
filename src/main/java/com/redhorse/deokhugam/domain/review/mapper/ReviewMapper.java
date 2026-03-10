@@ -22,5 +22,6 @@ public interface ReviewMapper {
   @Mapping(source = "review.user.id", target = "userId")
   @Mapping(source = "review.user.nickname", target = "userNickname")
   @Mapping(source = "likedByMe", target = "likedByMe")
-  ReviewDto toDto(Review review, boolean likedByMe);
+  @Mapping(source="commentCount",target="commentCount")
+  ReviewDto toDto(Review review, boolean likedByMe, long commentCount);
 }
