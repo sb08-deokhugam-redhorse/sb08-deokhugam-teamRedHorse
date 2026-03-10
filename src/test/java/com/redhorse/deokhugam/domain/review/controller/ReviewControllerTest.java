@@ -3,8 +3,10 @@ package com.redhorse.deokhugam.domain.review.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,6 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -43,6 +47,9 @@ public class ReviewControllerTest {
 
   @MockitoBean
   private ReviewService reviewService;
+
+  @MockitoBean
+  private AlarmService alarmService;
 
   @Test
   @DisplayName("리뷰 등록 성공 테스트")
@@ -243,8 +250,19 @@ public class ReviewControllerTest {
     UUID userId = UUID.randomUUID();
 
     ReviewLikeDto request = new ReviewLikeDto(reviewId, userId, true);
+    NotificationDto dto = new NotificationDto(
+        UUID.randomUUID(),
+        userId,
+        reviewId,
+        "좋은 리뷰에요",
+        "좋아요 알림",
+        false,
+        Instant.now(),
+        Instant.now()
+    );
 
     given(reviewService.like(reviewId, userId)).willReturn(request);
+    given(alarmService.createLikeAlarm(request)).willReturn(dto);
 
     // when & then
     mockMvc.perform(post("/api/reviews/{reviewId}/like", reviewId)
@@ -252,6 +270,8 @@ public class ReviewControllerTest {
             .header("Deokhugam-Request-User-ID", userId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.liked").value(true));
+
+    then(alarmService).should().createLikeAlarm(request);
   }
 
   @Test
