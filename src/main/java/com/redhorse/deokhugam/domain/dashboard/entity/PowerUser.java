@@ -27,10 +27,10 @@ public class PowerUser extends BaseEntity {
     private Double reviewScoreSum = 0.0;
 
     @Column(name = "like_count", nullable = false)
-    private Long likeCount = 0l;
+    private Long likeCount = 0L;
 
     @Column(name = "comment_count", nullable = false)
-    private Long commentCount = 0l;
+    private Long commentCount = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_power_users_users"))

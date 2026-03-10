@@ -1,9 +1,9 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
 
-import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReivewBatchDto;
+import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReviewBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
-import com.redhorse.deokhugam.domain.dashboard.repository.PopularReivewRepository;
+import com.redhorse.deokhugam.domain.dashboard.repository.PopularReviewRepository;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.global.batch.repository.ReviewBatchRepository;
 import com.redhorse.deokhugam.global.entity.PeriodType;
@@ -41,7 +41,7 @@ public class PopularReivewBatchConfig {
     private final PlatformTransactionManager transactionManager;
 
     private final ReviewBatchRepository reviewBatchRepository;
-    private final PopularReivewRepository popularReivewRepository;
+    private final PopularReviewRepository PopularReviewRepository;
 
     @Bean
     public Job reivewRankingBatchJob() {
@@ -70,7 +70,7 @@ public class PopularReivewBatchConfig {
     @Bean
     public Step reivewRankingBatchDailyStep() {
         return new StepBuilder("dailyStep", jobRepository)
-                .<ReivewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
                 .reader(reivewRepositoryDailyRead())
                 .processor(reivewItemProcessor())
                 .writer(reivewWriter())
@@ -80,7 +80,7 @@ public class PopularReivewBatchConfig {
     @Bean
     public Step reivewRankingBatchWeeklyStep() {
         return new StepBuilder("weeklyStep", jobRepository)
-                .<ReivewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
                 .reader(reivewRepositoryWeelyRead())
                 .processor(reivewItemProcessor())
                 .writer(reivewWriter())
@@ -90,7 +90,7 @@ public class PopularReivewBatchConfig {
     @Bean
     public Step reivewRankingBatchMothlyStep() {
         return new StepBuilder("mothlyStep", jobRepository)
-                .<ReivewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
                 .reader(reivewRepositoryMonthlyRead())
                 .processor(reivewItemProcessor())
                 .writer(reivewWriter())
@@ -100,7 +100,7 @@ public class PopularReivewBatchConfig {
     @Bean
     public Step reivewRankingBatchAllStep() {
         return new StepBuilder("allTimeSetp", jobRepository)
-                .<ReivewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
                 .reader(reivewRepositoryAllRead())
                 .processor(reivewItemProcessor())
                 .writer(reivewWriter())
@@ -109,38 +109,38 @@ public class PopularReivewBatchConfig {
 
     @Bean
     @StepScope
-    public RepositoryItemReader<ReivewBatchDto> reivewRepositoryWeelyRead() {
+    public RepositoryItemReader<ReviewBatchDto> reivewRepositoryWeelyRead() {
         return reivewRepositoryRead(WEEKLY);
     }
 
     @Bean
     @StepScope
-    public RepositoryItemReader<ReivewBatchDto> reivewRepositoryMonthlyRead() {
+    public RepositoryItemReader<ReviewBatchDto> reivewRepositoryMonthlyRead() {
         return reivewRepositoryRead(MONTHLY);
     }
 
     @Bean
     @StepScope
-    public RepositoryItemReader<ReivewBatchDto> reivewRepositoryAllRead() {
+    public RepositoryItemReader<ReviewBatchDto> reivewRepositoryAllRead() {
         return reivewRepositoryRead(ALL_TIME);
     }
 
     @Bean
     @StepScope
-    public RepositoryItemReader<ReivewBatchDto> reivewRepositoryDailyRead() {
+    public RepositoryItemReader<ReviewBatchDto> reivewRepositoryDailyRead() {
         return reivewRepositoryRead(DAILY);
     }
 
     @Bean
     @StepScope
-    public ItemProcessor<ReivewBatchDto, PopularReview> reivewItemProcessor() {
-        return new ItemProcessor<ReivewBatchDto, PopularReview>() {
+    public ItemProcessor<ReviewBatchDto, PopularReview> reivewItemProcessor() {
+        return new ItemProcessor<ReviewBatchDto, PopularReview>() {
             private Long currentRank = 1L; // 현재 순위
             private Long processCount = 0L; // 지금까지 처리한 데이터 개수
             private Double previousScore = -1.0; // 직전 데이터의 점수 (동점자 처리용)
 
             @Override
-            public PopularReview process(ReivewBatchDto item) throws Exception {
+            public PopularReview process(ReviewBatchDto item) throws Exception {
                 // DB 조회 없이 식별자(ID)만 가진 프록시 객체 생성 (성능 대폭 향상)
                 Review review = reviewBatchRepository.getReferenceById(item.reviewId());
                 PeriodType periodType = PeriodType.valueOf(item.period());
@@ -166,12 +166,12 @@ public class PopularReivewBatchConfig {
     @Bean
     public RepositoryItemWriter<PopularReview> reivewWriter() {
         return new RepositoryItemWriterBuilder<PopularReview>()
-                .repository(popularReivewRepository)
+                .repository(PopularReviewRepository)
                 .methodName("save")
                 .build();
     }
 
-    private RepositoryItemReader<ReivewBatchDto> reivewRepositoryRead(PeriodType period) {
+    private RepositoryItemReader<ReviewBatchDto> reivewRepositoryRead(PeriodType period) {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
         Instant startOfToday = now.truncatedTo(ChronoUnit.DAYS).toInstant();
         Instant startOfEnd = null;
@@ -191,7 +191,7 @@ public class PopularReivewBatchConfig {
             }
         }
 
-        return new RepositoryItemReaderBuilder<ReivewBatchDto>()
+        return new RepositoryItemReaderBuilder<ReviewBatchDto>()
                 .name("ReivewRepositoryRead_" + period.toString())
                 .pageSize(1000)
                 .methodName("findReviews")

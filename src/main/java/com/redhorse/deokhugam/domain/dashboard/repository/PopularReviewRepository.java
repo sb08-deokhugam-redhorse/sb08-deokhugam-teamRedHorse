@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface PopularReivewRepository extends JpaRepository<PopularReview, UUID> {
+public interface PopularReviewRepository extends JpaRepository<PopularReview, UUID> {
 }

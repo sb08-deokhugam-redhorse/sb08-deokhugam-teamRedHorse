@@ -38,8 +38,11 @@ public interface UserBatchRepository extends JpaRepository<User, UUID> {
           "CAST(SUM(r.rating) AS double) )" +
           "FROM User u " +
           "LEFT JOIN Review r ON r.user = u AND r.deletedAt IS NULL " +
-          "WHERE u.deletedAt IS NULL " +
-          "GROUP BY u.id")
+          "WHERE r.createdAt >= :startDay " +
+          "AND r.createdAt < :endDay " +
+          "AND u.deletedAt IS NULL " +
+          "GROUP BY u.id "+
+          "ORDER BY CAST(SUM(r.rating) * 0.5 + SUM(r.commentCount) * 0.3 + SUM(r.likeCount) * 0.2 AS double) DESC " )
   Page<UserBatchDto> findPowerUsers(
           @Param("period") String period,
           @Param("startDay") Instant startDay,

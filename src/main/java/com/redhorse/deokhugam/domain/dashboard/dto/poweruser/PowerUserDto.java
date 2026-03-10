@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.domain.dashboard.entity.dashboard.dto.poweruser;
+package com.redhorse.deokhugam.domain.dashboard.dto.poweruser;
 
 import com.redhorse.deokhugam.global.entity.PeriodType;
 
