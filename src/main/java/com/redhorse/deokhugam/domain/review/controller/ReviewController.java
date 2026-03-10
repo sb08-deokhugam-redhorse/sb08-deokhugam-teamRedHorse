@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.review.controller;
 
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController {
 
   private final ReviewService reviewService;
+  private final AlarmService alarmService;
 
   @PostMapping
   public ResponseEntity<ReviewDto> create(
@@ -80,6 +82,7 @@ public class ReviewController {
 
     log.info("[Review-Controller] 좋아요 요청 시작: reviewId = {}", reviewId);
     ReviewLikeDto dto = reviewService.like(reviewId, userId);
+    alarmService.createLikeAlarm(dto);// 좋아요 알림 생성
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
