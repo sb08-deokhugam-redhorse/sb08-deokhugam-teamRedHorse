@@ -99,7 +99,7 @@ public class PopularBookBatchConfig {
 
     @Bean
     public Step bookRankingBatchAllStep() {
-        return new StepBuilder("allTimeSetp", jobRepository)
+        return new StepBuilder("allTimeStep", jobRepository)
                 .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
                 .reader(bookRepositoryAllRead())
                 .processor(bookItemProcessor())

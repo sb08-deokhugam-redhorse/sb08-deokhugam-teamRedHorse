@@ -48,7 +48,7 @@ public class PopularReivewBatchConfig {
         return new JobBuilder("reivewRankingBatchJob", jobRepository)
                 .start(reivewRankingBatchDailyStep())  // 1. 일간 실행
                 .next(reivewRankingBatchWeeklyStep())  // 2. 주간 실행
-                .next(reivewRankingBatchMothlyStep())  // 3. 월간 실행
+                .next(reivewRankingBatchMonthlyStep())  // 3. 월간 실행
                 .next(reivewRankingBatchAllStep())     // 4. 전체 기간 실행
                 .listener(new JobExecutionListener() {
                     @Override
@@ -88,8 +88,8 @@ public class PopularReivewBatchConfig {
     }
 
     @Bean
-    public Step reivewRankingBatchMothlyStep() {
-        return new StepBuilder("mothlyStep", jobRepository)
+    public Step reivewRankingBatchMonthlyStep() {
+        return new StepBuilder("monthlyStep", jobRepository)
                 .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
                 .reader(reivewRepositoryMonthlyRead())
                 .processor(reivewItemProcessor())
@@ -99,7 +99,7 @@ public class PopularReivewBatchConfig {
 
     @Bean
     public Step reivewRankingBatchAllStep() {
-        return new StepBuilder("allTimeSetp", jobRepository)
+        return new StepBuilder("allTimeStep", jobRepository)
                 .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
                 .reader(reivewRepositoryAllRead())
                 .processor(reivewItemProcessor())

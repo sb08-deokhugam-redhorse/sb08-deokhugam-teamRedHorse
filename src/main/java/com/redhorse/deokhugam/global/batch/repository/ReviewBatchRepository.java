@@ -1,7 +1,6 @@
 package com.redhorse.deokhugam.global.batch.repository;
 
 import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReviewBatchDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.UserBatchDto;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +26,4 @@ public interface ReviewBatchRepository extends JpaRepository<Review, UUID> {
             @Param("endDay") Instant endDay,
             Pageable pageable
     );
-
-
 }

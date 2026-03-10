@@ -101,7 +101,7 @@ public class PowerUserBatchConfig {
 
     @Bean
     public Step userRankingBatchAllStep() {
-        return new StepBuilder("allTimeSetp", jobRepository)
+        return new StepBuilder("allTimeStep", jobRepository)
                 .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
                 .reader(userRepositoryAllRead())
                 .processor(userItemProcessor())
