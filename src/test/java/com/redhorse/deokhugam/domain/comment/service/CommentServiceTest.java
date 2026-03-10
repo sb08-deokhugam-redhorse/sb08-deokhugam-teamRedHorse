@@ -272,8 +272,11 @@ class CommentServiceTest {
       User mockUser = mock(User.class);
       given(mockUser.getId()).willReturn(requestUserId);
 
+      Review mockReview = mock(Review.class);
+
       Comment mockComment = mock(Comment.class);
       given(mockComment.getUser()).willReturn(mockUser);
+      given(mockComment.getReview()).willReturn(mockReview);
       given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
           Optional.of(mockComment));
 
