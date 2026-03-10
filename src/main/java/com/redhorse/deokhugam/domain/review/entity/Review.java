@@ -87,6 +87,10 @@ public class Review extends BaseUpdatableEntity {
   public void delete() {
     if (this.deletedAt == null) {
       this.deletedAt = Instant.now();
+
+      if(comments!= null) {
+        this.comments.forEach(Comment::softDelete);
+      }
     }
   }
 
