@@ -21,7 +21,7 @@ public class GlobalBatchScheduler {
     // 작성한 배치 Config에서 @Bean으로 등록한 Job을 주입
     // 메서드 이름과 동일하게 변수명을 지으면 자동으로 매핑
     private final Job cleanupAlarmJob;
-    private final Job reivewRankingBatchJob;
+    private final Job reviewRankingBatchJob;
     private final Job bookRankingBatchJob;
     private final Job userRankingBatchJob;
     private final Job cleanupUserJob;
@@ -47,11 +47,11 @@ public class GlobalBatchScheduler {
     }
 
     // 매일 오전 2시에 동작하게
-    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     public void runDailyDashboardJob() {
         log.info("[DoashDoard-Batch] 작업 시작: 오전 2시 예약된 작업 진행");
 
-        runJob(reivewRankingBatchJob);
+        runJob(reviewRankingBatchJob);
         runJob(bookRankingBatchJob);
         runJob(userRankingBatchJob);
     }

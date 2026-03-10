@@ -48,7 +48,7 @@ public class PopularBookBatchConfig {
         return new JobBuilder("bookRankingBatchJob", jobRepository)
                 .start(bookRankingBatchDailyStep())  // 1. 일간 실행
                 .next(bookRankingBatchWeeklyStep())  // 2. 주간 실행
-                .next(bookRankingBatchMothlyStep())  // 3. 월간 실행
+                .next(bookRankingBatchMonthlyStep())  // 3. 월간 실행
                 .next(bookRankingBatchAllStep())     // 4. 전체 기간 실행
                 .listener(new JobExecutionListener() {
                     @Override
@@ -59,7 +59,7 @@ public class PopularBookBatchConfig {
                                     jobExecution.getAllFailureExceptions());
 
                         } else if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-                            log.info("[PopularBook-batch] 작업 완료",
+                            log.info("[PopularBook-batch] 작업 완료: {}",
                                     jobExecution.getStepExecutions().iterator().next().getWriteCount());
                         }
                     }
@@ -81,15 +81,15 @@ public class PopularBookBatchConfig {
     public Step bookRankingBatchWeeklyStep() {
         return new StepBuilder("weeklyStep", jobRepository)
                 .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
-                .reader(bookRepositoryWeelyRead())
+                .reader(bookRepositoryWeeklyRead())
                 .processor(bookItemProcessor())
                 .writer(bookWriter())
                 .build();
     }
 
     @Bean
-    public Step bookRankingBatchMothlyStep() {
-        return new StepBuilder("mothlyStep", jobRepository)
+    public Step bookRankingBatchMonthlyStep() {
+        return new StepBuilder("monthlyStep", jobRepository)
                 .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
                 .reader(bookRepositoryMonthlyRead())
                 .processor(bookItemProcessor())
@@ -109,7 +109,7 @@ public class PopularBookBatchConfig {
 
     @Bean
     @StepScope
-    public RepositoryItemReader<BookBatchDto> bookRepositoryWeelyRead() {
+    public RepositoryItemReader<BookBatchDto> bookRepositoryWeeklyRead() {
         return bookRepositoryRead(WEEKLY);
     }
 

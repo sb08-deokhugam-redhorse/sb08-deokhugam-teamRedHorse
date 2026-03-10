@@ -50,7 +50,7 @@ public class PowerUserBatchConfig {
         return new JobBuilder("userRankingBatchJob", jobRepository)
                 .start(userRankingBatchDailyStep())  // 1. 일간 실행
                 .next(userRankingBatchWeeklyStep())  // 2. 주간 실행
-                .next(userRankingBatchMothlyStep())  // 3. 월간 실행
+                .next(userRankingBatchmonthlyStep())  // 3. 월간 실행
                 .next(userRankingBatchAllStep())     // 4. 전체 기간 실행
                 .listener(new JobExecutionListener() {
                     @Override
@@ -61,7 +61,7 @@ public class PowerUserBatchConfig {
                                     jobExecution.getAllFailureExceptions());
 
                         } else if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-                            log.info("[PowerUser-batch] 작업 완료",
+                            log.info("[PowerUser-batch] 작업 완료: {}",
                                     jobExecution.getStepExecutions().iterator().next().getWriteCount());
                         }
                     }
@@ -90,8 +90,8 @@ public class PowerUserBatchConfig {
     }
 
     @Bean
-    public Step userRankingBatchMothlyStep() {
-        return new StepBuilder("mothlyStep", jobRepository)
+    public Step userRankingBatchmonthlyStep() {
+        return new StepBuilder("monthlyStep", jobRepository)
                 .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
                 .reader(userRepositoryMonthlyRead())
                 .processor(userItemProcessor())
@@ -137,8 +137,8 @@ public class PowerUserBatchConfig {
     @StepScope
     public ItemProcessor<UserBatchDto, PowerUser> userItemProcessor() {
         return new ItemProcessor<UserBatchDto, PowerUser>() {
-            private Long currentRank = 1l; // 현재 순위
-            private Long processCount = 0l; // 지금까지 처리한 데이터 개수
+            private Long currentRank = 1L; // 현재 순위
+            private Long processCount = 0L; // 지금까지 처리한 데이터 개수
             private Double previousScore = -1.0; // 직전 데이터의 점수 (동점자 처리용)
 
             @Override
