@@ -440,23 +440,21 @@ class CommentServiceTest {
       int limit = 5;
       CommentPageRequest request = new CommentPageRequest(reviewId, "DESC", null, null, limit);
 
-      Review mockReview = mock(Review.class);
-      given(mockReview.getId()).willReturn(reviewId);
-      given(reviewRepository.findByIdAndDeletedAtIsNull(reviewId)).willReturn(
-          Optional.of(mockReview));
+      given(reviewRepository.existsByIdAndDeletedAtIsNull(reviewId)).willReturn(true);
 
       List<Comment> mockComments = new ArrayList<>();
-      for (int i = 0; i < 6; i++) {
+      for (int i = 0; i < limit + 1 ; i++) {
         Comment mockComment = mock(Comment.class);
+        if (i == limit - 1) {
+          given(mockComment.getId()).willReturn(UUID.randomUUID());
+          given(mockComment.getCreatedAt()).willReturn(Instant.now());
+        }
         mockComments.add(mockComment);
       }
 
-      Comment lastCommentOfContent = mockComments.get(4);
-      given(lastCommentOfContent.getId()).willReturn(UUID.randomUUID());
-      given(lastCommentOfContent.getCreatedAt()).willReturn(Instant.now());
+      Comment lastCommentOfContent = mockComments.get(limit - 1);
 
-      given(commentRepository.findAllByCursorDesc(eq(reviewId), any(), any(), any()))
-          .willReturn(mockComments);
+      given(commentRepository.findAllByCursor(request)).willReturn(mockComments);
       given(commentRepository.countByReviewIdAndDeletedAtIsNull(eq(reviewId))).willReturn(10L);
       given(commentMapper.toDto(any(Comment.class))).willReturn(mock(CommentDto.class));
 
@@ -469,7 +467,7 @@ class CommentServiceTest {
       assertThat(result.nextCursor()).isEqualTo(lastCommentOfContent.getId().toString());
       assertThat(result.nextAfter()).isEqualTo(lastCommentOfContent.getCreatedAt());
 
-      then(commentRepository).should().findAllByCursorDesc(eq(reviewId), any(), any(), any());
+      then(commentRepository).should().findAllByCursor(request);
     }
 
     @Test
@@ -479,14 +477,13 @@ class CommentServiceTest {
       UUID invalidReviewId = UUID.randomUUID();
       CommentPageRequest request = new CommentPageRequest(invalidReviewId, "DESC", null, null, 5);
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(
-          Optional.empty());
+      given(reviewRepository.existsByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(false);
 
       // when & then
       assertThatThrownBy(() -> commentService.findAll(request))
           .isInstanceOf(ReviewNotFoundException.class);
 
-      then(commentRepository).should(never()).findAllByCursorDesc(any(), any(), any(), any());
+      then(commentRepository).should(never()).findAllByCursor(any());
     }
   }
 }
