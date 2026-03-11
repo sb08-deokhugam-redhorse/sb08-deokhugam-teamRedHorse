@@ -16,11 +16,19 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface AlarmMapper {
     @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "confirmed", constant = "false") // 추후 수정, 생성시면 상관 없는데 업뎃에서 걸릴 듯
+    @Mapping(target = "confirmed", expression = "java(isConfirmed(alarm))")
     NotificationDto alarmToNotificationDto(Alarm alarm);
 
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "user.nickname", target = "nickname")
     @Mapping(source = "ranking", target = "rank")
     PowerUserDto toPowerUserDto(PowerUser powerUser);
+
+    default boolean isConfirmed(Alarm alarm) {
+        if (alarm.getCreatedAt() == null || alarm.getUpdatedAt() == null) {
+            return false;
+        }
+
+        return !alarm.getCreatedAt().equals(alarm.getUpdatedAt());
+    }
 }
