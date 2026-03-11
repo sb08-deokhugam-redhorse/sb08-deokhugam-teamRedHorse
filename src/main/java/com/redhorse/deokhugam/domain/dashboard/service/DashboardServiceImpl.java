@@ -126,7 +126,6 @@ public class DashboardServiceImpl implements DashboardSerivce {
                 .map(dashboardMapper::entityToPowerUserDto)
                 .toList();
 
-
         return new CursorPageResponsePowerUserDto(
                 content,
                 nextCursor,

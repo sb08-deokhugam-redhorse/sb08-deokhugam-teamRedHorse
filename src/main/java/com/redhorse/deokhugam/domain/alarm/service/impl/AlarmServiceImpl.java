@@ -57,8 +57,8 @@ public class AlarmServiceImpl implements AlarmService {
 
         Alarm alarm = new Alarm(
                 "COMMENT",
-                dto.content(),
                 "[" + user.getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.",
+                dto.content(),
                 dto.reviewId(),
                 reviewOwner
         );
@@ -77,8 +77,8 @@ public class AlarmServiceImpl implements AlarmService {
 
         Alarm alarm = new Alarm(
                 "LIKE",
-                review.getContent(),
                 "[" + user.getNickname() + "]님이 나의 리뷰를 좋아합니다.",
+                review.getContent(),
                 dto.reviewId(),
                 reviewOwner
         );
@@ -146,8 +146,8 @@ public class AlarmServiceImpl implements AlarmService {
 
         Alarm alarm = new Alarm(
                 dto.period().toString(),
-                "",
                 user.getNickname()+"님이 유저랭킹" + type + dto.rank() + "위에 올랐습니다.",
+                "",
                 dto.userId(),
                 user
         );
