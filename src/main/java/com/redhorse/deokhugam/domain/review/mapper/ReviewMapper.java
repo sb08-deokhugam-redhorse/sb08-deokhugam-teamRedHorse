@@ -11,7 +11,7 @@ public interface ReviewMapper {
 
   @Mapping(source = "book.id", target = "bookId")
   @Mapping(source = "book.title", target = "bookTitle")
-  @Mapping(source = "review.book.thumbnailUrl", target = "bookThumbnailUrl", qualifiedByName = "toPresignedUrl")
+  @Mapping(source = "book.thumbnailUrl", target = "bookThumbnailUrl", qualifiedByName = "toPresignedUrl")
   @Mapping(source = "user.id", target = "userId")
   @Mapping(source = "user.nickname", target = "userNickname")
   @Mapping(target = "likedByMe", ignore = true)
