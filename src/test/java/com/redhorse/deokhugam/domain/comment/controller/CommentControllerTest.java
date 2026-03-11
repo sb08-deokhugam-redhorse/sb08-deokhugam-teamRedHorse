@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
@@ -51,6 +54,9 @@ class CommentControllerTest {
   @MockitoBean
   private CommentService commentService;
 
+  @MockitoBean
+  private AlarmService alarmService;
+
   @Nested
   @DisplayName("댓글 등록 관련 테스트")
   class createCommentsTests {
@@ -77,6 +83,35 @@ class CommentControllerTest {
           .andExpect(status().isCreated())
           .andExpect(jsonPath("$.content").value("하이루"))
           .andExpect(jsonPath("$.userNickname").value("감자"));
+
+      verify(alarmService, times(1)).createCommentAlarm(any(CommentDto.class));
+    }
+
+    @Test
+    @DisplayName("댓글 등록 성공 - 알림 서비스에서 예외가 발생해도 댓글 생성은 유지되어야 한다.")
+    void create_WhenAlarmServiceFails_ShouldStillReturnCreated() throws Exception {
+      // given
+      UUID reviewId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+      CommentCreateRequest request = new CommentCreateRequest(reviewId, userId, "알람실패테스트");
+      CommentDto responseDto = new CommentDto(
+          UUID.randomUUID(), reviewId, userId, "감자", "알람실패테스트",
+          Instant.now(), Instant.now()
+      );
+
+      given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);
+
+      doThrow(new RuntimeException("알람 서버 장애"))
+          .when(alarmService).createCommentAlarm(any(CommentDto.class));
+
+      // when & then
+      mockMvc.perform(post("/api/comments")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.content").value("알람실패테스트"));
+
+      verify(alarmService, times(1)).createCommentAlarm(any(CommentDto.class));
     }
 
     @Test
