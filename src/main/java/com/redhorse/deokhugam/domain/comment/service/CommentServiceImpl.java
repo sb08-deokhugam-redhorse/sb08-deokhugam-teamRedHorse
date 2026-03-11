@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -128,34 +126,13 @@ public class CommentServiceImpl implements CommentService {
   @Override
   @Transactional(readOnly = true)
   public CursorPageResponseCommentDto findAll(CommentPageRequest commentPageRequest) {
-    Review review = reviewRepository.findByIdAndDeletedAtIsNull(commentPageRequest.reviewId())
-        .orElseThrow(() -> new ReviewNotFoundException(commentPageRequest.reviewId()));
-
-    int limit = commentPageRequest.limit() != null && commentPageRequest.limit() > 0
-        ? commentPageRequest.limit() : 50;
-
-    boolean isAsc = "ASC".equalsIgnoreCase(commentPageRequest.direction());
-
-    UUID cursorId =
-        (commentPageRequest.cursor() != null) ? UUID.fromString(commentPageRequest.cursor()) : null;
-
-    Pageable pageable = PageRequest.of(0, limit + 1);
-
-    List<Comment> comments;
-    if (isAsc) {
-      comments = commentRepository.findAllByCursorAsc(
-          review.getId(),
-          cursorId,
-          commentPageRequest.after(),
-          pageable);
-    } else {
-      comments = commentRepository.findAllByCursorDesc(
-          review.getId(),
-          cursorId,
-          commentPageRequest.after(),
-          pageable);
+    if (!reviewRepository.existsByIdAndDeletedAtIsNull(commentPageRequest.reviewId())) {
+      throw new ReviewNotFoundException(commentPageRequest.reviewId());
     }
 
+    List<Comment> comments = commentRepository.findAllByCursor(commentPageRequest);
+
+    int limit = (commentPageRequest.limit() != null && commentPageRequest.limit() > 0) ? commentPageRequest.limit() : 50;
     boolean hasNext = comments.size() > limit;
     List<Comment> content = hasNext ? comments.subList(0, limit) : comments;
 
