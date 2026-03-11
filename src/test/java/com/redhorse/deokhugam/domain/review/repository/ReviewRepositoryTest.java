@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @Import(JpaConfig.class)
-@ActiveProfiles("test")
 public class ReviewRepositoryTest {
 
   @Autowired
@@ -55,9 +54,9 @@ public class ReviewRepositoryTest {
         LocalDate.now(),
         "isbn",
         "thumbnailUrl",
-        Boolean.FALSE,
-        Double.valueOf(0),
-        Long.valueOf(0),
+        false,
+        0.0,
+        0L,
         new ArrayList<>());
     bookRepository.save(book);
     User user = new User("email", "nickname", "password");

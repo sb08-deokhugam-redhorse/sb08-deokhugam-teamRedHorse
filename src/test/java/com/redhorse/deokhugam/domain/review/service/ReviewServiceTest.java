@@ -89,9 +89,9 @@ public class ReviewServiceTest {
         LocalDate.now(),
         "isbn",
         "thumbnailUrl",
-        Boolean.FALSE,
-        Double.valueOf(0),
-        Long.valueOf(0),
+        false,
+        0.0,
+        0L,
         new ArrayList<>());
     ReflectionTestUtils.setField(book, "id", bookId);
 
