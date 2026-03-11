@@ -355,7 +355,7 @@ class UserControllerTest {
 
   @Test
   @DisplayName("사용자 SOFT 삭제 실패 - 권한 없음 (ID 불일치)")
-  void soft_delete_user_Forbidden() throws Exception {
+  void soft_delete_user_isForbidden() throws Exception {
     // given
     UUID userId = UUID.randomUUID();
     UUID anotherUserId = UUID.randomUUID();
@@ -370,7 +370,7 @@ class UserControllerTest {
 
     // then
     result.andExpect(status().isUnauthorized());
-    result.andExpect(jsonPath("$.message").value("로그인이 필요한 서비스입니다."));
+    result.andExpect(jsonPath("$.message").value("해당 요청에 대한 권한이 없습니다."));
   }
 
   @Test
@@ -427,7 +427,7 @@ class UserControllerTest {
 
   @Test
   @DisplayName("사용자 HARD 삭제 실패 - 권한 없음 (ID 불일치)")
-  void hard_delete_user_Forbidden() throws Exception {
+  void hard_delete_user_isForbidden() throws Exception {
     // given
     UUID userId = UUID.randomUUID();
     UUID anotherUserId = UUID.randomUUID();
@@ -442,7 +442,7 @@ class UserControllerTest {
 
     // then
     result.andExpect(status().isUnauthorized());
-    result.andExpect(jsonPath("$.message").value("로그인이 필요한 서비스입니다."));
+    result.andExpect(jsonPath("$.message").value("해당 요청에 대한 권한이 없습니다."));
   }
 
   @Test
