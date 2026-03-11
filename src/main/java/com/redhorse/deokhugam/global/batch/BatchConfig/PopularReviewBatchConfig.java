@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
 
+import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReviewBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.dashboard.repository.PopularReviewRepository;
@@ -15,10 +16,12 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
+import org.springframework.batch.item.support.builder.CompositeItemWriterBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
@@ -42,6 +45,7 @@ public class PopularReviewBatchConfig {
 
     private final ReviewBatchRepository reviewBatchRepository;
     private final PopularReviewRepository popularReviewRepository;
+    private final AlarmService alarmService;
 
     @Bean
     public Job reviewRankingBatchJob() {
@@ -164,10 +168,28 @@ public class PopularReviewBatchConfig {
     }
 
     @Bean
-    public RepositoryItemWriter<PopularReview> reviewWriter() {
-        return new RepositoryItemWriterBuilder<PopularReview>()
-                .repository(popularReviewRepository)
-                .methodName("save")
+    public ItemWriter<PopularReview> reviewWriter() {
+
+        RepositoryItemWriter<PopularReview> repositoryItemWriter =
+                new RepositoryItemWriterBuilder<PopularReview>()
+                        .repository(popularReviewRepository)
+                        .methodName("save")
+                        .build();
+
+        ItemWriter<PopularReview> serviceCallWriter = chunk ->
+                chunk.getItems().stream()
+                        .filter(item -> item.getRanking() <= 10)
+                        .forEach(item -> {
+                            try {
+                                alarmService.createReviewAlarm(item);
+                            } catch (Exception e) {
+                                log.error("[Alarm-Service] 알람 생성 중 에러 발생. Review ID: {}, 원인: {}",
+                                        item.getReview().getId(), e.getMessage());
+                            }
+                        });
+
+        return new CompositeItemWriterBuilder<PopularReview>()
+                .delegates(repositoryItemWriter, serviceCallWriter)
                 .build();
     }
 

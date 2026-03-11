@@ -6,7 +6,7 @@ import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.impl.AlarmServiceImpl;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.PopularReviewDto;
+import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
@@ -150,31 +150,38 @@ class AlarmServiceUnitTest {
     }
 
     @Test
-    @DisplayName("인기 리뷰 알림 생성 성공 - 타입 변환 검증 포함")
+    @DisplayName("인기 리뷰 알림 생성 성공")
     void createReviewAlarm_Success() {
         // given
-        UUID testUserId = UUID.randomUUID();
         UUID testReviewId = UUID.randomUUID();
 
-        PopularReviewDto dto = new PopularReviewDto(
-                UUID.randomUUID(), testReviewId, UUID.randomUUID(), "책제목",
-                "url", testUserId, "닉네임", 10,
-                4.5, PeriodType.DAILY, Instant.now(), 1, 100.0,
-                5, 2
-        );
-
+        // 1. PopularReview 내부에 들어갈 Review 객체 모킹
         Review mockReview = mock(Review.class);
+        given(mockReview.getId()).willReturn(testReviewId); // popularReview.getReview().getId()를 위해 필요
+
         User mockReviewOwner = mock(User.class);
         given(mockReview.getUser()).willReturn(mockReviewOwner);
         given(mockReview.getContent()).willReturn("리뷰 내용입니다");
+
         given(reviewRepository.findById(testReviewId)).willReturn(Optional.of(mockReview));
+
+        // 2. DTO 대신 PopularReview 엔티티 생성
+        PopularReview popularReview = new PopularReview(
+                PeriodType.DAILY,
+                1L,
+                100.0,
+                5L,
+                2L,
+                mockReview
+        );
 
         Alarm mockAlarm = mock(Alarm.class);
         given(alarmRepository.save(any(Alarm.class))).willReturn(mockAlarm);
         given(alarmMapper.alarmToNotificationDto(mockAlarm)).willReturn(mock(NotificationDto.class));
 
         // when
-        NotificationDto result = alarmService.createReviewAlarm(dto);
+        // DTO가 아닌 popularReview 엔티티를 전달합니다.
+        NotificationDto result = alarmService.createReviewAlarm(popularReview);
 
         // then
         assertThat(result).isNotNull();
