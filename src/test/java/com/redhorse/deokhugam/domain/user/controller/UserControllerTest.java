@@ -369,7 +369,7 @@ class UserControllerTest {
         .header("Deokhugam-Request-User-ID", anotherUserId));
 
     // then
-    result.andExpect(status().isUnauthorized());
+    result.andExpect(status().isForbidden());
     result.andExpect(jsonPath("$.message").value("해당 요청에 대한 권한이 없습니다."));
   }
 
@@ -441,7 +441,7 @@ class UserControllerTest {
         .header("Deokhugam-Request-User-ID", anotherUserId));
 
     // then
-    result.andExpect(status().isUnauthorized());
+    result.andExpect(status().isForbidden());
     result.andExpect(jsonPath("$.message").value("해당 요청에 대한 권한이 없습니다."));
   }
 
