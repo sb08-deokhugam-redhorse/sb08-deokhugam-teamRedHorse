@@ -23,10 +23,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
   @Override
   public List<Comment> findAllByCursor(CommentPageRequest commentPageRequest) {
 
-    int limit = (commentPageRequest.limit() != null ? commentPageRequest.limit() : 50);
     boolean isAsc = "ASC".equalsIgnoreCase(commentPageRequest.direction());
-    UUID cursorId =
-        (commentPageRequest.cursor() != null) ? UUID.fromString(commentPageRequest.cursor()) : null;
 
     return queryFactory
         .selectFrom(comment)
@@ -34,21 +31,27 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         .where(
             comment.review.id.eq(commentPageRequest.reviewId()),
             comment.deletedAt.isNull(),
-            combineCursorCondition(cursorId, commentPageRequest.after(), isAsc)
+            combineCursorCondition(commentPageRequest.cursor(), commentPageRequest.after(), isAsc)
         )
         .orderBy(getOrderSpecifiers(isAsc))
-        .limit(limit + 1)
+        .limit(commentPageRequest.limit() + 1)
         .fetch();
   }
 
-  private BooleanExpression combineCursorCondition(UUID cursorId, Instant after, boolean isAsc) {
-    if (cursorId == null || after == null) {
+  private BooleanExpression combineCursorCondition(String cursor, Instant after, boolean isAsc) {
+    if (cursor == null || after == null) {
       return null;
     }
 
-    return isAsc
-        ? comment.createdAt.gt(after).or(comment.createdAt.eq(after).and(comment.id.gt(cursorId)))
-        : comment.createdAt.lt(after).or(comment.createdAt.eq(after).and(comment.id.lt(cursorId)));
+    try {
+      UUID cursorId = UUID.fromString(cursor);
+
+      return isAsc
+          ? comment.createdAt.gt(after).or(comment.createdAt.eq(after).and(comment.id.gt(cursorId)))
+          : comment.createdAt.lt(after).or(comment.createdAt.eq(after).and(comment.id.lt(cursorId)));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 
   private OrderSpecifier<?>[] getOrderSpecifiers(boolean isAsc) {

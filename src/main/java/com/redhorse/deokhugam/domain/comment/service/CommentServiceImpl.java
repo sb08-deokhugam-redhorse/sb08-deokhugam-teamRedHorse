@@ -132,9 +132,8 @@ public class CommentServiceImpl implements CommentService {
 
     List<Comment> comments = commentRepository.findAllByCursor(commentPageRequest);
 
-    int limit = (commentPageRequest.limit() != null && commentPageRequest.limit() > 0) ? commentPageRequest.limit() : 50;
-    boolean hasNext = comments.size() > limit;
-    List<Comment> content = hasNext ? comments.subList(0, limit) : comments;
+    boolean hasNext = comments.size() > commentPageRequest.limit();
+    List<Comment> content = hasNext ? comments.subList(0, commentPageRequest.limit()) : comments;
 
     String nextCursor = null;
     Instant nextAfter = null;
@@ -155,7 +154,7 @@ public class CommentServiceImpl implements CommentService {
         content.stream().map(commentMapper::toDto).toList(),
         nextCursor,
         nextAfter,
-        limit,
+        commentPageRequest.limit(),
         totalElements,
         hasNext
     );
