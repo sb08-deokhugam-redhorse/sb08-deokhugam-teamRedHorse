@@ -2,6 +2,10 @@ package com.redhorse.deokhugam.domain.user.controller;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,11 +17,14 @@ import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
+import com.redhorse.deokhugam.domain.user.exception.UserDeletedNotYetException;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
+import com.redhorse.deokhugam.global.exception.AuthenticationException;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -307,4 +314,187 @@ class UserControllerTest {
     result.andExpect(status().isOk());
     result.andExpect(jsonPath("$.nickname").value(response.nickname()));
   }
+
+  @Test
+  @DisplayName("사용자 SOFT 삭제 성공")
+  void soft_delete_user() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    willDoNothing()
+        .given(userService)
+        .deleteUserSoft(eq(userId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}", userId)
+        .header("Deokhugam-Request-User-ID", userId));
+
+    // then
+    result.andExpect(status().isNoContent());
+    verify(userService).deleteUserSoft(eq(userId), eq(userId));
+  }
+
+  @Test
+  @DisplayName("사용자 SOFT 삭제 실패 - 존재하지 않는 사용자의 ID")
+  void soft_delete_user_NotFound() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new UserNotFoundException(userId))
+        .given(userService)
+        .deleteUserSoft(eq(userId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}", userId)
+        .header("Deokhugam-Request-User-ID", userId));
+
+    // then
+    result.andExpect(status().isNotFound());
+    result.andExpect(jsonPath("$.message").value("사용자를 찾을 수 없습니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 SOFT 삭제 실패 - 권한 없음 (ID 불일치)")
+  void soft_delete_user_Forbidden() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID anotherUserId = UUID.randomUUID();
+
+    willThrow(new AuthenticationException())
+        .given(userService)
+        .deleteUserSoft(eq(anotherUserId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}", userId)
+        .header("Deokhugam-Request-User-ID", anotherUserId));
+
+    // then
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.message").value("로그인이 필요한 서비스입니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 SOFT 삭제 실패 - 필수 헤더 누락")
+  void soft_delete_user_MissingHeader() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}", userId));
+
+    // then
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.message").value("필수 헤더가 누락되었습니다: Deokhugam-Request-User-ID"));
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 성공")
+  void hard_delete_user() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    willDoNothing()
+        .given(userService)
+        .deleteUserHard(eq(userId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId)
+        .header("Deokhugam-Request-User-ID", userId));
+
+    // then
+    result.andExpect(status().isNoContent());
+    verify(userService).deleteUserHard(eq(userId), eq(userId));
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 존재하지 않는 사용자의 ID")
+  void hard_delete_user_NotFound() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new UserNotFoundException(userId))
+        .given(userService)
+        .deleteUserHard(eq(userId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId)
+        .header("Deokhugam-Request-User-ID", userId));
+
+    // then
+    result.andExpect(status().isNotFound());
+    result.andExpect(jsonPath("$.message").value("사용자를 찾을 수 없습니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 권한 없음 (ID 불일치)")
+  void hard_delete_user_Forbidden() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID anotherUserId = UUID.randomUUID();
+
+    willThrow(new AuthenticationException())
+        .given(userService)
+        .deleteUserHard(eq(anotherUserId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId)
+        .header("Deokhugam-Request-User-ID", anotherUserId));
+
+    // then
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.message").value("로그인이 필요한 서비스입니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 소프트 삭제되지 않은 사용자")
+  void hard_delete_user_NotSoftDeleted() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new UserNotSoftDeletedException())
+        .given(userService)
+        .deleteUserHard(eq(userId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId)
+        .header("Deokhugam-Request-User-ID", userId));
+
+    // then
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.message").value("탈퇴 처리되지 않은 사용자입니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 유예 기간 미경과")
+  void hard_delete_user_NotYet() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    willThrow(new UserDeletedNotYetException())
+        .given(userService)
+        .deleteUserHard(eq(userId), eq(userId));
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId)
+        .header("Deokhugam-Request-User-ID", userId));
+
+    // then
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.message").value("탈퇴 후 24시간이 지나야 영구 삭제가 가능합니다."));
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 필수 헤더 누락")
+  void hard_delete_user_MissingHeader() throws Exception {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    // when
+    var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId));
+
+    // then
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.message").value("필수 헤더가 누락되었습니다: Deokhugam-Request-User-ID"));
+  }
+
 }
