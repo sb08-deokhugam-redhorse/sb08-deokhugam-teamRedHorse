@@ -18,7 +18,8 @@ public interface PowerUserRepository extends JpaRepository<PowerUser, UUID> {
             "  (:#{#request.after == null ? true : false} = true) OR " +
             "  (a.createdAt < :#{#request.after}) OR " +
             "  (a.createdAt = :#{#request.after} AND a.id < :#{#request.cursor}) " +
-            ")")
+            ")"+
+            "ORDER BY a.ranking ASC")
     Slice<PowerUser> getAllPowerUserDesc(@Param("request") DashboardRequest request, Pageable pageable);
 
     @Query("SELECT a FROM PowerUser a " +
@@ -27,6 +28,7 @@ public interface PowerUserRepository extends JpaRepository<PowerUser, UUID> {
             "  (:#{#request.after == null ? true : false} = true) OR " +
             "  (a.createdAt > :#{#request.after}) " +
             "  OR (a.createdAt = :#{#request.after} AND a.id > :#{#request.cursor})" +
-            ")")
+            ")"+
+            "ORDER BY a.ranking ASC")
     Slice<PowerUser> getAllPowerUserAsc(@Param("request") DashboardRequest request, Pageable pageable);
 }
