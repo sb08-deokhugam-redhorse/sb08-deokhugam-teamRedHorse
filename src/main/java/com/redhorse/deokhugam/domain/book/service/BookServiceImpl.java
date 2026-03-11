@@ -207,11 +207,6 @@ public class BookServiceImpl implements BookService
         log.info("[Book-Service] 물리 삭제 작업 완료: bookId={}", bookId);
     }
 
-    @Override
-    public String extractIsbnFromImage(MultipartFile file) {
-        return "";
-    }
-
     /**
      * 정렬 기준에 따라 마지막 요소의 값을 nextCursor 문자열로 변환한다.
      *

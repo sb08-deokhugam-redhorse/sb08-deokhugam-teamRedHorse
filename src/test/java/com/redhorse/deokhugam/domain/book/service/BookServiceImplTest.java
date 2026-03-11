@@ -1,8 +1,11 @@
 package com.redhorse.deokhugam.domain.book.service;
 
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
+import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
+import com.redhorse.deokhugam.domain.book.dto.response.CursorPageResponseBookDto;
 import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.exception.IsbnDuplicateException;
 import com.redhorse.deokhugam.domain.book.mapper.BookMapper;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
@@ -14,10 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.SliceImpl;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,8 +40,11 @@ class BookServiceImplTest
     @Mock private BookMapper bookMapper;
 
     private BookCreateRequest bookCreateRequest;
+    private BookUpdateRequest bookUpdateRequest;
+
     private Book book;
     private BookDto bookDto;
+    private UUID bookId;
 
     @BeforeEach
     void setUp() {
@@ -45,6 +55,14 @@ class BookServiceImplTest
                 "출판사A",
                 LocalDate.of(2024, 1, 1),
                 "9788965745464"
+        );
+
+        bookUpdateRequest = new BookUpdateRequest(
+                "수정된 자바 프로그래밍",
+                "수정된 김자바",
+                "수정된 소개",
+                "수정된 출판사",
+                LocalDate.of(2025, 1, 1)
         );
 
         book = new Book(
@@ -58,6 +76,8 @@ class BookServiceImplTest
                 LocalDate.of(2024, 1, 1), "9788965745464", null, 0, 0.0,
                 Instant.now(), Instant.now()
         );
+
+        bookId = UUID.randomUUID();
     }
 
     @Nested
@@ -110,6 +130,171 @@ class BookServiceImplTest
             assertThatThrownBy(() -> bookServiceimpl.create(bookCreateRequest, null))
                     .isInstanceOf(IsbnDuplicateException.class);
             then(bookRepository).should(never()).save(any(Book.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 조회")
+    class Read {
+        @Test
+        @DisplayName("성공 - 키워드 없이 전체 도서 목록을 반환한다")
+        void success_withNoKeyword_returnsAllBooks() {
+            // given
+            SliceImpl<Book> slice = new SliceImpl<>(List.of(book), PageRequest.of(0, 10), false);
+            given(bookRepository.getAllBooks(null, "title", "DESC", null, null, 10))
+                    .willReturn(slice);
+            given(bookRepository.countBooksWithKeyword(null)).willReturn(1L);
+            given(bookMapper.toBookDto(book)).willReturn(bookDto);
+
+            // when
+            CursorPageResponseBookDto result = bookServiceimpl.getBooks(null, "title", "DESC", null, null, 10);
+
+            // then
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.hasNext()).isFalse();
+            assertThat(result.totalElements()).isEqualTo(1L);
+            assertThat(result.nextCursor()).isNull();
+            assertThat(result.nextAfter()).isNull();
+        }
+
+        @Test
+        @DisplayName("성공 - 키워드로 검색하면 해당 도서 목록을 반환한다")
+        void success_withKeyword_returnsFilteredBooks() {
+            // given
+            SliceImpl<Book> slice = new SliceImpl<>(List.of(book), PageRequest.of(0, 10), false);
+            given(bookRepository.getAllBooks("자바", "title", "DESC", null, null, 10))
+                    .willReturn(slice);
+            given(bookRepository.countBooksWithKeyword("자바")).willReturn(1L);
+            given(bookMapper.toBookDto(book)).willReturn(bookDto);
+
+            // when
+            CursorPageResponseBookDto result = bookServiceimpl.getBooks("자바", "title", "DESC", null, null, 10);
+
+            // then
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).title()).isEqualTo("자바 프로그래밍");
+        }
+
+        @Test
+        @DisplayName("성공 - 결과가 없으면 빈 목록을 반환한다")
+        void success_withNoResult_returnsEmptyList() {
+            // given
+            SliceImpl<Book> slice = new SliceImpl<>(List.of(), PageRequest.of(0, 10), false);
+            given(bookRepository.getAllBooks("없는책", "title", "DESC", null, null, 10))
+                    .willReturn(slice);
+            given(bookRepository.countBooksWithKeyword("없는책")).willReturn(0L);
+
+            // when
+            CursorPageResponseBookDto result = bookServiceimpl.getBooks("없는책", "title", "DESC", null, null, 10);
+
+            // then
+            assertThat(result.content()).isEmpty();
+            assertThat(result.hasNext()).isFalse();
+            assertThat(result.totalElements()).isZero();
+        }
+
+        @Test
+        @DisplayName("실패 - limit가 0이하이면 IllegalArgumentException을 던진다")
+        void fail_withInvalidLimit_throwsIllegalArgumentException() {
+            // when & then
+            assertThatThrownBy(() -> bookServiceimpl.getBooks(null, "title", "DESC", null, null, 0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("limit 값은 반드시 0보다 커야 합니다.");
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 수정")
+    class Update {
+        @Test
+        @DisplayName("성공 - 유효한 요청이면 도서가 수정된다.")
+        void success_withValidRequest_updatesBook() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.of(book));
+            given(bookMapper.toBookDto(book)).willReturn(bookDto);
+
+            // when
+            BookDto result = bookServiceimpl.update(bookId, bookUpdateRequest, null);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(book.getTitle()).isEqualTo("수정된 자바 프로그래밍");
+            assertThat(book.getAuthor()).isEqualTo("수정된 김자바");
+            assertThat(book.getPublisher()).isEqualTo("수정된 출판사");
+
+            then(bookRepository).should(times(1)).findById(bookId);
+            then(bookMapper).should(times(1)).toBookDto(book);
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException이 발생한다.")
+        void fail_withNonExistentBook_throwsBookNotFoundException() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.empty());
+
+            // when
+            assertThatThrownBy(() -> bookServiceimpl.update(bookId, bookUpdateRequest, null))
+                    .isInstanceOf(BookNotFoundException.class);
+
+            // then
+            then(bookRepository).should().findById(bookId);
+            then(bookRepository).should(never()).save(any(Book.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("도서 삭제")
+    class SoftDelete {
+        @Test
+        @DisplayName("성공 - 도서를 논리 삭제한다.")
+        void success_softDelete() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.of(book));
+
+            // when
+            bookServiceimpl.softDelete(bookId);
+
+            // then
+            assertThat(book.getIsDeleted()).isTrue();
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException이 발생한다.")
+        void fail_withNonExistentBook_throwsBookNotFoundException() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> bookServiceimpl.softDelete(bookId))
+                    .isInstanceOf(BookNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("hardDelete 메서드")
+    class HardDelete {
+        @Test
+        @DisplayName("성공 - 도서를 물리 삭제한다")
+        void success_hardDelete() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.of(book));
+
+            // when
+            bookServiceimpl.hardDelete(bookId);
+
+            // then
+            then(bookRepository).should().delete(book);
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 도서면 BookNotFoundException을 던진다")
+        void fail_withNonExistentBook_throwsBookNotFoundException() {
+            // given
+            given(bookRepository.findById(bookId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> bookServiceimpl.hardDelete(bookId))
+                    .isInstanceOf(BookNotFoundException.class);
         }
     }
 }
