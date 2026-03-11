@@ -43,7 +43,7 @@ class AlarmControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/notifications/{notificationId}", testAlarmId)
-                        .header("Deokhugam-Request-Id", testUserId)
+                        .header("Deokhugam-Request-User-ID", testUserId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.*").exists());
@@ -61,7 +61,7 @@ class AlarmControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/notifications/read-all")
-                        .header("Deokhugam-Request-Id", testUserId)
+                        .header("Deokhugam-Request-User-ID", testUserId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
