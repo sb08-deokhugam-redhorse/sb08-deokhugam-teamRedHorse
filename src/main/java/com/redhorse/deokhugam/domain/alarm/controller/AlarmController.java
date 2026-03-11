@@ -34,7 +34,7 @@ public class AlarmController implements AlarmApi {
 
     @PatchMapping("/read-all")
     public void updateAlarmToRead(
-            @RequestHeader (value = "Deokhugam-Request-User-ID", required = true)
+            @RequestHeader (value = "Deokhugam-Request-User-Id", required = true)
             @NotNull UUID deokhugamRequestUserID
     ) {
         alarmService.checkAllAlarm(deokhugamRequestUserID);
