@@ -176,14 +176,21 @@ public class PowerUserBatchConfig {
     public ItemWriter<PowerUser> userWriter() {
         RepositoryItemWriter<PowerUser> repositoryItemWriter =
                 new RepositoryItemWriterBuilder<PowerUser>()
-                .repository(powerUserRepository)
-                .methodName("save")
-                .build();
+                        .repository(powerUserRepository)
+                        .methodName("save")
+                        .build();
 
         ItemWriter<PowerUser> serviceCallWriter = chunk ->
-            chunk.getItems().stream()
-                    .filter(item -> item.getRanking() <= 10)
-                    .forEach(item -> alarmService.createPowerUserAlarm(alarmMapper.toPowerUserDto(item)));
+                chunk.getItems().stream()
+                        .filter(item -> item.getRanking() <= 10)
+                        .forEach(item -> {
+                            try {
+                                alarmService.createPowerUserAlarm(alarmMapper.toPowerUserDto(item));
+                            } catch (Exception e) {
+                                log.error("[Alarm-Service] 알람 생성 중 에러 발생. PowerUser ID: {}, 원인: {}",
+                                        item.getId(), e.getMessage());
+                            }
+                        });
 
         return new CompositeItemWriterBuilder<PowerUser>()
                 .delegates(repositoryItemWriter, serviceCallWriter)

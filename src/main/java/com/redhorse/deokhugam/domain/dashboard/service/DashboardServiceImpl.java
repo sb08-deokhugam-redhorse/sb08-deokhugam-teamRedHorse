@@ -45,7 +45,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class DashboardServiceImpl implements DashboardSerivce {
+public class DashboardServiceImpl implements DashboardService {
     private final PopularReviewRepository reviewRepository;
     private final PowerUserRepository userRepository;
     private final PopularBookRepository bookRepository;
@@ -80,7 +80,7 @@ public class DashboardServiceImpl implements DashboardSerivce {
         }
 
         List<PopularReviewDto> content = objectList.stream()
-                .map(dashboardMapper::entityToReivewDto)
+                .map(dashboardMapper::entityToReviewDto)
                 .toList();
 
 

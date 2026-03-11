@@ -5,7 +5,7 @@ import com.redhorse.deokhugam.domain.dashboard.dto.request.DashboardRequest;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularBookDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularReviewkDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePowerUserDto;
-import com.redhorse.deokhugam.domain.dashboard.service.DashboardSerivce;
+import com.redhorse.deokhugam.domain.dashboard.service.DashboardService;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class DashboardController {
-    private final DashboardSerivce dashboardService;
+    private final DashboardService dashboardService;
 
     @GetMapping("/reviews/popular") // 대시보드용 인기 리뷰
     public ResponseEntity<CursorPageResponsePopularReviewkDto> getPopularReviews(

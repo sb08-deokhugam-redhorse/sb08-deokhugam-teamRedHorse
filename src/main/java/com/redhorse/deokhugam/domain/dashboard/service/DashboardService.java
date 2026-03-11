@@ -14,7 +14,7 @@ import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 
 import java.util.UUID;
 
-public interface DashboardSerivce {
+public interface DashboardService {
     CursorPageResponsePopularReviewkDto getPopularReviews(DashboardRequest request);
 
     CursorPageResponsePowerUserDto getPowerUsers(DashboardRequest request);

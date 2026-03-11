@@ -24,7 +24,7 @@ public interface DashboardMapper {
     @Mapping(source = "review.rating", target = "reviewRating")
     @Mapping(source = "ranking", target = "rank")
     @Mapping(target = "reviewCount", constant = "0L")
-    PopularReviewDto entityToReivewDto(PopularReview review);
+    PopularReviewDto entityToReviewDto(PopularReview review);
 
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "user.nickname", target = "nickname")

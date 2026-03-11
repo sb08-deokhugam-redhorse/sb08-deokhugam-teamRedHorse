@@ -179,7 +179,14 @@ public class PopularReviewBatchConfig {
         ItemWriter<PopularReview> serviceCallWriter = chunk ->
                 chunk.getItems().stream()
                         .filter(item -> item.getRanking() <= 10)
-                        .forEach(item -> alarmService.createReviewAlarm(item));
+                        .forEach(item -> {
+                            try {
+                                alarmService.createReviewAlarm(item);
+                            } catch (Exception e) {
+                                log.error("[Alarm-Service] 알람 생성 중 에러 발생. Review ID: {}, 원인: {}",
+                                        item.getReview().getId(), e.getMessage());
+                            }
+                        });
 
         return new CompositeItemWriterBuilder<PopularReview>()
                 .delegates(repositoryItemWriter, serviceCallWriter)

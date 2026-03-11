@@ -5,7 +5,7 @@ import com.redhorse.deokhugam.domain.dashboard.dto.request.DashboardRequest;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularBookDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularReviewkDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePowerUserDto;
-import com.redhorse.deokhugam.domain.dashboard.service.DashboardSerivce;
+import com.redhorse.deokhugam.domain.dashboard.service.DashboardService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// 🚨 주의: AlarmController가 아니라 DashboardController를 로드해야 합니다!
 @WebMvcTest(DashboardController.class)
 @ActiveProfiles("test")
 public class DashboardControllerTest {
@@ -31,7 +30,7 @@ public class DashboardControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private DashboardSerivce dashboardService;
+    private DashboardService dashboardService;
 
     @Test
     @DisplayName("대시보드 인기 리뷰 조회 성공")

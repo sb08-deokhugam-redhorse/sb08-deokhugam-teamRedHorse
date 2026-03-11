@@ -62,7 +62,6 @@ public class DashboardServiceTest {
         List<PopularReview> mockList = new ArrayList<>();
         for (int i = 0; i < limit + 1; i++) {
             PopularReview review = mock(PopularReview.class);
-            // 모든 mock 원소의 메서드가 호출되진 않으므로 lenient() 적용
             lenient().when(review.getId()).thenReturn(UUID.randomUUID());
             lenient().when(review.getCreatedAt()).thenReturn(Instant.now());
             mockList.add(review);
@@ -73,7 +72,7 @@ public class DashboardServiceTest {
         given(reviewRepository.count()).willReturn(10L);
 
         PopularReviewDto mockDto = mock(PopularReviewDto.class);
-        given(dashboardMapper.entityToReivewDto(any(PopularReview.class))).willReturn(mockDto);
+        given(dashboardMapper.entityToReviewDto(any(PopularReview.class))).willReturn(mockDto);
 
         // when
         CursorPageResponsePopularReviewkDto response = dashboardService.getPopularReviews(mockRequest);
@@ -97,7 +96,6 @@ public class DashboardServiceTest {
         List<PowerUser> mockList = new ArrayList<>();
         for (int i = 0; i < limit + 1; i++) {
             PowerUser user = mock(PowerUser.class);
-            // 모든 mock 원소의 메서드가 호출되진 않으므로 lenient() 적용
             lenient().when(user.getId()).thenReturn(UUID.randomUUID());
             lenient().when(user.getCreatedAt()).thenReturn(Instant.now());
             mockList.add(user);
@@ -130,7 +128,6 @@ public class DashboardServiceTest {
 
         List<PopularBook> mockList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            // 이 케이스는 hasNext = false 라서 getId() 호출 자체가 안 일어나므로 Stubbing 불필요
             PopularBook book = mock(PopularBook.class);
             mockList.add(book);
         }
