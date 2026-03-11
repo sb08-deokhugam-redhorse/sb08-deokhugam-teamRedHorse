@@ -66,6 +66,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.batch:spring-batch-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 }
 
 jacoco {
@@ -94,7 +95,8 @@ jacocoTestReport {
                     "**/entity/**",
                     "**/entity/Q*", // QueryDSL QClass 제외
                     "**/*Application*",
-                    "**/global/**"
+                    "**/global/**",
+                    "**/infra/s3/scheduler/**"
             ])
         }))
     }
