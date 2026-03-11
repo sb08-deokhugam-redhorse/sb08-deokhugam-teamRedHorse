@@ -3,7 +3,6 @@ package com.redhorse.deokhugam.infra.ocr;
 import com.redhorse.deokhugam.infra.ocr.dto.OcrSpaceResponse;
 import com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException;
 import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -14,19 +13,23 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class OcrSpaceClientImpl implements OcrClient
 {
-    @Value("${ocr.space.api-key}")
-    private String ocrApiKey;
-
-    @Value("${ocr.space.url}")
-    private String ocrUrl;
-
+    private final String ocrApiKey;
+    private final String ocrUrl;
     private final RestClient restClient;
 
     private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
+
+    public OcrSpaceClientImpl(RestClient restClient,
+                              @Value("${ocr.space.api-key}") String ocrApiKey,
+                              @Value("${ocr.space.url}") String ocrUrl)
+    {
+        this.restClient = restClient;
+        this.ocrApiKey = ocrApiKey;
+        this.ocrUrl = ocrUrl;
+    }
 
     /**
      * 이미지에서 텍스트를 추출하여 반환한다.
