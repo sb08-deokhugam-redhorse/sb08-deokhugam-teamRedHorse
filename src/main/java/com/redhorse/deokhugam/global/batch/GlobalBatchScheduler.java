@@ -43,17 +43,17 @@ public class GlobalBatchScheduler {
 
         // thread Pool이 아니면 순차적으로 실행됨
         runJob(cleanupAlarmJob);
-        runJob(cleanupUserJob);
     }
 
     // 매일 오전 2시에 동작하게
-    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
     public void runDailyDashboardJob() {
         log.info("[DoashDoard-Batch] 작업 시작: 오전 2시 예약된 작업 진행");
 
         runJob(reviewRankingBatchJob);
         runJob(bookRankingBatchJob);
         runJob(userRankingBatchJob);
+        runJob(cleanupUserJob);
     }
 
     private void runJob(Job job) {

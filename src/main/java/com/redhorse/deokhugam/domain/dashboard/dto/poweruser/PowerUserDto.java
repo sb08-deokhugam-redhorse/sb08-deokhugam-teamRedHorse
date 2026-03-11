@@ -10,10 +10,10 @@ public record PowerUserDto(
         String nickname,
         PeriodType period,
         Instant createdAt,
-        int rank,
+        Long rank,
         double score,
         double reviewScoreSum,
-        int likeCount,
-        int commentCount
+        Long likeCount,
+        Long commentCount
 ) {
 }

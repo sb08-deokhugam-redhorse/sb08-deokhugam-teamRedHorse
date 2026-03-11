@@ -11,11 +11,14 @@ import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
 import com.redhorse.deokhugam.domain.user.dto.response.UserDto;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserDeletedNotYetException;
 import com.redhorse.deokhugam.domain.user.exception.UserDuplicateException;
 import com.redhorse.deokhugam.domain.user.exception.UserLoginFailedException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
+import com.redhorse.deokhugam.global.exception.AuthenticationException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -280,5 +283,149 @@ class UserServiceImplTest {
 
     assertThat(user.getNickname()).isEqualTo(request.nickname());
     assertThat(result.nickname()).isEqualTo(request.nickname());
+  }
+
+  @Test
+  @DisplayName("사용자 SOFT 삭제 성공")
+  void softDelete_user() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    // ID임시 주입
+    ReflectionTestUtils.setField(user, "id", userId);
+
+    given(
+        userRepository.findById(userId)
+    ).willReturn(Optional.of(user));
+
+
+    // When & Then
+    userService.deleteUserSoft(userId, userId);
+
+
+    assertThat(user.isDeleted()).isEqualTo(true);
+    assertThat(user.getDeletedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 성공")
+  void hardDelete_user_Success() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    // 물리 삭제 조건 설정: ID 주입, Soft Delete 상태(true), 삭제 시간(25시간 전)
+    ReflectionTestUtils.setField(user, "id", userId);
+    ReflectionTestUtils.setField(user, "isDeleted", true);
+    ReflectionTestUtils.setField(user, "deletedAt", Instant.now().minus(java.time.Duration.ofHours(25)));
+
+    given(
+        userRepository.findByIdIncludeDeleted(userId)
+    ).willReturn(Optional.of(user));
+
+    given(
+        userRepository.deleteHardById(userId)
+    ).willReturn(1);
+
+    // when
+    userService.deleteUserHard(userId, userId);
+
+    // then
+    verify(userRepository).findByIdIncludeDeleted(userId);
+    verify(userRepository).deleteHardById(userId);
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 존재하지 않는 사용자")
+  void hardDelete_user_NotFound() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    given(
+        userRepository.findByIdIncludeDeleted(userId)
+    ).willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(() -> userService.deleteUserHard(userId, userId))
+        .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 권한 없음")
+  void hardDelete_user_AuthenticationFailed() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID anotherUserId = UUID.randomUUID();
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    ReflectionTestUtils.setField(user, "id", userId);
+
+    given(
+        userRepository.findByIdIncludeDeleted(userId)
+    ).willReturn(Optional.of(user));
+
+    // when & then
+    assertThatThrownBy(() -> userService.deleteUserHard(anotherUserId, userId))
+        .isInstanceOf(AuthenticationException.class);
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 소프트 삭제되지 않은 유저")
+  void hardDelete_user_NotSoftDeleted() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    ReflectionTestUtils.setField(user, "id", userId);
+    ReflectionTestUtils.setField(user, "isDeleted", false);
+
+    given(
+        userRepository.findByIdIncludeDeleted(userId)
+    ).willReturn(Optional.of(user));
+
+    // when & then
+    assertThatThrownBy(() -> userService.deleteUserHard(userId, userId))
+        .isInstanceOf(UserNotSoftDeletedException.class);
+  }
+
+  @Test
+  @DisplayName("사용자 HARD 삭제 실패 - 유예 기간(1일) 미경과")
+  void hardDelete_user_NotYet() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = new User(
+        "seongjo.park@gmail.com",
+        "박성조",
+        "Thisistest123***"
+    );
+
+    ReflectionTestUtils.setField(user, "id", userId);
+    ReflectionTestUtils.setField(user, "isDeleted", true);
+    ReflectionTestUtils.setField(user, "deletedAt", Instant.now());
+
+    given(
+        userRepository.findByIdIncludeDeleted(userId)
+    ).willReturn(Optional.of(user));
+
+    // when & then
+    assertThatThrownBy(() -> userService.deleteUserHard(userId, userId))
+        .isInstanceOf(UserDeletedNotYetException.class);
   }
 }
