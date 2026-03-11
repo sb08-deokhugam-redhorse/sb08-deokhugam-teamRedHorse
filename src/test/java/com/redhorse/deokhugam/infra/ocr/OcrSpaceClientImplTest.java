@@ -15,6 +15,8 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("OcrSpaceClientImpl Unit Test")
@@ -32,7 +34,7 @@ class OcrSpaceClientImplTest
                 .baseUrl(mockWebServer.url("/").toString())
                 .build();
 
-        ocrSpaceClientImpl = new OcrSpaceClientImpl(restClient, mockWebServer.url("/").toString(), "test-api-key");
+        ocrSpaceClientImpl = new OcrSpaceClientImpl(restClient, "test-api-key", mockWebServer.url("/").toString());
     }
 
     @AfterEach
@@ -99,10 +101,8 @@ class OcrSpaceClientImplTest
         @DisplayName("실패 - 파일 크기가 1MB를 초과하면 ImageSizeExceededException을 던진다")
         void fail_withOversizedImage_throwsImageSizeExceededException() {
             // given
-            byte[] largeContent = new byte[1024 * 1024 * 1024];
-            MockMultipartFile image = new MockMultipartFile(
-                    "image", "large.jpg", MediaType.IMAGE_JPEG_VALUE, largeContent
-            );
+            MockMultipartFile image = mock(MockMultipartFile.class);
+            when(image.getSize()).thenReturn(1024 * 1024 + 1L);
 
             // when & then
             assertThatThrownBy(() -> ocrSpaceClientImpl.extractText(image))
