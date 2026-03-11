@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
+import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -53,6 +54,9 @@ public class ReviewServiceTest {
 
   @Mock
   private UserRepository userRepository;
+
+  @Mock
+  private CommentRepository commentRepository;
 
   @Mock
   private ReviewMapper reviewMapper;
@@ -108,8 +112,8 @@ public class ReviewServiceTest {
         "userNickname",
         content,
         rating,
-        0,
-        0,
+        0L,
+        0L,
         false,
         date,
         date
@@ -172,8 +176,8 @@ public class ReviewServiceTest {
         "userNickname",
         "update",
         rating,
-        0,
-        0,
+        0L,
+        0L,
         false,
         date,
         date
@@ -315,7 +319,9 @@ public class ReviewServiceTest {
         .willReturn(Optional.of(user));
     given(reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(eq(reviewId), eq(userId)))
         .willReturn(Optional.of(mock(ReviewLike.class)));
-    given(reviewMapper.toDto(eq(review), eq(true)))
+    given(commentRepository.countByReviewIdAndDeletedAtIsNull(reviewId))
+        .willReturn(0L);
+    given(reviewMapper.toDto(eq(review), eq(true),eq(0L)))
         .willReturn(reviewDto);
 
     // when

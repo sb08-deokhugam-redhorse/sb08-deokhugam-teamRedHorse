@@ -52,6 +52,7 @@ public class CommentServiceImpl implements CommentService {
     Comment comment = new Comment(content, review, user);
 
     Comment savedComment = commentRepository.save(comment);
+    review.incrementCommentCount();
 
     log.info("[Comment-Service] 등록 작업 완료: commentId={}", savedComment.getId());
 
@@ -102,7 +103,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     comment.softDelete();
-
+    Review review = comment.getReview();
+    review.decrementCommentCount();
     log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
 

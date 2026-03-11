@@ -12,8 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "popular_books")
 @Entity
-public class PopularBook extends BaseEntity
-{
+public class PopularBook extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "period", length = 20, nullable = false)
     private PeriodType period = PeriodType.DAILY;
@@ -42,4 +41,5 @@ public class PopularBook extends BaseEntity
         this.ranking = ranking;
         this.book = book;
     }
+
 }

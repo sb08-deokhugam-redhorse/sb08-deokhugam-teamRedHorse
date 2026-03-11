@@ -73,7 +73,7 @@ class AlarmServiceGetListTest {
 
         // then
         assertAll(
-                () -> assertEquals(limit, result.contents().size(), "결과 리스트는 limit 크기만큼 잘려야 함"),
+                () -> assertEquals(limit, result.content().size(), "결과 리스트는 limit 크기만큼 잘려야 함"),
                 () -> assertTrue(result.hasNext(), "데이터가 limit보다 많으므로 hasNext는 true여야 함"),
                 () -> assertEquals(lastId.toString(), result.nextCursor(), "limit 번째 데이터의 ID가 커서가 되어야 함"),
                 () -> assertEquals(lastCreatedAt, result.nextAfter(), "limit 번째 데이터의 시간이 nextAfter가 되어야 함"),
@@ -97,7 +97,7 @@ class AlarmServiceGetListTest {
 
         // then
         assertAll(
-                () -> assertTrue(result.contents().isEmpty()),
+                () -> assertTrue(result.content().isEmpty()),
                 () -> assertNull(result.nextCursor()),
                 () -> assertNull(result.nextAfter()),
                 () -> assertFalse(result.hasNext()),

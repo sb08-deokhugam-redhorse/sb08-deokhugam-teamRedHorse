@@ -18,7 +18,7 @@ public class PopularReview extends BaseEntity {
     private PeriodType period;
 
     @Column(name = "ranking", nullable = false)
-    private Integer ranking;
+    private Long ranking;
 
     @Column(name = "score", nullable = false)
     private Double score = 0.0;
@@ -32,4 +32,13 @@ public class PopularReview extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false, referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_popular_review_review"))
     private Review review;
+
+    public PopularReview(PeriodType period, Long ranking, Double score, Long likeCount, Long commentCount, Review review) {
+        this.period = period;
+        this.ranking = ranking;
+        this.score = score;
+        this.likeCount = likeCount;
+        this.commentCount = commentCount;
+        this.review = review;
+    }
 }

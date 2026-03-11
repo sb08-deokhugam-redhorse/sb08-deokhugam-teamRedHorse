@@ -13,8 +13,8 @@ public record ReviewDto(
     String userNickname,
     String content,
     Integer rating,
-    int likeCount,
-    int commentCount,
+    long likeCount,
+    long commentCount,
     boolean likedByMe,
     Instant createdAt,
     Instant updatedAt
