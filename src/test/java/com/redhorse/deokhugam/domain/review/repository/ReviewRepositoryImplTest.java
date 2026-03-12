@@ -14,6 +14,7 @@ import com.redhorse.deokhugam.global.exception.InvalidCursorException;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Slice;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @Import(JpaConfig.class)
@@ -68,24 +68,26 @@ public class ReviewRepositoryImplTest {
     user1Id = user1.getId();
     book1Id = book1.getId();
 
-    Review r1 = new Review("test1", 1, book1, user1);
-    Review r2 = new Review("test2", 2, book1, user2);
-    Review r3 = new Review("test3", 3, book1, user3);
-    Review r4 = new Review("test5", 1, book2, user1);
-    Review r5 = new Review("test2", 4, book2, user2);
-    Review r6 = new Review("test4", 2, book2, user3);
-
-    reviewRepository.saveAll(List.of(r1, r2, r3, r4, r5, r6));
+    List<Review> reviews = List.of(
+        new Review("test1", 1, book1, user1),
+        new Review("test2", 2, book1, user2),
+        new Review("test3", 3, book1, user3),
+        new Review("test5", 1, book2, user1),
+        new Review("test2", 4, book2, user2),
+        new Review("test4", 2, book2, user3)
+    );
 
     Instant base = Instant.now();
 
-    ReflectionTestUtils.setField(r1, "createdAt", base.minusSeconds(6));
-    ReflectionTestUtils.setField(r2, "createdAt", base.minusSeconds(5));
-    ReflectionTestUtils.setField(r3, "createdAt", base.minusSeconds(4));
-    ReflectionTestUtils.setField(r4, "createdAt", base.minusSeconds(3));
-    ReflectionTestUtils.setField(r5, "createdAt", base.minusSeconds(2));
-    ReflectionTestUtils.setField(r6, "createdAt", base.minusSeconds(1));
+    for (int i = 0; i < reviews.size(); i++) {
+      Review review = reviewRepository.save(reviews.get(i));
+      Instant updateTime = base.minus(6L - i, ChronoUnit.MINUTES);
 
+      em.createNativeQuery("UPDATE reviews SET created_at = ? WHERE id = ?")
+          .setParameter(1, updateTime)
+          .setParameter(2, review.getId())
+          .executeUpdate();
+    }
     reviewRepository.flush();
     em.clear();
   }
