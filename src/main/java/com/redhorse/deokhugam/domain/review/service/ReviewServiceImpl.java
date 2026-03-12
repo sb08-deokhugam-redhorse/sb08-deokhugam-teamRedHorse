@@ -60,10 +60,14 @@ public class ReviewServiceImpl implements ReviewService {
     if (reviewRepository.existsByBookIdAndUserId(bookId, userId)) {
       throw new BookIdUserIdExistsException(bookId, userId);
     }
+    try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
       log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(), userId);
       return reviewMapper.toDto(review);
+    } catch (DataIntegrityViolationException e) {
+      throw new BookIdUserIdExistsException(bookId, userId);
+    }
 
   }
 

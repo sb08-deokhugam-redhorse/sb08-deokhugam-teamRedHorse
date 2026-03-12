@@ -306,6 +306,8 @@ public class ReviewServiceTest {
   void deleteReviewLike_Success() {
     // given
     ReviewLike reviewLike = new ReviewLike(user, review);
+    review.incrementLikeCount();
+
     given(reviewRepository.findByIdForUpdate(eq(reviewId)))
         .willReturn(Optional.of(review));
     given(userRepository.findById(eq(userId)))
@@ -326,6 +328,8 @@ public class ReviewServiceTest {
     assertThat(result.reviewId()).isEqualTo(reviewId);
     assertThat(result.userId()).isEqualTo(userId);
     assertThat(result.liked()).isEqualTo(false);
+    assertThat(reviewLike.getDeletedAt()).isNotNull();
+    assertThat(review.getLikeCount()).isZero();
   }
 
   @Test

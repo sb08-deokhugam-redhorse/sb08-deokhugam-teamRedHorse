@@ -47,7 +47,7 @@ public class ReviewRepositoryImplTest {
   private UUID book1Id;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws InterruptedException {
 
     User user1 = userRepository.save(new User("a@test.com", "user1", "pw"));
     User user2 = userRepository.save(new User("b@test.com", "user2", "pw"));
@@ -63,14 +63,20 @@ public class ReviewRepositoryImplTest {
     user1Id = user1.getId();
     book1Id = book1.getId();
 
-    reviewRepository.saveAll(List.of(
+    // 시간차 저장
+    List<Review> reviews = List.of(
         new Review("test1", 1, book1, user1),
         new Review("test2", 2, book1, user2),
         new Review("test3", 3, book1, user3),
         new Review("test5", 1, book2, user1),
         new Review("test2", 4, book2, user2),
         new Review("test4", 2, book2, user3)
-    ));
+    );
+
+    for (Review review : reviews) {
+      reviewRepository.save(review);
+      Thread.sleep(10);
+    }
   }
 
   @Test
