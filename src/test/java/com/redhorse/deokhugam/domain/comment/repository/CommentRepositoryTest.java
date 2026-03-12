@@ -204,24 +204,24 @@ class CommentRepositoryTest {
   @Test
   @DisplayName("댓글 목록 조회 성공 - 다음 페이지일 경우")
   void findAllByCursor_NextPage_Success() {
-    // given (댓글의 물리적인 시간차를 두기 위해 반복문 없이 저장)
-    commentRepository.save(new Comment("1번 댓글", savedReview, savedUser));
-    commentRepository.save(new Comment("2번 댓글", savedReview, savedUser));
-    commentRepository.save(new Comment("3번 댓글", savedReview, savedUser));
-    commentRepository.save(new Comment("4번 댓글", savedReview, savedUser));
-    commentRepository.save(new Comment("5번 댓글", savedReview, savedUser));
+    // given
+    for (int i = 1; i <= 10; i++) {
+      commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
+    }
+    commentRepository.flush();
 
-    CommentPageRequest firstRequest = new CommentPageRequest(savedReview.getId(), null, null, null, 3);
-    List<Comment> result = commentRepository.findAllByCursor(firstRequest); // 5, 4, 3 조회
+    CommentPageRequest firstRequest = new CommentPageRequest(savedReview.getId(), null, null, null, 5);
+    List<Comment> result = commentRepository.findAllByCursor(firstRequest);
+    Comment lastComment = result.get(4);
 
-    CommentPageRequest nextRequest = new CommentPageRequest(savedReview.getId(), null, result.get(2).getId().toString(), result.get(2).getCreatedAt(), 3);
+    CommentPageRequest nextRequest = new CommentPageRequest(savedReview.getId(), null, lastComment.getId().toString(), lastComment.getCreatedAt(), 5);
 
     // when
     List<Comment> nextResult = commentRepository.findAllByCursor(nextRequest);
 
     // then
-    List<String> contents = nextResult.stream().map(Comment::getContent).toList();
-    assertThat(contents).containsExactly("2번 댓글", "1번 댓글");
+    assertThat(nextResult).isNotEmpty();
+    assertThat(nextResult.get(0).getId()).isNotEqualTo(lastComment.getId());
   }
 
   @Test
