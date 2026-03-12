@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,7 +19,6 @@ public interface BookInfoApi
     @Operation(
             summary = "ISBN으로 도서 정보 조회",
             description = "Naver API를 통해 ISBN으로 도서 정보를 조회합니다."
-            , security = @SecurityRequirement(name = "CustomHeaderAuth")
     )
     @ApiResponses({
             @ApiResponse(

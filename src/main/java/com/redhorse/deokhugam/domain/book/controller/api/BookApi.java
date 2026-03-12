@@ -37,9 +37,9 @@ public interface BookApi
     ResponseEntity<BookDto> createBook(
             @Parameter(description = "도서 정보", required = true,
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = BookDto.class))) BookCreateRequest bookCreateRequest,
+                    schema = @Schema(implementation = BookCreateRequest.class))) BookCreateRequest bookCreateRequest,
             @Parameter(description = "도서 썸네일 이미지", required = false,
-                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)) MultipartFile thumbnailImage
+                    content = @Content(schema = @Schema(type = "string", format = "binary"))) MultipartFile thumbnailImage
     );
 
     @Operation(summary = "도서 정보 수정", description = "도서 정보를 수정합니다.")
@@ -59,9 +59,9 @@ public interface BookApi
             @Parameter(description = "도서 ID", example = "123e4567-e89b-12d3-a456-426614174000", required = true) UUID bookID,
             @Parameter(description = "수정할 도서 정보", required = true,
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = BookDto.class))) BookUpdateRequest bookUpdateRequest,
+                    schema = @Schema(implementation = BookUpdateRequest.class))) BookUpdateRequest bookUpdateRequest,
             @Parameter(description = "수정할 도서 썸네일 이미지", required = false,
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)) MultipartFile thumbnailImage
+                    content = @Content(schema = @Schema(type = "string", format = "binary"))) MultipartFile thumbnailImage
     );
 
     @Operation(summary = "도서 목록 조회", description = "검색 조건에 맞는 도서 목록을 조회합니다.")
