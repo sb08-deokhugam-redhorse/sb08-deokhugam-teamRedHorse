@@ -123,6 +123,35 @@ class CommentRepositoryTest {
   }
 
   @Test
+  @DisplayName("논리 삭제된 댓글은 findByIdAndDeletedAtIsNull로 조회되지 않음")
+  void findByIdAndDeletedAtIsNull_SoftDeleted_ReturnsEmpty() {
+    // given
+    Comment comment = new Comment("삭제될 댓글", savedReview, savedUser);
+    Comment savedComment = commentRepository.save(comment);
+    savedComment.softDelete();
+    commentRepository.flush();
+
+    // when
+    Optional<Comment> result = commentRepository.findByIdAndDeletedAtIsNull(savedComment.getId());
+
+    // then
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  @DisplayName("댓글이 없는 경우 빈 리스트 반환")
+  void findAllByCursor_NoComments_ReturnsEmptyList() {
+    // given
+    CommentPageRequest request = new CommentPageRequest(savedReview.getId(), null, null, null, 10);
+
+    // when
+    List<Comment> result = commentRepository.findAllByCursor(request);
+
+    // then
+    assertThat(result).isEmpty();
+  }
+
+  @Test
   @DisplayName("댓글 물리 삭제 성공")
   void hardDelete_Success() {
     // given
@@ -174,10 +203,11 @@ class CommentRepositoryTest {
 
   @Test
   @DisplayName("댓글 목록 조회 성공 - 다음 페이지일 경우")
-  void findAllByCursor_NextPage_Success() {
+  void findAllByCursor_NextPage_Success() throws InterruptedException {
     // given
     for (int i = 1; i <= 10; i++) {
       commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
+      Thread.sleep(1);
     }
     CommentPageRequest firstRequest = new CommentPageRequest(savedReview.getId(), null, null, null, 5);
     List<Comment> result = commentRepository.findAllByCursor(firstRequest); // 10번부터 6번까지 조회
@@ -202,7 +232,7 @@ class CommentRepositoryTest {
     }
 
     // 커서 역할을 못하기 때문에 다음 페이지 조회 x
-    CommentPageRequest request = new CommentPageRequest(savedReview.getId(), "invalid-uuid", Instant.now().toString(), null, 5);
+    CommentPageRequest request = new CommentPageRequest(savedReview.getId(), null, "invalid-uuid", Instant.now(), 5);
 
     // when
     List<Comment> result = commentRepository.findAllByCursor(request);
