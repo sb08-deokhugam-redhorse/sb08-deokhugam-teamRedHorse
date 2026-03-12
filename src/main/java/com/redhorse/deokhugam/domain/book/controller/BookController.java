@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.book.controller;
 
+import com.redhorse.deokhugam.domain.book.controller.api.BookApi;
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
 import com.redhorse.deokhugam.domain.book.dto.request.BookUpdateRequest;
 import com.redhorse.deokhugam.domain.book.dto.response.BookDto;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/books")
-public class BookController
+public class BookController implements BookApi
 {
     private final BookService bookService;
 
