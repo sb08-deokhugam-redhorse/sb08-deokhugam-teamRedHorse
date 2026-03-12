@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.book.controller;
 
+import com.redhorse.deokhugam.domain.book.controller.api.BookInfoApi;
 import com.redhorse.deokhugam.infra.naver.NaverBookProvider;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import com.redhorse.deokhugam.infra.ocr.OcrProvider;
@@ -15,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/books")
 @RestController
-public class BookInfoController
+public class BookInfoController implements BookInfoApi
 {
     private final NaverBookProvider naverBookProvider;
     private final OcrProvider ocrProvider;
