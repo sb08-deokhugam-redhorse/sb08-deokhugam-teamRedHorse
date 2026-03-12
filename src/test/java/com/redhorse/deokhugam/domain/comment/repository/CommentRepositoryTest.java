@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @Import(JpaConfig.class)
@@ -216,8 +215,12 @@ class CommentRepositoryTest {
     for (int i = 1; i <= 10; i++) {
       Comment comment = commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
 
-      Instant manipulatedTime = baseTime.minus(i, ChronoUnit.MINUTES);
-      ReflectionTestUtils.setField(comment, "createdAt", manipulatedTime);
+      Instant manipulatedTime = baseTime.minus(11L - i, ChronoUnit.MINUTES);
+
+      em.createNativeQuery("UPDATE comments SET created_at = ? WHERE id = ?")
+          .setParameter(1, manipulatedTime)
+          .setParameter(2, comment.getId())
+          .executeUpdate();
     }
 
     commentRepository.flush();
