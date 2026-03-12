@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.hibernate.query.SortDirection;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,8 +74,14 @@ public interface BookApi
     })
     ResponseEntity<CursorPageResponseBookDto> getAllBooks(
             @Parameter(description = "검색어 (제목 | 저자 | ISBN)",example = "자바") String keyword,
-            @Parameter(description = "정렬 기준(title | publishedDate | rating | reviewCount)", schema = @Schema(defaultValue = "title", example = "title")) String orderBy,
-            @Parameter(description = "정렬 방향", schema = @Schema(implementation = SortDirection.class, defaultValue = "DESC", example = "DESC")) String direction,
+            @Parameter(description = "정렬 기준(title | publishedDate | rating | reviewCount)", schema = @Schema(
+                    allowableValues = {"title", "publishedDate", "rating", "reviewCount"},
+                    defaultValue = "title",
+                    example = "title")) String orderBy,
+            @Parameter(description = "정렬 방향", schema = @Schema(
+                    allowableValues = {"ASC", "DESC"},
+                    defaultValue = "DESC",
+                    example = "DESC")) String direction,
             @Parameter(description = "커서 페이지네이션 커서") String cursor,
             @Parameter(description = "보조 커서 (created At)") Instant after,
             @Parameter(description = "페이지 크기") int limit
