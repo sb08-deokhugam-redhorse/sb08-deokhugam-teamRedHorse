@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.domain.bashboard;
+package com.redhorse.deokhugam.domain.dashboard;
 
 import com.redhorse.deokhugam.domain.dashboard.dto.popularbook.PopularBookDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.PopularReviewDto;
