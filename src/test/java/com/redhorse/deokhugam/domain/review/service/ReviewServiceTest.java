@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
-import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
@@ -20,6 +19,7 @@ import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.domain.review.exception.OnlyTheReviewAuthorException;
 import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
+import com.redhorse.deokhugam.domain.review.exception.ReviewValidationException;
 import com.redhorse.deokhugam.domain.review.mapper.ReviewMapper;
 import com.redhorse.deokhugam.domain.review.repository.ReviewLikeRepository;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
@@ -191,7 +191,7 @@ public class ReviewServiceTest {
 
   @Test
   @DisplayName("리뷰 수정 실패 - 리뷰 작성자와 유저 아이디가 다를 경우")
-  void updateReview_Failure() {
+  void updateReview_UserIsNotAuthory_Failure() {
     // given
     ReviewUpdateRequest request = new ReviewUpdateRequest(
         "update", 3
@@ -204,6 +204,19 @@ public class ReviewServiceTest {
     // when & then
     assertThatThrownBy(() -> reviewService.update(reviewId, otherUserId, request))
         .isInstanceOf(OnlyTheReviewAuthorException.class);
+  }
+
+  @Test
+  @DisplayName("리뷰 수정 실패 - 리뷰 내용이 비었을 경우")
+  void updateReview_ContentIsEmpty_Failure() {
+    // given
+    ReviewUpdateRequest request = new ReviewUpdateRequest(
+        "", 3
+    );
+
+    // when & then
+    assertThatThrownBy(() -> reviewService.update(reviewId, userId, request))
+        .isInstanceOf(ReviewValidationException.class);
   }
 
   @Test
@@ -286,6 +299,33 @@ public class ReviewServiceTest {
     assertThat(result.reviewId()).isEqualTo(reviewId);
     assertThat(result.userId()).isEqualTo(userId);
     assertThat(result.liked()).isEqualTo(true);
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 취소 성공")
+  void deleteReviewLike_Success() {
+    // given
+    ReviewLike reviewLike = new ReviewLike(user, review);
+    given(reviewRepository.findByIdForUpdate(eq(reviewId)))
+        .willReturn(Optional.of(review));
+    given(userRepository.findById(eq(userId)))
+        .willReturn(Optional.of(user));
+
+    ReviewLikeDto request = new ReviewLikeDto(
+        reviewId, userId, false
+    );
+
+    given(reviewLikeRepository.findByIdForUpdate(eq(reviewId), eq(userId)))
+        .willReturn(Optional.of(reviewLike));
+
+    // when
+    ReviewLikeDto result = reviewService.like(reviewId, userId);
+
+    // then
+    assertThat(result).isEqualTo(request);
+    assertThat(result.reviewId()).isEqualTo(reviewId);
+    assertThat(result.userId()).isEqualTo(userId);
+    assertThat(result.liked()).isEqualTo(false);
   }
 
   @Test
