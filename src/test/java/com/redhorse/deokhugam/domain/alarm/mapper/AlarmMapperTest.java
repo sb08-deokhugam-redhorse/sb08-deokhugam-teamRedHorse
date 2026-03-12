@@ -1,4 +1,5 @@
 package com.redhorse.deokhugam.domain.alarm.mapper;
+
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
 import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
 import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.PowerUserDto;
@@ -74,8 +75,24 @@ class AlarmMapperTest {
         // given
         Alarm mockAlarm = mock(Alarm.class);
         given(mockAlarm.getUser()).willReturn(mock(User.class));
-        // 둘 중 하나라도 null이면 false 반환
+        given(mockAlarm.getCreatedAt()).willReturn(Instant.now());
+        given(mockAlarm.getUpdatedAt()).willReturn(null);
+
+        // when
+        NotificationDto result = alarmMapper.alarmToNotificationDto(mockAlarm);
+
+        // then
+        assertThat(result.confirmed()).isFalse();
+    }
+
+    @Test
+    @DisplayName("isConfirmed 로직 검증 - 둘 다 null인 경우 false 반환")
+    void alarmToNotificationDto_BothTimesNull_ThenFalse() {
+        // given
+        Alarm mockAlarm = mock(Alarm.class);
+        given(mockAlarm.getUser()).willReturn(mock(User.class));
         given(mockAlarm.getCreatedAt()).willReturn(null);
+        given(mockAlarm.getUpdatedAt()).willReturn(null);
 
         // when
         NotificationDto result = alarmMapper.alarmToNotificationDto(mockAlarm);

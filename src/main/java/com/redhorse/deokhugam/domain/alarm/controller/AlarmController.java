@@ -5,6 +5,7 @@ import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationUpdateRequest;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class AlarmController implements AlarmApi {
 
     @GetMapping
     @Override
-    public ResponseEntity<CursorPageResponseNotificationDto> getAlarmList(NotificationListRequest request) {
+    public ResponseEntity<CursorPageResponseNotificationDto> getAlarmList(@Valid NotificationListRequest request) {
         CursorPageResponseNotificationDto response = alarmService.getAlarmList(request);
         return ResponseEntity.ok(response);
     }

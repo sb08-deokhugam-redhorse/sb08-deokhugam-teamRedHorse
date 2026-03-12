@@ -48,7 +48,7 @@ public interface AlarmApi {
             summary = "모든 알림 읽음 처리",
             description = "사용자의 모든 알림을 읽음 상태로 처리합니다.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "알림 읽음 처리 성공"),
+                    @ApiResponse(responseCode = "200", description = "알림 읽음 처리 성공"),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (사용자 ID 누락)"),
                     @ApiResponse(responseCode = "404", description = "사용자 정보 없음"),
                     @ApiResponse(responseCode = "404", description = "알림 정보 없음"),

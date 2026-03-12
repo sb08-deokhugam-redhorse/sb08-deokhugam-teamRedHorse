@@ -36,7 +36,7 @@ public interface DashboardApi {
             summary = "파워 유저 목록 조회",
             description = "기간별 파워 유저 목록을 조회합니다.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "파워 유저 목록 조회 성공",
+                    @ApiResponse(responseCode = "200", description = "파워 유저 목록 조회 성공",
                             content = @Content(schema = @Schema(implementation = CursorPageResponsePowerUserDto.class))),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (랭킹 기간 오류, 정렬 방향 오류 등)",
                             content = @Content(schema = @Schema(implementation = CursorPageResponsePowerUserDto.class))),
