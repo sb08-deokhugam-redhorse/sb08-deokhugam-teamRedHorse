@@ -11,9 +11,9 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.config.JpaConfig;
 import com.redhorse.deokhugam.global.exception.InvalidCursorException;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -44,6 +44,9 @@ public class ReviewRepositoryImplTest {
   @Autowired
   ReviewRepositoryImpl reviewRepositoryImpl;
 
+  @Autowired
+  EntityManager em;
+
   private UUID user1Id;
 
   private UUID book1Id;
@@ -65,23 +68,26 @@ public class ReviewRepositoryImplTest {
     user1Id = user1.getId();
     book1Id = book1.getId();
 
-    // 시간차 저장
-    Instant base = Instant.now();
-
     Review r1 = new Review("test1", 1, book1, user1);
-    ReflectionTestUtils.setField(r1, "createdAt", base.minusSeconds(6));
     Review r2 = new Review("test2", 2, book1, user2);
-    ReflectionTestUtils.setField(r2, "createdAt", base.minusSeconds(5));
     Review r3 = new Review("test3", 3, book1, user3);
-    ReflectionTestUtils.setField(r3, "createdAt", base.minusSeconds(4));
     Review r4 = new Review("test5", 1, book2, user1);
-    ReflectionTestUtils.setField(r4, "createdAt", base.minusSeconds(3));
     Review r5 = new Review("test2", 4, book2, user2);
-    ReflectionTestUtils.setField(r5, "createdAt", base.minusSeconds(2));
     Review r6 = new Review("test4", 2, book2, user3);
-    ReflectionTestUtils.setField(r6, "createdAt", base.minusSeconds(1));
 
     reviewRepository.saveAll(List.of(r1, r2, r3, r4, r5, r6));
+
+    Instant base = Instant.now();
+
+    ReflectionTestUtils.setField(r1, "createdAt", base.minusSeconds(6));
+    ReflectionTestUtils.setField(r2, "createdAt", base.minusSeconds(5));
+    ReflectionTestUtils.setField(r3, "createdAt", base.minusSeconds(4));
+    ReflectionTestUtils.setField(r4, "createdAt", base.minusSeconds(3));
+    ReflectionTestUtils.setField(r5, "createdAt", base.minusSeconds(2));
+    ReflectionTestUtils.setField(r6, "createdAt", base.minusSeconds(1));
+
+    reviewRepository.flush();
+    em.clear();
   }
 
   @Test
@@ -206,13 +212,13 @@ public class ReviewRepositoryImplTest {
     assertThat(result1.hasNext()).isTrue();
     assertThat(result1.getContent())
         .extracting(Review::getCreatedAt)
-        .isSorted();
+        .isSortedAccordingTo(Comparator.naturalOrder());
 
     assertThat(result2.getContent()).hasSize(3);
     assertThat(result2.hasNext()).isFalse();
     assertThat(result2.getContent())
         .extracting(Review::getCreatedAt)
-        .isSorted();
+        .isSortedAccordingTo(Comparator.naturalOrder());
 
   }
 
@@ -234,13 +240,13 @@ public class ReviewRepositoryImplTest {
     assertThat(result1.hasNext()).isTrue();
     assertThat(result1.getContent())
         .extracting(Review::getRating)
-        .isSorted();
+        .isSortedAccordingTo(Comparator.naturalOrder());
 
     assertThat(result2.getContent()).hasSize(3);
     assertThat(result2.hasNext()).isFalse();
     assertThat(result2.getContent())
         .extracting(Review::getRating)
-        .isSorted();
+        .isSortedAccordingTo(Comparator.naturalOrder());
   }
 
   @Test
