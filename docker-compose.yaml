@@ -3,7 +3,8 @@ services:
     image: postgres:17
     container_name: postgres
     restart: unless-stopped
-
+    profiles:
+      - local
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -61,7 +62,7 @@ services:
       - app_logs:/app/.logs
 
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5432/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:80/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
