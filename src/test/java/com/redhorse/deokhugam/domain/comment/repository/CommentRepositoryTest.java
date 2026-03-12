@@ -11,8 +11,10 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.config.JpaConfig;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @Import(JpaConfig.class)
@@ -39,6 +42,9 @@ class CommentRepositoryTest {
 
   @Autowired
   private ReviewRepository reviewRepository;
+
+  @Autowired
+  private EntityManager em;
 
   private User savedUser;
   private Book savedBook;
@@ -204,11 +210,18 @@ class CommentRepositoryTest {
   @Test
   @DisplayName("댓글 목록 조회 성공 - 다음 페이지일 경우")
   void findAllByCursor_NextPage_Success() {
-    // given
+    // given : 10개의 댓글을 저장하고 시간을 1분씩 과거로 강제 설정
+    Instant baseTime = Instant.now().truncatedTo(ChronoUnit.MICROS);
+
     for (int i = 1; i <= 10; i++) {
-      commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
+      Comment comment = commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
+
+      Instant manipulatedTime = baseTime.minus(i, ChronoUnit.MINUTES);
+      ReflectionTestUtils.setField(comment, "createdAt", manipulatedTime);
     }
+
     commentRepository.flush();
+    em.clear();
 
     CommentPageRequest firstRequest = new CommentPageRequest(savedReview.getId(), null, null, null, 5);
     List<Comment> result = commentRepository.findAllByCursor(firstRequest);
@@ -222,6 +235,7 @@ class CommentRepositoryTest {
     // then
     assertThat(nextResult).isNotEmpty();
     assertThat(nextResult.get(0).getId()).isNotEqualTo(lastComment.getId());
+    assertThat(nextResult.get(0).getContent()).isEqualTo("5번 댓글");
   }
 
   @Test
