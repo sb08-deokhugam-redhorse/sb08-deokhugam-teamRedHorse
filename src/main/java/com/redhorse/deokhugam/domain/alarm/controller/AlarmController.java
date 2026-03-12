@@ -23,7 +23,7 @@ public class AlarmController implements AlarmApi {
     @PatchMapping("/{notificationId}")
     public ResponseEntity<NotificationUpdateRequest> updateAlarmToRead(
             @PathVariable(value = "notificationId", required = true) UUID notificationId,
-            @RequestHeader(value = "Deokhugam-Request-Id", required = true) UUID deokhugamRequestUserID
+            @RequestHeader(value = "Deokhugam-Request-User-Id", required = true) UUID deokhugamRequestUserID
     ) {
         alarmService.checkAlarm(notificationId, deokhugamRequestUserID);
 
@@ -34,7 +34,7 @@ public class AlarmController implements AlarmApi {
 
     @PatchMapping("/read-all")
     public void updateAlarmToRead(
-            @RequestHeader (value = "Deokhugam-Request-Id", required = true)
+            @RequestHeader (value = "Deokhugam-Request-User-Id", required = true)
             @NotNull UUID deokhugamRequestUserID
     ) {
         alarmService.checkAllAlarm(deokhugamRequestUserID);
