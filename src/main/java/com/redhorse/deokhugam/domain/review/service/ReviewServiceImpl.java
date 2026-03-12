@@ -57,14 +57,13 @@ public class ReviewServiceImpl implements ReviewService {
     User user = userRepository
         .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
-    try {
+    if (reviewRepository.existsByBookIdAndUserId(bookId, userId)) {
+      throw new BookIdUserIdExistsException(bookId, userId);
+    }
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
       log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(), userId);
       return reviewMapper.toDto(review);
-    } catch (DataIntegrityViolationException e) {
-      throw new BookIdUserIdExistsException(bookId, userId);
-    }
 
   }
 
