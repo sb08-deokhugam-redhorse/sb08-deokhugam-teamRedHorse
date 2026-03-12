@@ -166,10 +166,8 @@ public class AlarmServiceImpl implements AlarmService {
         List<Alarm> alarms = alarmRepository.findAllAlarmByUserId(userId);
 
         if (alarms.isEmpty()) {
-            System.out.println("testsetset");
             throw new NoAlarmException(userId);
         }
-            System.out.println("sdfdsd");
 
         for (Alarm alarm : alarms) {
             alarm.update();

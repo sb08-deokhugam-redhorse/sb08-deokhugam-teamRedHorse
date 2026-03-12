@@ -5,10 +5,7 @@ import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationUpdateRequest;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

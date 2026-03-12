@@ -4,10 +4,7 @@ import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.popularbook.PopularBookDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.PopularReviewDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.PowerUserDto;
-import com.redhorse.deokhugam.domain.dashboard.entity.PopularBook;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 
