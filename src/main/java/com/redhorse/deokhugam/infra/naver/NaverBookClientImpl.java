@@ -4,17 +4,17 @@ import com.redhorse.deokhugam.domain.book.exception.InValidIsbnException;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverApiException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class NaverBookClientImpl implements NaverBookClient
 {
@@ -28,6 +28,14 @@ public class NaverBookClientImpl implements NaverBookClient
     private String naverUrl;
 
     private final RestClient restClient;
+
+    public NaverBookClientImpl(RestClient.Builder restClientBuilder) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofMillis(3000)); // 3s
+        requestFactory.setReadTimeout(Duration.ofMillis(500));     // 500ms
+
+        this.restClient = restClientBuilder.requestFactory(requestFactory).build();
+    }
 
     /**
      * ISBN으로 네이버에 API 요청을 보낸다.

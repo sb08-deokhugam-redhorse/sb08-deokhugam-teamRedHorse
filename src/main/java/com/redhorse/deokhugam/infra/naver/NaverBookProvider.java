@@ -22,8 +22,8 @@ public class NaverBookProvider
 {
     private final NaverBookClient naverBookClient;
 
-    private static final int CONNECTION_TIMEOUT_MS = 5000; // 5초
-    private static final int READ_TIMEOUT_MS = 10000;      // 10초
+    private static final int CONNECTION_TIMEOUT_MS = 3000; // 3s
+    private static final int READ_TIMEOUT_MS = 500;        // 500ms
 
     /**
      * ISBN으로 네이버 도서 정보를 조회하여 NaverBooktDto로 반환한다.

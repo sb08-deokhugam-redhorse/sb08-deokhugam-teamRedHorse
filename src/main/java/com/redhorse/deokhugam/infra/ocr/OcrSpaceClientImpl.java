@@ -6,29 +6,35 @@ import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
+
 @Slf4j
 @Component
 public class OcrSpaceClientImpl implements OcrClient
 {
-    private final String ocrApiKey;
-    private final String ocrUrl;
+    @Value("${ocr.space.api-key}")
+    private String ocrApiKey;
+
+    @Value("${ocr.space.url}")
+    private String ocrUrl;
+
     private final RestClient restClient;
 
     private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
-    public OcrSpaceClientImpl(RestClient restClient,
-                              @Value("${ocr.space.api-key}") String ocrApiKey,
-                              @Value("${ocr.space.url}") String ocrUrl)
-    {
-        this.restClient = restClient;
-        this.ocrApiKey = ocrApiKey;
-        this.ocrUrl = ocrUrl;
+    public OcrSpaceClientImpl(RestClient.Builder restClientBuilder) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofMillis(3000)); // 3s
+        requestFactory.setReadTimeout(Duration.ofMillis(5000));    // 5s
+
+        this.restClient = restClientBuilder.requestFactory(requestFactory).build();
     }
 
     /**
