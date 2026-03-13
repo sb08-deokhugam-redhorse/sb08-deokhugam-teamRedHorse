@@ -30,6 +30,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -71,6 +74,7 @@ public class ReviewServiceImpl implements ReviewService {
 
   }
 
+  @Caching(evict = {@CacheEvict(value = "review", key = "#reviewId")})
   @Transactional
   @Override
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
@@ -97,6 +101,7 @@ public class ReviewServiceImpl implements ReviewService {
     return reviewMapper.toDto(review);
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public void softDelete(UUID reviewId, UUID userId) {
@@ -111,6 +116,7 @@ public class ReviewServiceImpl implements ReviewService {
     log.info("[Review-Service] 논리 삭제 작업 완료: reviewId = {}", reviewId);
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public void hardDelete(UUID reviewId, UUID userId) {
@@ -125,6 +131,7 @@ public class ReviewServiceImpl implements ReviewService {
     log.info("[Review-Service] 물리 삭제 작업 완료: reviewId = {}", reviewId);
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public ReviewLikeDto like(UUID reviewId, UUID userId) {
@@ -218,9 +225,11 @@ public class ReviewServiceImpl implements ReviewService {
     return lastReview.getCreatedAt().toString();
   }
 
+  @Cacheable(value = "review", key = "#reviewId + '_' + #userId")
   @Transactional(readOnly = true)
   @Override
   public ReviewDto findById(UUID reviewId, UUID userId) {
+    log.info("[Review-Service] DB 조회 실행 (캐시 미스 시에만 찍힘): reviewId = {}", reviewId);
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
     userRepository.findById(userId)
