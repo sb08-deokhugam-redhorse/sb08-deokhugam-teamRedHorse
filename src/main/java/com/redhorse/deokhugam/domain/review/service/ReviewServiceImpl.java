@@ -55,14 +55,13 @@ public class ReviewServiceImpl implements ReviewService {
     UUID bookId = request.bookId();
     UUID userId = request.userId();
 
-    Book book = bookRepository.findById(bookId)
-        .orElseThrow(() -> new BookNotFoundException(bookId));
-    User user = userRepository
-        .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    Book book = getBook(bookId);
+    User user = getUser(userId);
 
     if (reviewRepository.existsByBookIdAndUserId(bookId, userId)) {
       throw new BookIdUserIdExistsException(bookId, userId);
     }
+
     try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
@@ -89,12 +88,8 @@ public class ReviewServiceImpl implements ReviewService {
       throw new ReviewValidationException("내용이 비면 안됩니다.");
     }
 
-    Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    if (!review.getUser().getId().equals(userId)) {
-      throw new OnlyTheReviewAuthorException(userId);
-    }
+    Review review = getReviewWithLock(reviewId);
+    validateReviewAuthor(review, userId);
 
     review.update(content, rating);
     log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
@@ -105,12 +100,8 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional
   @Override
   public void softDelete(UUID reviewId, UUID userId) {
-    Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    if (!review.getUser().getId().equals(userId)) {
-      throw new OnlyTheReviewAuthorException(userId);
-    }
+    Review review = getReviewWithLock(reviewId);
+    validateReviewAuthor(review, userId);
 
     review.delete();
     log.info("[Review-Service] 논리 삭제 작업 완료: reviewId = {}", reviewId);
@@ -123,9 +114,7 @@ public class ReviewServiceImpl implements ReviewService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
-    if (!review.getUser().getId().equals(userId)) {
-      throw new OnlyTheReviewAuthorException(userId);
-    }
+    validateReviewAuthor(review, userId);
 
     reviewRepository.delete(review);
     log.info("[Review-Service] 물리 삭제 작업 완료: reviewId = {}", reviewId);
@@ -135,11 +124,8 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional
   @Override
   public ReviewLikeDto like(UUID reviewId, UUID userId) {
-    Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+    Review review = getReviewWithLock(reviewId);
+    User user = getUser(userId);
 
     boolean like;
 
@@ -175,9 +161,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   @Override
   public CursorPageResponseReviewDto findAll(ReviewSearchRequest request, UUID requestUserId) {
-    if (!userRepository.existsById(requestUserId)) {
-      throw new UserNotFoundException(requestUserId);
-    }
+    getUser(requestUserId);
 
     Slice<Review> slice = reviewRepository.getAllReviews(request);
 
@@ -232,8 +216,7 @@ public class ReviewServiceImpl implements ReviewService {
     log.info("[Review-Service] DB 조회 실행 (캐시 미스 시에만 찍힘): reviewId = {}", reviewId);
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-    userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+    getUser(userId);
 
     boolean likedByMe = reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(reviewId,
             userId)
@@ -242,5 +225,28 @@ public class ReviewServiceImpl implements ReviewService {
     log.info("[Review-Service] 상세 정보 조회 작업 완료: reviewId = {}", reviewId);
     return reviewMapper.toDto(review, likedByMe);
   }
+
+  // 공통 로직
+  private Book getBook(UUID bookId) {
+    return bookRepository.findById(bookId)
+        .orElseThrow(() -> new BookNotFoundException(bookId));
+  }
+
+  private User getUser(UUID userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(userId));
+  }
+
+  private Review getReviewWithLock(UUID reviewId) {
+    return reviewRepository.findByIdForUpdate(reviewId)
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+  }
+
+  private void validateReviewAuthor(Review review, UUID userId) {
+    if (!review.getUser().getId().equals(userId)) {
+      throw new OnlyTheReviewAuthorException(userId);
+    }
+  }
+
 
 }
