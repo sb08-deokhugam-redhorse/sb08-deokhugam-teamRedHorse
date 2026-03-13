@@ -92,7 +92,7 @@ public class ReviewServiceImpl implements ReviewService {
     validateReviewAuthor(review, userId);
 
     review.update(content, rating);
-    log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
+    log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userId = {}", reviewId, userId);
     return reviewMapper.toDto(review);
   }
 
