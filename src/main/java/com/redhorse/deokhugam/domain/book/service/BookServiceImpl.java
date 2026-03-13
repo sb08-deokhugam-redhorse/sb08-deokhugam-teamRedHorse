@@ -12,6 +12,9 @@ import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.infra.s3.S3ImageStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,6 +128,7 @@ public class BookServiceImpl implements BookService
      * @param bookId 조회할 도서 ID
      * @return 도서 정보
      */
+    @Cacheable(value = "book", key = "#bookId")
     @Override
     public BookDto findById(UUID bookId) {
         Book book = bookRepository.findById(bookId)
@@ -147,6 +151,9 @@ public class BookServiceImpl implements BookService
      * @return 수정된 도서 정보
      * @throws BookNotFoundException 도서를 찾을 수 없는 경우
      */
+    @Caching(evict = {
+            @CacheEvict(value = "book", key = "#bookId")
+    })
     @Transactional
     @Override
     public BookDto update(UUID bookId, BookUpdateRequest bookUpdateRequest, MultipartFile thumbnailImage) {
@@ -175,6 +182,7 @@ public class BookServiceImpl implements BookService
      * @param bookId 논리 삭제할 도서 ID
      * @throws BookNotFoundException 도서를 찾을 수 없는 경우
      */
+    @CacheEvict(value = "book", key = "#bookId")
     @Transactional
     @Override
     public void softDelete(UUID bookId) {
@@ -196,6 +204,7 @@ public class BookServiceImpl implements BookService
      * @param bookId 물리 삭제할 도서 ID
      * @throws BookNotFoundException 도서를 찾을 수 없는 경우
      */
+    @CacheEvict(value = "book", key = "#bookId")
     @Transactional
     @Override
     public void hardDelete(UUID bookId) {

@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.domain.review.controller;
 
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
+import com.redhorse.deokhugam.domain.review.controller.api.ReviewApi;
 import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
 import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
 import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/reviews")
-public class ReviewController {
+public class ReviewController implements ReviewApi {
 
   private final ReviewService reviewService;
   private final AlarmService alarmService;

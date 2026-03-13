@@ -5,6 +5,7 @@ import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -31,6 +32,7 @@ public class NaverBookProvider
      * @return 조회된 도서 정보 (가공후)
      * @throws NaverBookNotFoundException 해당 ISBN의 도서를 찾을 수 없는 경우
      */
+    @Cacheable(value = "naverBook", key = "#isbn")
     public NaverBookDto getBookInfoByIsbn(String isbn) {
         NaverBookItem item = naverBookClient.fetchInfoByIsbn(isbn)
                 .orElseThrow(() -> new NaverBookNotFoundException(isbn));
