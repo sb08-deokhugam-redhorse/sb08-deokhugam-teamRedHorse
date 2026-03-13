@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "getUser", key = "#userId")
   @Transactional
   public UserDto updateUser(UUID userId, UUID requestUserId, UserUpdateRequest request) {
 
@@ -115,6 +117,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "getUser", key = "#userId")
   @Transactional
   public void deleteUserSoft(UUID requestUserId ,UUID userId) {
     // 유저 체크
@@ -130,6 +133,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "getUser", key = "#userId")
   @Transactional
   public void deleteUserHard(UUID requestUserId, UUID userId) {
     // 유저 체크 - Soft Delete 여부와 상관없이 유저 조회 (Native Query 사용)

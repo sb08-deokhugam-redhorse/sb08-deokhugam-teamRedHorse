@@ -9,6 +9,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.support.RetryTemplate;
@@ -22,6 +23,7 @@ public class UserCleanupBatchConfig {
   private final JobRepository jobRepository;
   private final PlatformTransactionManager transactionManager;
   private final UserBatchRepository userBatchRepository;
+  private final CacheManager cacheManager;
 
   // Job 설정
   @Bean
@@ -51,6 +53,14 @@ public class UserCleanupBatchConfig {
 
       int deletedRows = retryTemplate.execute(context ->
           userBatchRepository.deleteSoftDeletedUsersInBulk());
+
+      // 삭제된 유저가 있다면 캐시 무효화
+      if (deletedRows > 0) {
+        var cache = cacheManager.getCache("getUser");
+        if (cache != null) {
+          cache.clear();
+        }
+      }
 
       // batch_step_execution테이블에 기록함
       // batch_step_execution → write_count 컬럼에 누적 숫자로 저장
