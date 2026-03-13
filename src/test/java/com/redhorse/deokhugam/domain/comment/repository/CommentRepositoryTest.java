@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.domain.comment.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
@@ -11,6 +12,7 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.config.JpaConfig;
+import com.redhorse.deokhugam.global.exception.InvalidCursorException;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -176,9 +178,7 @@ class CommentRepositoryTest {
   @DisplayName("댓글 목록 조회 성공(오름차) - 첫 페이지일 경우")
   void findAllByCursor_isAsc_Success() {
     // given
-    for (int i = 1; i <= 10; i++) {
-      commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
-    }
+    setupCommentsWithTimeGap();
     CommentPageRequest request = new CommentPageRequest(savedReview.getId(), "ASC", null, null, 5);
 
     // when
@@ -190,12 +190,10 @@ class CommentRepositoryTest {
   }
 
   @Test
-  @DisplayName("댓글 목록 조회 성공 - 첫 페이지일 경우")
+  @DisplayName("댓글 목록 조회 성공(내림차) - 첫 페이지일 경우")
   void findAllByCursor_FirstPage_Success() {
     // given
-    for (int i = 1; i <= 10; i++) {
-      commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
-    }
+    setupCommentsWithTimeGap();
     CommentPageRequest request = new CommentPageRequest(savedReview.getId(), null, null, null, 5);
 
     // when
@@ -209,22 +207,8 @@ class CommentRepositoryTest {
   @Test
   @DisplayName("댓글 목록 조회 성공 - 다음 페이지일 경우")
   void findAllByCursor_NextPage_Success() {
-    // given : 10개의 댓글을 저장하고 시간을 1분씩 과거로 강제 설정
-    Instant baseTime = Instant.now().truncatedTo(ChronoUnit.MICROS);
-
-    for (int i = 1; i <= 10; i++) {
-      Comment comment = commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
-
-      Instant manipulatedTime = baseTime.minus(11L - i, ChronoUnit.MINUTES);
-
-      em.createNativeQuery("UPDATE comments SET created_at = ? WHERE id = ?")
-          .setParameter(1, manipulatedTime)
-          .setParameter(2, comment.getId())
-          .executeUpdate();
-    }
-
-    commentRepository.flush();
-    em.clear();
+    // given
+    setupCommentsWithTimeGap();
 
     CommentPageRequest firstRequest = new CommentPageRequest(savedReview.getId(), null, null, null, 5);
     List<Comment> result = commentRepository.findAllByCursor(firstRequest);
@@ -239,25 +223,6 @@ class CommentRepositoryTest {
     assertThat(nextResult).isNotEmpty();
     assertThat(nextResult.get(0).getId()).isNotEqualTo(lastComment.getId());
     assertThat(nextResult.get(0).getContent()).isEqualTo("5번 댓글");
-  }
-
-  @Test
-  @DisplayName("댓글 목록 조회 성공 - 잘못된 형식의 UUID 커서가 넘어온 경우")
-  void findAllByCursor_InvalidUUID_ReturnFirstPage() {
-    // given
-    for (int i = 1; i <= 5; i++) {
-      commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
-    }
-
-    // 커서 역할을 못하기 때문에 다음 페이지 조회 x
-    CommentPageRequest request = new CommentPageRequest(savedReview.getId(), null, "invalid-uuid", Instant.now(), 5);
-
-    // when
-    List<Comment> result = commentRepository.findAllByCursor(request);
-
-    // then
-    assertThat(result).hasSize(5);
-    assertThat(result.get(0).getContent()).isEqualTo("5번 댓글"); // 최신순 첫 페이지 데이터
   }
 
   @Test
@@ -277,5 +242,35 @@ class CommentRepositoryTest {
     // then
     assertThat(result).hasSize(1);
     assertThat(result.get(0).getContent()).isEqualTo("살아있는 댓글");
+  }
+
+  @Test
+  @DisplayName("댓글 목록 조회 실패 - 잘못된 형식의 UUID 커서가 넘어온 경우")
+  void findAllByCursor_InvalidUUID_ShouldThrowException() {
+    // given
+    commentRepository.save(new Comment("테스트 댓글", savedReview, savedUser));
+
+    // 커서 역할을 못하기 때문에 다음 페이지 조회 x
+    CommentPageRequest request = new CommentPageRequest(savedReview.getId(), null, "invalid-uuid", Instant.now(), 5);
+
+    // when
+    assertThatThrownBy(() -> commentRepository.findAllByCursor(request))
+        .isInstanceOf(InvalidCursorException.class);
+  }
+
+  private void setupCommentsWithTimeGap() {
+    Instant baseTime = Instant.now().truncatedTo(ChronoUnit.MICROS);
+    for (int i = 1; i <= 10; i++) {
+      Comment comment = commentRepository.save(new Comment(i + "번 댓글", savedReview, savedUser));
+
+      Instant manipulatedTime = baseTime.minus(10L - i, ChronoUnit.MINUTES);
+
+      em.createNativeQuery("UPDATE comments SET created_at = ? WHERE id = ?")
+          .setParameter(1, manipulatedTime)
+          .setParameter(2, comment.getId())
+          .executeUpdate();
+    }
+    commentRepository.flush();
+    em.clear();
   }
 }
