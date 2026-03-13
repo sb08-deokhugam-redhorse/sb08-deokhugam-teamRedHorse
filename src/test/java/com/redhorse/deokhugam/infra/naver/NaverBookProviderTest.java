@@ -3,11 +3,11 @@ package com.redhorse.deokhugam.infra.naver;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,8 +22,13 @@ import static org.mockito.BDDMockito.given;
 @DisplayName("NaverBookProvider Unit Test")
 class NaverBookProviderTest
 {
-    @InjectMocks private NaverBookProvider naverBookProvider;
+    private NaverBookProvider naverBookProvider;
     @Mock private NaverBookClient naverBookClient;
+
+    @BeforeEach
+    void setUp() {
+        naverBookProvider = new NaverBookProvider(naverBookClient, 3000, 1000);
+    }
 
     private NaverBookItem createNaverBookItem() {
         return new NaverBookItem(

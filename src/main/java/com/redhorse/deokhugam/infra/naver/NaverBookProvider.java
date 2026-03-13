@@ -3,8 +3,9 @@ package com.redhorse.deokhugam.infra.naver;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -15,14 +16,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class NaverBookProvider
 {
     private final NaverBookClient naverBookClient;
+    private final int connectTimeout;
+    private final int readTimeout;
 
-    private static final int CONNECTION_TIMEOUT_MS = 5000; // 5초
-    private static final int READ_TIMEOUT_MS = 10000;      // 10초
+    public NaverBookProvider(NaverBookClient naverBookClient,
+                             @Value("${naver.api.connect-timeout}") int connectTimeout,
+                             @Value("${naver.api.read-timeout}") int readTimeout)
+    {
+        this.naverBookClient = naverBookClient;
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
+    }
 
     /**
      * ISBN으로 네이버 도서 정보를 조회하여 NaverBooktDto로 반환한다.
@@ -31,6 +39,7 @@ public class NaverBookProvider
      * @return 조회된 도서 정보 (가공후)
      * @throws NaverBookNotFoundException 해당 ISBN의 도서를 찾을 수 없는 경우
      */
+    @Cacheable(value = "naverBook", key = "#isbn")
     public NaverBookDto getBookInfoByIsbn(String isbn) {
         NaverBookItem item = naverBookClient.fetchInfoByIsbn(isbn)
                 .orElseThrow(() -> new NaverBookNotFoundException(isbn));
@@ -86,8 +95,8 @@ public class NaverBookProvider
         if (imageUrl == null || imageUrl.isBlank()) return null;
         try {
             URLConnection connection = URI.create(imageUrl).toURL().openConnection();
-            connection.setConnectTimeout(CONNECTION_TIMEOUT_MS);
-            connection.setReadTimeout(READ_TIMEOUT_MS);
+            connection.setConnectTimeout(connectTimeout); // 3s
+            connection.setReadTimeout(readTimeout);       // 1s
             try (InputStream is = connection.getInputStream()) {
                 return Base64.getEncoder().encodeToString(is.readAllBytes());
             }
