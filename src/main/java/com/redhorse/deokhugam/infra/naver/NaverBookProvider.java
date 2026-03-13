@@ -3,7 +3,6 @@ package com.redhorse.deokhugam.infra.naver;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookDto;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,17 +16,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class NaverBookProvider
 {
     private final NaverBookClient naverBookClient;
+    private final int connectTimeout;
+    private final int readTimeout;
 
-    @Value("${naver.api.connect-timeout}")
-    private int connectTimeout;
-
-    @Value("${naver.api.read-timeout}")
-    private int readTimeout;
+    public NaverBookProvider(NaverBookClient naverBookClient,
+                             @Value("${naver.api.connect-timeout}") int connectTimeout,
+                             @Value("${naver.api.read-timeout}") int readTimeout)
+    {
+        this.naverBookClient = naverBookClient;
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
+    }
 
     /**
      * ISBN으로 네이버 도서 정보를 조회하여 NaverBooktDto로 반환한다.
