@@ -27,12 +27,18 @@ public class NaverBookClientImpl implements NaverBookClient
     @Value("${naver.api.url}")
     private String naverUrl;
 
+    @Value("${naver.api.connect-timeout}")
+    private int connectTimeout;
+
+    @Value("${naver.api.read-timeout}")
+    private int readTimeout;
+
     private final RestClient restClient;
 
     public NaverBookClientImpl(RestClient.Builder restClientBuilder) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofMillis(3000)); // 3s
-        requestFactory.setReadTimeout(Duration.ofMillis(500));     // 500ms
+        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeout)); // 3s
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeout));       // 1s
 
         this.restClient = restClientBuilder.requestFactory(requestFactory).build();
     }

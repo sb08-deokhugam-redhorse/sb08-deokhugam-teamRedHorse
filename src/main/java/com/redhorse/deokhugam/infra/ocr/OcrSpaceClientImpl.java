@@ -25,14 +25,20 @@ public class OcrSpaceClientImpl implements OcrClient
     @Value("${ocr.space.url}")
     private String ocrUrl;
 
+    @Value("${ocr.space.connect-timeout}")
+    private int connectTimeout;
+
+    @Value("${ocr.space.read-timeout}")
+    private int readTimeout;
+
     private final RestClient restClient;
 
     private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
     public OcrSpaceClientImpl(RestClient.Builder restClientBuilder) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofMillis(3000)); // 3s
-        requestFactory.setReadTimeout(Duration.ofMillis(5000));    // 5s
+        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeout)); // 3s
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeout));       // 5s
 
         this.restClient = restClientBuilder.requestFactory(requestFactory).build();
     }
