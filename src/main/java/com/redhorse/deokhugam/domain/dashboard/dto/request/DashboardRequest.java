@@ -9,7 +9,6 @@ import java.util.UUID;
 public record DashboardRequest(
         @NotNull PeriodType period,
         String direction,
-//        String cursor,
         UUID cursor,
         Instant after,
         Integer limit

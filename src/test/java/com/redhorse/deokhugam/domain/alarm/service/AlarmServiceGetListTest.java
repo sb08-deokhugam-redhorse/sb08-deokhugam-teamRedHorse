@@ -19,19 +19,22 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("알림 목록 조회 테스트")
+@DisplayName("알림 조회 테스트")
 class AlarmServiceGetListTest {
+
+    @InjectMocks
+    private AlarmServiceImpl alarmService;
 
     @Mock
     private AlarmRepository alarmRepository;
@@ -39,34 +42,34 @@ class AlarmServiceGetListTest {
     @Mock
     private AlarmMapper alarmMapper;
 
-    @InjectMocks
-    private AlarmServiceImpl alarmService;
-
     @Test
-    @DisplayName("알림 목록 조회 테스트 - 다음 페이지가 있는 경우 커서가 올바르게 생성되는지 확인")
-    void getAlarmList_WithNextPage() {
+    @DisplayName("알림 목록 조회 테스트 - 데이터가 많은 경우 (hasNext = true)")
+    void getAlarmList_HasNext() {
         // given
         UUID userId = UUID.randomUUID();
-        int limit = 2;
+        int limit = 10;
         NotificationListRequest request = new NotificationListRequest(userId, "DESC", null, null, limit);
 
-        Alarm alarm1 = mock(Alarm.class);
-        Alarm alarm2 = mock(Alarm.class);
-        Alarm alarm3 = mock(Alarm.class);
-
+        List<Alarm> alarms = new ArrayList<>();
         UUID lastId = UUID.randomUUID();
-        Instant lastCreatedAt = Instant.now().minusSeconds(100);
+        Instant lastCreatedAt = Instant.now();
 
-        given(alarm2.getId()).willReturn(lastId);
-        given(alarm2.getCreatedAt()).willReturn(lastCreatedAt);
+        // limit + 1 개의 데이터를 만들어서 hasNext가 true가 되도록 유도
+        for (int i = 0; i < limit + 1; i++) {
+            Alarm alarm = mock(Alarm.class);
+            if (i == limit - 1) { // 정확히 limit 번째 데이터(인덱스 limit-1)의 정보 저장 (다음 커서용)
+                given(alarm.getId()).willReturn(lastId);
+                given(alarm.getCreatedAt()).willReturn(lastCreatedAt);
+            }
+            alarms.add(alarm);
+        }
 
-        List<Alarm> alarmList = List.of(alarm1, alarm2, alarm3);
-        Slice<Alarm> alarmSlice = new SliceImpl<>(alarmList, PageRequest.of(0, limit + 1), true);
+        Slice<Alarm> slice = new SliceImpl<>(alarms, PageRequest.of(0, limit + 1), true);
 
-        given(alarmRepository.getAllAlarmsDesc(any(), any())).willReturn(alarmSlice);
-        given(alarmRepository.countAlarmsByUserId(userId)).willReturn(10L);
-
-        given(alarmMapper.alarmToNotificationDto(any())).willReturn(mock(NotificationDto.class));
+        // 변경점: getAllAlarmsDesc가 아닌 getAllAlarms 호출
+        given(alarmRepository.getAllAlarms(eq(request), any(Pageable.class))).willReturn(slice);
+        given(alarmRepository.countAlarmsByUserId(userId)).willReturn(20L);
+        given(alarmMapper.alarmToNotificationDto(any(Alarm.class))).willReturn(mock(NotificationDto.class));
 
         // when
         CursorPageResponseNotificationDto result = alarmService.getAlarmList(request);
@@ -77,7 +80,7 @@ class AlarmServiceGetListTest {
                 () -> assertTrue(result.hasNext(), "데이터가 limit보다 많으므로 hasNext는 true여야 함"),
                 () -> assertEquals(lastId.toString(), result.nextCursor(), "limit 번째 데이터의 ID가 커서가 되어야 함"),
                 () -> assertEquals(lastCreatedAt, result.nextAfter(), "limit 번째 데이터의 시간이 nextAfter가 되어야 함"),
-                () -> assertEquals(10L, result.totalElements())
+                () -> assertEquals(20L, result.totalElements())
         );
     }
 
@@ -89,7 +92,9 @@ class AlarmServiceGetListTest {
         NotificationListRequest request = new NotificationListRequest(userId, "DESC", null, null, 20);
 
         Slice<Alarm> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, 20), false);
-        given(alarmRepository.getAllAlarmsDesc(any(), any())).willReturn(emptySlice);
+
+        // 변경점: getAllAlarmsDesc가 아닌 getAllAlarms 호출
+        given(alarmRepository.getAllAlarms(eq(request), any(Pageable.class))).willReturn(emptySlice);
         given(alarmRepository.countAlarmsByUserId(userId)).willReturn(0L);
 
         // when
@@ -101,7 +106,7 @@ class AlarmServiceGetListTest {
                 () -> assertNull(result.nextCursor()),
                 () -> assertNull(result.nextAfter()),
                 () -> assertFalse(result.hasNext()),
-                () -> assertEquals(0, result.size())
+                () -> assertEquals(0L, result.totalElements())
         );
     }
 }
