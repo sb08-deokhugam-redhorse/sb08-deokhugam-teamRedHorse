@@ -7,6 +7,8 @@ import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.UserBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PowerUser;
 import com.redhorse.deokhugam.domain.dashboard.repository.PowerUserRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.exception.UserException;
+import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.batch.repository.UserBatchRepository;
 import com.redhorse.deokhugam.global.entity.PeriodType;
@@ -78,40 +80,51 @@ public class PowerUserBatchConfig {
     @Bean
     public Step userRankingBatchDailyStep() {
         return new StepBuilder("dailyStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryDailyRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(Exception.class) // 어떤 예외일 때 재시도할지
                 .build();
     }
 
     @Bean
     public Step userRankingBatchWeeklyStep() {
         return new StepBuilder("weeklyStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryWeelyRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(Exception.class) // 어떤 예외일 때 재시도할지
                 .build();
     }
 
     @Bean
     public Step userRankingBatchmonthlyStep() {
         return new StepBuilder("monthlyStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryMonthlyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(Exception.class) // 어떤 예외일 때 재시도할지
                 .build();
     }
 
     @Bean
     public Step userRankingBatchAllStep() {
         return new StepBuilder("allTimeStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryAllRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(Exception.class) // 어떤 예외일 때 재시도할지
                 .build();
     }
 
@@ -219,7 +232,7 @@ public class PowerUserBatchConfig {
 
         return new RepositoryItemReaderBuilder<UserBatchDto>()
                 .name("userRepositoryRead_" + period.toString())
-                .pageSize(1000)
+                .pageSize(500)
                 .methodName("findPowerUsers")
                 .repository(userBatchRepository)
                 .arguments(List.of(period.name(), startOfEnd, startOfToday))

@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -82,6 +83,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 배치에서 중간에 끊여도 앞서한건 저장되도록
     public NotificationDto createReviewAlarm(PopularReview popularReview) {
         Review review = reviewRepository.findById(popularReview.getReview().getId())
                 .orElseThrow(() -> new ReviewNotFoundException(popularReview.getReview().getId()));
@@ -117,6 +119,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 배치에서 중간에 끊여도 앞서한건 저장되도록
     public NotificationDto createPowerUserAlarm(PowerUserDto dto) {
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));

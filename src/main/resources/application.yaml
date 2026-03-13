@@ -38,13 +38,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, prometheus # prometheus 엔드포인트 추가
   endpoint:
     health:
       show-details: always
   info:
     env:
       enabled: true
+  metrics:
+    tags:
+      application: deokhugam # 그라파나에 앱 구분용 이름
 
 # Naver API
 naver:

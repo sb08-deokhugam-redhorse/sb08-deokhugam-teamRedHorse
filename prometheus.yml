@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s # 15초마다 데이터 수집
+
+scrape_configs:
+  - job_name: 'spring-boot-application'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      # 로컬에서 도커로 실행 시 호스트 머신의 포트에 접근하기 위한 주소
+      - targets: ['deokhugam:80']
+#      - targets: ['app:80'] # 예: ['app:8080'] (.env의 SERVER_PORT 값과 일치하게 작성)
+      # - targets: ['{SERVER_IP}:8080'], 나중에 서버 주소로 넣어줘야 한다.

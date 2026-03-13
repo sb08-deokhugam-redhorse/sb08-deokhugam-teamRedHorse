@@ -7,8 +7,11 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 @Slf4j
 @Component
@@ -60,14 +63,18 @@ public class GlobalBatchScheduler {
         try {
             // 실행 시점마다 고유한 파라미터 생성
             JobParameters params = new JobParametersBuilder()
-                    .addLong("time", System.currentTimeMillis())
+                    .addString("executionDate", LocalDate.now().toString()) // 시간단위가 아니라 날짜단위로 바꿔 같은 날짜면 안돌아가게함
                     .toJobParameters();
 
             // thread Pool이 아니면 순차적으로 실행됨
             log.info("[{}] 배치 시작", job.getName());
             jobLauncher.run(job, params);
 
-        } catch (JobExecutionAlreadyRunningException e) {
+        } catch (JobInstanceAlreadyCompleteException e) {
+            // 오늘 이미 성공한 기록이 있을 때 발생하는 예외
+            log.info("[Batch-{}] 오늘 이미 성공적으로 완료된 작업입니다. 실행을 건너뜁니다.", job.getName());
+
+        }catch (JobExecutionAlreadyRunningException e) {
             /**
              * 데이터가 많아 작업이 늦어져 다른 배치의 실행 시간이 된다면
              * 다른 배치에서 출동 에러가 나옴 이건 진행 중인 배치를
