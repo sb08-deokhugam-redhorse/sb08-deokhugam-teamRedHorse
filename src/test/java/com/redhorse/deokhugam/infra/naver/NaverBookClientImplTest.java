@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -49,10 +48,6 @@ class NaverBookClientImplTest
                 3000,
                 1000
         );
-
-        ReflectionTestUtils.setField(naverBookClientImpl, "clientId", "test-client-id");
-        ReflectionTestUtils.setField(naverBookClientImpl, "clientSecret", "test-client-secret");
-        ReflectionTestUtils.setField(naverBookClientImpl, "naverUrl", "https://openapi.naver.com/v1/search/book.json?query=");
     }
 
     @Nested

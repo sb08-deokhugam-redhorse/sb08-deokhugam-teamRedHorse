@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,14 +44,11 @@ class OcrSpaceClientImplTest
 
         ocrSpaceClientImpl = new OcrSpaceClientImpl(
                 restClientBuilder,
-                "ocr-api-key",
-                "https://test-ocr.com",
+                "test-api-key",
+                "https://api.ocr.space/parse/image",
                 3000,
                 5000
         );
-
-        ReflectionTestUtils.setField(ocrSpaceClientImpl, "ocrApiKey", "test-api-key");
-        ReflectionTestUtils.setField(ocrSpaceClientImpl, "ocrUrl", "https://api.ocr.space/parse/image");
     }
 
     @Nested
