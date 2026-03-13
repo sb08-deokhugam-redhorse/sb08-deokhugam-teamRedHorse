@@ -1,6 +1,5 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
-import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.global.batch.repository.AlarmBatchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

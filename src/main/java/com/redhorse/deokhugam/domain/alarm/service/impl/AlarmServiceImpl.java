@@ -10,9 +10,11 @@ import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.PopularReviewDto;
+import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.PowerUserDto;
+import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.entity.Review;
+import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
@@ -40,18 +42,16 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Override
     public NotificationDto createCommentAlarm(CommentDto dto) {
-        // 임시 dto 사용 중
-
         Review review = reviewRepository.findById(dto.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(dto.reviewId()));
         User reviewOwner = review.getUser();
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));
 
         Alarm alarm = new Alarm(
                 "COMMENT",
-                dto.content(),
                 "[" + user.getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.",
+                dto.content(),
                 dto.reviewId(),
                 reviewOwner
         );
@@ -62,19 +62,16 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Override
     public NotificationDto createLikeAlarm(ReviewLikeDto dto) {
-        // 임시 dto 사용 중
-
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));
         Review review = reviewRepository.findById(dto.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(dto.reviewId()));
         User reviewOwner = review.getUser();
-
 
         Alarm alarm = new Alarm(
                 "LIKE",
-                review.getContent(),
                 "[" + user.getNickname() + "]님이 나의 리뷰를 좋아합니다.",
+                review.getContent(),
                 dto.reviewId(),
                 reviewOwner
         );
@@ -85,12 +82,44 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public NotificationDto createReviewAlarm(PopularReviewDto dto) {
-        // 임시 dto 사용 중
-
-        Review review = reviewRepository.findById(dto.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+    public NotificationDto createReviewAlarm(PopularReview popularReview) {
+        Review review = reviewRepository.findById(popularReview.getReview().getId())
+                .orElseThrow(() -> new ReviewNotFoundException(popularReview.getReview().getId()));
         User reviewOwner = review.getUser();
+
+        String type = "";
+        switch (popularReview.getPeriod().toString()) {
+            case "DAILY":
+                type = "일간 ";
+                break;
+            case "WEEKLY":
+                type = "주간 ";
+                break;
+            case "MONTHLY":
+                type = "월간 ";
+                break;
+            case "ALL_TIME":
+                type = "전체 ";
+                break;
+        }
+
+        Alarm alarm = new Alarm(
+                popularReview.getPeriod().toString(),
+                "나의 리뷰가 " + type + popularReview.getRanking() + "위에 올랐습니다.",
+                review.getContent(),
+                popularReview.getReview().getId(),
+                reviewOwner
+        );
+
+        alarm = alarmRepository.save(alarm);
+        return alarmMapper.alarmToNotificationDto(alarm);
+
+    }
+
+    @Override
+    public NotificationDto createPowerUserAlarm(PowerUserDto dto) {
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
 
         String type = "";
         switch (dto.period().toString()) {
@@ -110,10 +139,10 @@ public class AlarmServiceImpl implements AlarmService {
 
         Alarm alarm = new Alarm(
                 dto.period().toString(),
-                review.getContent(),
-                "나의 리뷰가 " + type + dto.rank() + "위에 올랐습니다.",
-                dto.reviewId(),
-                reviewOwner
+                user.getNickname() + "님이 유저랭킹" + type + dto.rank() + "위에 올랐습니다.",
+                "",
+                dto.userId(),
+                user
         );
 
         alarm = alarmRepository.save(alarm);
@@ -159,9 +188,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
 
-        Slice<Alarm> alarmSlice = "ASC".equalsIgnoreCase(request.direction())
-                ? alarmRepository.getAllAlarmsAsc(request, pageable)
-                : alarmRepository.getAllAlarmsDesc(request, pageable);
+        Slice<Alarm> alarmSlice = alarmRepository.getAllAlarms(request, pageable);
 
         List<Alarm> alarmList = alarmSlice.getContent();
         Long alarmCount = alarmRepository.countAlarmsByUserId(request.userId());

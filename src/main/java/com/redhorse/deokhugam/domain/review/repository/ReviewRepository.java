@@ -18,4 +18,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
 
   // 조회용
   Optional<Review> findByIdAndDeletedAtIsNull(UUID id);
+
+  boolean existsByIdAndDeletedAtIsNull(UUID id);
+
+  Boolean existsByBookIdAndUserId(UUID bookId, UUID userId);
 }

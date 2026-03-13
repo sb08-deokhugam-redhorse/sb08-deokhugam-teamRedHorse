@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.user.controller;
 
+import com.redhorse.deokhugam.domain.user.controller.api.UserApi;
 import com.redhorse.deokhugam.domain.user.dto.request.UserLoginRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserRegisterRequest;
 import com.redhorse.deokhugam.domain.user.dto.request.UserUpdateRequest;
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("api/users")
 @Slf4j
-public class UserController {
+public class UserController implements UserApi {
 
   private final UserService userService;
 

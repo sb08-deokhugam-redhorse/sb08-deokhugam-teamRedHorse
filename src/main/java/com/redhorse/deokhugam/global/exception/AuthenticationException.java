@@ -8,8 +8,8 @@ public class AuthenticationException extends GlobalException {
     super(
         ErrorCode.UNAUTHORIZED_USER,
         Map.of(
-            "header", "인증 헤더 확인이 필요합니다.",
-            "description", "인증을 위해 유효한 사용자 ID가 필요합니다."
+            "header", "요청 헤더 누락 또는 오류",
+            "description", "필수 인증 헤더가 없거나, 올바른 식별자(UUID) 형식이 아닙니다."
         )
     );
   }

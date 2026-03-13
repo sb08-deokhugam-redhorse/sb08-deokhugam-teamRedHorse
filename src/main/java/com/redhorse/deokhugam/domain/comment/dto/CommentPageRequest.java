@@ -14,5 +14,13 @@ public record CommentPageRequest(
     @Min(value = 1, message = "limit은 1 이상이어야 합니다.")
     Integer limit
 ) {
+    public CommentPageRequest {
+        if (limit == null || limit <= 0) {
+            limit = 50;
+        }
 
+        if (direction == null || direction.isBlank()) {
+            direction = "DESC";
+        }
+    }
 }
