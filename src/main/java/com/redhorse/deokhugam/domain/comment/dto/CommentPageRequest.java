@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.comment.dto;
 
+import com.redhorse.deokhugam.global.exception.InvalidDirectionException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +37,7 @@ public record CommentPageRequest(
     } else {
       direction = direction.trim().toUpperCase();
       if (!direction.equals("ASC") && !direction.equals("DESC")) {
-        throw new IllegalArgumentException("direction은 ASC 또는 DESC만 허용됩니다.");
+        throw new InvalidDirectionException(direction);
       }
     }
   }
