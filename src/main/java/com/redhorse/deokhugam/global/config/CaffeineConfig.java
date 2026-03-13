@@ -33,7 +33,14 @@ public class CaffeineConfig
                                 .expireAfterWrite(24, TimeUnit.HOURS)
                                 .maximumSize(500)
                                 .recordStats()
-                                .build())
+                                .build()),
+                new CaffeineCache("getUser",
+                        Caffeine.newBuilder()
+                                .expireAfterWrite(24, TimeUnit.HOURS)
+                                .maximumSize(500)
+                                .recordStats()
+                                .build()
+                        )
         ));
 
         return cacheManager;
