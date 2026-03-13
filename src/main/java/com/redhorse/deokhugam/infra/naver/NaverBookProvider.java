@@ -5,6 +5,7 @@ import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverBookNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +23,11 @@ public class NaverBookProvider
 {
     private final NaverBookClient naverBookClient;
 
-    private static final int CONNECTION_TIMEOUT_MS = 5000; // 5초
-    private static final int READ_TIMEOUT_MS = 10000;      // 10초
+    @Value("${naver.api.connect-timeout}")
+    private int connectTimeout;
+
+    @Value("${naver.api.read-timeout}")
+    private int readTimeout;
 
     /**
      * ISBN으로 네이버 도서 정보를 조회하여 NaverBooktDto로 반환한다.
@@ -88,8 +92,8 @@ public class NaverBookProvider
         if (imageUrl == null || imageUrl.isBlank()) return null;
         try {
             URLConnection connection = URI.create(imageUrl).toURL().openConnection();
-            connection.setConnectTimeout(CONNECTION_TIMEOUT_MS);
-            connection.setReadTimeout(READ_TIMEOUT_MS);
+            connection.setConnectTimeout(connectTimeout); // 3s
+            connection.setReadTimeout(readTimeout);       // 1s
             try (InputStream is = connection.getInputStream()) {
                 return Base64.getEncoder().encodeToString(is.readAllBytes());
             }
