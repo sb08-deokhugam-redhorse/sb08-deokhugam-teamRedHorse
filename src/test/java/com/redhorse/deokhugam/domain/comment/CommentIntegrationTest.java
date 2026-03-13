@@ -126,7 +126,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 404 Not Found를 반환한다.")
-    void create_WhenReviewNotFound_ShouldThrowException() throws Exception {
+    void create_WhenReviewNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidReviewId = UUID.randomUUID();
       CommentCreateRequest request = new CommentCreateRequest(invalidReviewId, savedUser.getId(),
@@ -141,7 +141,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 등록 실패 - 존재하지 않는 사용자 ID인 경우 404 Not Found를 반환한다.")
-    void create_WhenUserNotFound_ShouldThrowException() throws Exception {
+    void create_WhenUserNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidUserID = UUID.randomUUID();
       CommentCreateRequest request = new CommentCreateRequest(savedReview.getId(), invalidUserID,
@@ -156,7 +156,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("입력값 검증 실패 - valid 검증을 실패하면 400 Bad Request를 반환한다.")
-    void create_InvalidInput_ShouldThrowException() throws Exception {
+    void create_InvalidInput_ShouldReturnBadRequest() throws Exception {
       // given
       CommentCreateRequest invalidRequest = new CommentCreateRequest(null, null, "");
 
@@ -195,7 +195,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다")
-    void update_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    void update_WhenUserIsNotAuthor_ShouldReturnForbidden() throws Exception {
       // given
       User anotherUser = new User("other@codeit.com", "다른유저", "Password123***");
       userRepository.save(anotherUser);
@@ -235,7 +235,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 단건 조회 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
-    void find_WhenCommentNotFound_ShouldThrowException() throws Exception {
+    void find_WhenCommentNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidCommentId = UUID.randomUUID();
 
@@ -271,7 +271,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 논리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
-    void softDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
+    void softDelete_WhenCommentNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidCommentId = UUID.randomUUID();
       UUID requestUserId = savedUser.getId();
@@ -284,7 +284,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 논리 삭제 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다.")
-    void softDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    void softDelete_WhenUserIsNotAuthor_ShouldReturnForbidden() throws Exception {
       // given
       User anotherUser = new User("other@codeit.com", "다른유저", "Password123***");
       userRepository.save(anotherUser);
@@ -335,7 +335,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 물리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
-    void hardDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
+    void hardDelete_WhenCommentNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidCommentId = UUID.randomUUID();
       UUID requestUserId = savedUser.getId();
@@ -348,7 +348,7 @@ public class CommentIntegrationTest {
 
     @Test
     @DisplayName("댓글 물리 삭제 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다.")
-    void hardDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    void hardDelete_WhenUserIsNotAuthor_ShouldReturnForbidden() throws Exception {
       // given
       User anotherUser = new User("other@codeit.com", "다른유저", "Password123***");
       userRepository.save(anotherUser);
