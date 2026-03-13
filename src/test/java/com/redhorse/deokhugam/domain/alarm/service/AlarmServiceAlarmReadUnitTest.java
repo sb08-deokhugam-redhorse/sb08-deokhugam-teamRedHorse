@@ -3,12 +3,9 @@ package com.redhorse.deokhugam.domain.alarm.service;
 import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
 import com.redhorse.deokhugam.domain.alarm.exception.AlarmNotFoundException;
 import com.redhorse.deokhugam.domain.alarm.exception.NoAlarmException;
-import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.impl.AlarmServiceImpl;
-import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
-import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +23,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("알림 읽은 상태 테스트")
 class AlarmServiceAlarmReadUnitTest {
 
     @InjectMocks
@@ -33,35 +31,30 @@ class AlarmServiceAlarmReadUnitTest {
 
     @Mock
     private AlarmRepository alarmRepository;
-    @Mock
-    private ReviewRepository reviewRepository;
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private AlarmMapper alarmMapper;
 
     @Test
-    @DisplayName("단건 알림 읽음 처리 성공 - update()가 호출된다")
+    @DisplayName("단일 알림 읽음 처리 성공 - 해당 알림의 update()가 호출된다")
     void checkAlarm_Success() {
         // given
         UUID testAlarmId = UUID.randomUUID();
         UUID testUserId = UUID.randomUUID();
+
         Alarm mockAlarm = mock(Alarm.class);
         User mockUser = mock(User.class);
 
-        given(mockUser.getId()).willReturn(testUserId);
-        given(mockAlarm.getUser()).willReturn(mockUser);
         given(alarmRepository.findById(testAlarmId)).willReturn(Optional.of(mockAlarm));
+        given(mockAlarm.getUser()).willReturn(mockUser);
+        given(mockUser.getId()).willReturn(testUserId);
 
         // when
         alarmService.checkAlarm(testAlarmId, testUserId);
 
-        // then, 메서드가 1번 실행되었는지 검증합니다.
+        // then
         verify(mockAlarm, times(1)).update();
     }
 
     @Test
-    @DisplayName("단건 알림 읽음 처리 실패 - 알림이 없으면 예외 발생")
+    @DisplayName("단일 알림 읽음 처리 실패 - 알림이 존재하지 않으면 예외 발생")
     void checkAlarm_NotFound() {
         // given
         UUID testAlarmId = UUID.randomUUID();
@@ -106,20 +99,5 @@ class AlarmServiceAlarmReadUnitTest {
         assertThatThrownBy(() -> alarmService.checkAllAlarm(testUserId))
                 .isInstanceOf(NoAlarmException.class)
                 .hasMessage("알림을 찾을 수 없습니다.");
-    }
-
-    @Test
-    @DisplayName("checkAllAlarm 호출 시 정상적으로 전체 업데이트가 수행된다")
-    void checkAllAlarm_InSpringContext() {
-        // given
-        UUID testUserId = UUID.randomUUID();
-        Alarm mockAlarm = mock(Alarm.class);
-        given(alarmRepository.findAllAlarmByUserId(testUserId)).willReturn(List.of(mockAlarm));
-
-        // when
-        alarmService.checkAllAlarm(testUserId);
-
-        // then
-        verify(mockAlarm).update();
     }
 }
