@@ -4,30 +4,42 @@ import com.redhorse.deokhugam.domain.book.exception.InValidIsbnException;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse;
 import com.redhorse.deokhugam.infra.naver.dto.NaverBookResponse.NaverBookItem;
 import com.redhorse.deokhugam.infra.naver.exception.NaverApiException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class NaverBookClientImpl implements NaverBookClient
 {
-    @Value("${naver.api.client-id}")
-    private String clientId;
-
-    @Value("${naver.api.client-secret}")
-    private String clientSecret;
-
-    @Value("${naver.api.url}")
-    private String naverUrl;
-
+    private final String clientId;
+    private final String clientSecret;
+    private final String naverUrl;
     private final RestClient restClient;
+
+    public NaverBookClientImpl(RestClient.Builder restClientBuilder,
+                               @Value("${naver.api.client-id}") String clientId,
+                               @Value("${naver.api.client-secret}") String clientSecret,
+                               @Value("${naver.api.url}") String naverUrl,
+                               @Value("${naver.api.connect-timeout}") int connectTimeout,
+                               @Value("${naver.api.read-timeout}") int readTimeout)
+    {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.naverUrl = naverUrl;
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeout)); // 3s
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeout));       // 1s
+
+        this.restClient = restClientBuilder.requestFactory(requestFactory).build();
+    }
 
     /**
      * ISBN으로 네이버에 API 요청을 보낸다.
