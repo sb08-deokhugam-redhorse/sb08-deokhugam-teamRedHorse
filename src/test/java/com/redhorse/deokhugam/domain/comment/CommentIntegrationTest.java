@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.domain.comment;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -258,10 +259,14 @@ public class CommentIntegrationTest {
       Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
       commentRepository.save(savedComment);
 
-      // when & then
+      // when
       mockMvc.perform(delete("/api/comments/{commentId}", savedComment.getId())
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isNoContent());
+
+      // then
+      Comment deletedComment = commentRepository.findById(savedComment.getId()).orElseThrow();
+      assertThat(deletedComment.getDeletedAt()).isNotNull();
     }
 
     @Test
@@ -323,6 +328,9 @@ public class CommentIntegrationTest {
       mockMvc.perform(delete("/api/comments/{commentId}/hard", savedComment.getId())
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isNoContent());
+
+      boolean exists = commentRepository.existsById(savedComment.getId());
+      assertThat(exists).isFalse();
     }
 
     @Test
