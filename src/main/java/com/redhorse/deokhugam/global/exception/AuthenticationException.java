@@ -8,8 +8,8 @@ public class AuthenticationException extends GlobalException {
     super(
         ErrorCode.UNAUTHORIZED_USER,
         Map.of(
-            "header", "요청 헤더 누락 또는 오류",
-            "description", "필수 인증 헤더가 없거나, 올바른 식별자(UUID) 형식이 아닙니다."
+            "header", "접근 권한 거부",
+            "description", "본인의 데이터만 접근할 수 있습니다."
         )
     );
   }
