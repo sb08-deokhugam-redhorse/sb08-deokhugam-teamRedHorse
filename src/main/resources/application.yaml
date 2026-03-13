@@ -28,6 +28,9 @@ spring:
     job:
       enabled: false # 다수 Job 빈 존재로 인한 기동 오류 방지 - 스케줄러(`@Scheduled`)로 별도 실행
 
+  cache:
+    type: caffeine
+
 # Common Logging
 logging:
   level:
@@ -38,7 +41,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers, prometheus # prometheus 엔드포인트 추가
+        include: health, info, metrics, loggers, caches, prometheus
   endpoint:
     health:
       show-details: always
@@ -55,12 +58,16 @@ naver:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
     url: https://openapi.naver.com/v1/search/book_adv.json?d_isbn=
+    connect-timeout: 3000
+    read-timeout: 1000
 
 # OCR Space API
 ocr:
   space:
     api-key: ${OCR_SPACE_API_KEY}
     url: https://api.ocr.space/parse/image
+    connect-timeout: 3000
+    read-timeout: 5000
 
 # s3
 storage:

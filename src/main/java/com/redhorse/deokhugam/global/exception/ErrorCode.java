@@ -38,6 +38,7 @@ public enum ErrorCode {
 
     // common
     INVALID_CURSOR("유효하지 않은 cursor 값 입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_DIRECTION("direction은 ASC 또는 DESC만 허용됩니다.", HttpStatus.BAD_REQUEST),
 
     // infra
     ISBN_NOT_FOUND("이미지에서 ISBN을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
