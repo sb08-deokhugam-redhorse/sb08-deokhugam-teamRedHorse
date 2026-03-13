@@ -24,7 +24,7 @@ import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
-import com.redhorse.deokhugam.global.exception.AuthenticationException;
+import com.redhorse.deokhugam.global.exception.AccessDeniedException;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -360,7 +360,7 @@ class UserControllerTest {
     UUID userId = UUID.randomUUID();
     UUID anotherUserId = UUID.randomUUID();
 
-    willThrow(new AuthenticationException())
+    willThrow(new AccessDeniedException())
         .given(userService)
         .deleteUserSoft(eq(anotherUserId), eq(userId));
 
@@ -432,7 +432,7 @@ class UserControllerTest {
     UUID userId = UUID.randomUUID();
     UUID anotherUserId = UUID.randomUUID();
 
-    willThrow(new AuthenticationException())
+    willThrow(new AccessDeniedException())
         .given(userService)
         .deleteUserHard(eq(anotherUserId), eq(userId));
 
