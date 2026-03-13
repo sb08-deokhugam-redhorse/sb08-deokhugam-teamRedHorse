@@ -13,7 +13,7 @@ import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
-import com.redhorse.deokhugam.global.exception.AuthenticationException;
+import com.redhorse.deokhugam.global.exception.AccessDeniedException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
-      throw new AuthenticationException();
+      throw new AccessDeniedException();
     }
 
     // 변경하려는 닉네임이 기존과 다를 경우에만 수정
@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
-      throw new AuthenticationException();
+      throw new AccessDeniedException();
     }
 
     findUser.softDelete();
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
-      throw new AuthenticationException();
+      throw new AccessDeniedException();
     }
 
     // 소프트 삭제 여부 확인
