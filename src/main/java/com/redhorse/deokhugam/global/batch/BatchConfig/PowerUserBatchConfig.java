@@ -86,7 +86,8 @@ public class PowerUserBatchConfig {
                 .writer(userWriter())
                 .faultTolerant() // 내결함성 기능 활성화
                 .retryLimit(3)   // 최대 3번 재시도
-                .retry(Exception.class) // 어떤 예외일 때 재시도할지
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
                 .build();
     }
 
@@ -99,7 +100,8 @@ public class PowerUserBatchConfig {
                 .writer(userWriter())
                 .faultTolerant() // 내결함성 기능 활성화
                 .retryLimit(3)   // 최대 3번 재시도
-                .retry(Exception.class) // 어떤 예외일 때 재시도할지
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
                 .build();
     }
 
@@ -111,7 +113,8 @@ public class PowerUserBatchConfig {
                 .processor(userItemProcessor())
                 .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
                 .retryLimit(3)   // 최대 3번 재시도
-                .retry(Exception.class) // 어떤 예외일 때 재시도할지
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
                 .build();
     }
 
@@ -124,7 +127,8 @@ public class PowerUserBatchConfig {
                 .writer(userWriter())
                 .faultTolerant() // 내결함성 기능 활성화
                 .retryLimit(3)   // 최대 3번 재시도
-                .retry(Exception.class) // 어떤 예외일 때 재시도할지
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
                 .build();
     }
 

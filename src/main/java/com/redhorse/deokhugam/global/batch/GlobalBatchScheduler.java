@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Slf4j
 @Component
@@ -63,7 +64,7 @@ public class GlobalBatchScheduler {
         try {
             // 실행 시점마다 고유한 파라미터 생성
             JobParameters params = new JobParametersBuilder()
-                    .addString("executionDate", LocalDate.now().toString()) // 시간단위가 아니라 날짜단위로 바꿔 같은 날짜면 안돌아가게함
+                    .addString("executionDate", LocalDate.now(ZoneId.of("Asia/Seoul")).toString()) // 시간단위가 아니라 날짜단위로 바꿔 같은 날짜면 안돌아가게함
                     .toJobParameters();
 
             // thread Pool이 아니면 순차적으로 실행됨
