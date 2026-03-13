@@ -1,12 +1,8 @@
-package com.redhorse.deokhugam.domain.comment.controller;
+package com.redhorse.deokhugam.domain.comment;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -16,35 +12,38 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
+import com.redhorse.deokhugam.domain.book.entity.Book;
+import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
-import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
-import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
-import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
-import com.redhorse.deokhugam.domain.comment.exception.CommentDeleteNotAllowedException;
-import com.redhorse.deokhugam.domain.comment.exception.CommentNotFoundException;
-import com.redhorse.deokhugam.domain.comment.exception.CommentUpdateNotAllowedException;
-import com.redhorse.deokhugam.domain.comment.service.CommentService;
-import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
-import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
-import java.time.Instant;
-import java.util.List;
+import com.redhorse.deokhugam.domain.comment.entity.Comment;
+import com.redhorse.deokhugam.domain.comment.repository.CommentRepository;
+import com.redhorse.deokhugam.domain.review.entity.Review;
+import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
+import com.redhorse.deokhugam.domain.user.entity.User;
+import com.redhorse.deokhugam.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 @ActiveProfiles("test")
-@WebMvcTest(CommentController.class)
-@DisplayName("CommentController 테스트")
-class CommentControllerTest {
+public class CommentIntegrationTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -52,27 +51,39 @@ class CommentControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private CommentService commentService;
+  @Autowired
+  private CommentRepository commentRepository;
+
+  @Autowired
+  private BookRepository bookRepository;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private ReviewRepository reviewRepository;
+
+  @Autowired
+  private EntityManager em;
 
   @MockitoBean
   private AlarmService alarmService;
 
-  UUID reviewId;
-  UUID userId;
-  UUID commentId;
-  CommentDto responseDto;
-  UUID requestUserId;
+  User savedUser;
+  Book savedBook;
+  Review savedReview;
 
   @BeforeEach
-  void setUp () {
-    reviewId = UUID.randomUUID();
-    userId = UUID.randomUUID();
-    commentId = UUID.randomUUID();
-    requestUserId = UUID.randomUUID();
+  void setUp() {
+    savedUser = new User("Buzz@codeit.com", "버즈", "Thisistest123***");
+    userRepository.save(savedUser);
 
-    responseDto = new CommentDto(commentId, reviewId, userId, "버즈", "컨트롤러 슬라이스 테스트",
-        Instant.now(), Instant.now());
+    savedBook = new Book("스프링 부트 핵심", "김스프링", "스프링 부트 마스터하기", "IT북스",
+        LocalDate.of(2024, 1, 1), "9788900000001", "url1", false, 4.8, 10L, new ArrayList<>());
+    bookRepository.save(savedBook);
+
+    savedReview = new Review("너무 재밌어요", 5, savedBook, savedUser);
+    reviewRepository.save(savedReview);
   }
 
   @Nested
@@ -83,51 +94,43 @@ class CommentControllerTest {
     @DisplayName("댓글 등록 요청이 성공적으로 처리되어야 한다.")
     void create_Success() throws Exception {
       // given
-      CommentCreateRequest request = new CommentCreateRequest(reviewId, userId, "컨트롤러 슬라이스 테스트");
-
-      given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);
+      CommentCreateRequest request = new CommentCreateRequest(savedReview.getId(),
+          savedUser.getId(), "댓글 생성 테스트");
 
       // when & then
       mockMvc.perform(post("/api/comments")
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.content").value("컨트롤러 슬라이스 테스트"))
+          .andExpect(jsonPath("$.content").value("댓글 생성 테스트"))
           .andExpect(jsonPath("$.userNickname").value("버즈"));
-
-      verify(alarmService, times(1)).createCommentAlarm(any(CommentDto.class));
     }
 
     @Test
     @DisplayName("댓글 등록 성공 - 알림 서비스에서 예외가 발생해도 댓글 생성은 유지되어야 한다.")
     void create_WhenAlarmServiceFails_ShouldStillReturnCreated() throws Exception {
       // given
-      CommentCreateRequest request = new CommentCreateRequest(reviewId, userId, "컨트롤러 슬라이스 테스트");
-
-      given(commentService.create(any(CommentCreateRequest.class))).willReturn(responseDto);
+      CommentCreateRequest request = new CommentCreateRequest(savedReview.getId(),
+          savedUser.getId(), "알람 실패 테스트");
 
       doThrow(new RuntimeException("알람 서버 장애"))
-          .when(alarmService).createCommentAlarm(any(CommentDto.class));
+          .when(alarmService).createCommentAlarm(any());
 
       // when & then
       mockMvc.perform(post("/api/comments")
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.content").value("컨트롤러 슬라이스 테스트"));
-
-      verify(alarmService, times(1)).createCommentAlarm(any(CommentDto.class));
+          .andExpect(jsonPath("$.content").value("알람 실패 테스트"));
     }
 
     @Test
     @DisplayName("댓글 등록 실패 - 존재하지 않는 리뷰 ID인 경우 404 Not Found를 반환한다.")
-    void create_WhenReviewNotFound_ShouldThrowException() throws Exception {
+    void create_WhenReviewNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidReviewId = UUID.randomUUID();
-      CommentCreateRequest request = new CommentCreateRequest(invalidReviewId, userId, "컨트롤러 슬라이스 테스트");
-
-      given(commentService.create(any(CommentCreateRequest.class)))
-          .willThrow(new ReviewNotFoundException(invalidReviewId));
+      CommentCreateRequest request = new CommentCreateRequest(invalidReviewId, savedUser.getId(),
+          "댓글 등록 실패 테스트");
 
       // when & then
       mockMvc.perform(post("/api/comments")
@@ -138,14 +141,11 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 등록 실패 - 존재하지 않는 사용자 ID인 경우 404 Not Found를 반환한다.")
-    void create_WhenUserNotFound_ShouldThrowException() throws Exception {
+    void create_WhenUserNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidUserID = UUID.randomUUID();
-      CommentCreateRequest request = new CommentCreateRequest(reviewId, invalidUserID,
-          "컨트롤러 슬라이스 테스트");
-
-      given(commentService.create(any(CommentCreateRequest.class)))
-          .willThrow(new UserNotFoundException(invalidUserID));
+      CommentCreateRequest request = new CommentCreateRequest(savedReview.getId(), invalidUserID,
+          "댓글 등록 실패 테스트");
 
       // when & then
       mockMvc.perform(post("/api/comments")
@@ -156,7 +156,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("입력값 검증 실패 - valid 검증을 실패하면 400 Bad Request를 반환한다.")
-    void create_InvalidInput_ShouldThrowException() throws Exception {
+    void create_InvalidInput_ShouldReturnBadRequest() throws Exception {
       // given
       CommentCreateRequest invalidRequest = new CommentCreateRequest(null, null, "");
 
@@ -176,37 +176,38 @@ class CommentControllerTest {
     @DisplayName("댓글 수정 요청이 성공적으로 처리되어야 한다.")
     void update_Success() throws Exception {
       // given
-      CommentUpdateRequest commentReq = new CommentUpdateRequest("컨트롤러 슬라이스 테스트");
-      CommentDto updateResponse = new CommentDto(commentId, reviewId, requestUserId, "버즈",
-          "컨트롤러 슬라이스 테스트", Instant.now(), Instant.now());
+      UUID requestUserId = savedUser.getId();
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
 
-      given(commentService.update(eq(commentId), eq(requestUserId),
-          any(CommentUpdateRequest.class))).willReturn(updateResponse);
+      commentRepository.save(savedComment);
+      CommentUpdateRequest request = new CommentUpdateRequest("댓글 수정 테스트");
 
       // when & then
-      mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+      mockMvc.perform(patch("/api/comments/{commentId}", savedComment.getId())
               .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(commentReq)))
+              .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.id").value(commentId.toString()))
-          .andExpect(jsonPath("$.content").value("컨트롤러 슬라이스 테스트"))
+          .andExpect(jsonPath("$.id").value(savedComment.getId().toString()))
+          .andExpect(jsonPath("$.content").value("댓글 수정 테스트"))
           .andExpect(jsonPath("$.userId").value(requestUserId.toString()));
     }
 
     @Test
     @DisplayName("댓글 수정 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다")
-    void update_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    void update_WhenUserIsNotAuthor_ShouldReturnForbidden() throws Exception {
       // given
-      CommentUpdateRequest request = new CommentUpdateRequest("컨트롤러 슬라이스 테스트");
+      User anotherUser = new User("other@codeit.com", "다른유저", "Password123***");
+      userRepository.save(anotherUser);
 
-      given(
-          commentService.update(eq(commentId), eq(requestUserId), any(CommentUpdateRequest.class)))
-          .willThrow(new CommentUpdateNotAllowedException(commentId));
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
+
+      CommentUpdateRequest request = new CommentUpdateRequest("댓글 수정 테스트");
 
       // when & then
-      mockMvc.perform(patch("/api/comments/{commentId}", commentId)
-              .header("Deokhugam-Request-User-ID", requestUserId.toString())
+      mockMvc.perform(patch("/api/comments/{commentId}", savedComment.getId())
+              .header("Deokhugam-Request-User-ID", anotherUser.getId().toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isForbidden());
@@ -221,24 +222,22 @@ class CommentControllerTest {
     @DisplayName("댓글 단건 조회 요청이 성공적으로 처리되어야 한다.")
     void find_Success() throws Exception {
       // given
-      given(commentService.find(eq(commentId))).willReturn(responseDto);
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
 
       // when & then
-      mockMvc.perform(get("/api/comments/{commentId}", commentId)
+      mockMvc.perform(get("/api/comments/{commentId}", savedComment.getId())
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.id").value(commentId.toString()))
+          .andExpect(jsonPath("$.id").value(savedComment.getId().toString()))
           .andExpect(jsonPath("$.id").exists());
     }
 
     @Test
     @DisplayName("댓글 단건 조회 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
-    void find_WhenCommentNotFound_ShouldThrowException() throws Exception {
+    void find_WhenCommentNotFound_ShouldReturnNotFound() throws Exception {
       // given
       UUID invalidCommentId = UUID.randomUUID();
-
-      given(commentService.find(eq(invalidCommentId)))
-          .willThrow(new CommentNotFoundException(invalidCommentId));
 
       // when & then
       mockMvc.perform(get("/api/comments/{commentId}", invalidCommentId)
@@ -255,45 +254,59 @@ class CommentControllerTest {
     @DisplayName("댓글 논리 삭제 요청이 성공적으로 처리되어야 한다.")
     void softDelete_Success() throws Exception {
       // given
-      doNothing().when(commentService).softDelete(eq(commentId), eq(requestUserId));
+      UUID requestUserId = savedUser.getId();
 
-      // when & then
-      mockMvc.perform(delete("/api/comments/{commentId}", commentId)
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
+
+      // when
+      mockMvc.perform(delete("/api/comments/{commentId}", savedComment.getId())
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isNoContent());
+
+      // then
+      Comment deletedComment = commentRepository.findById(savedComment.getId()).orElseThrow();
+      assertThat(deletedComment.getDeletedAt()).isNotNull();
     }
 
     @Test
     @DisplayName("댓글 논리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
-    void softDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
+    void softDelete_WhenCommentNotFound_ShouldReturnNotFound() throws Exception {
       // given
-      doThrow(new CommentNotFoundException(commentId))
-          .when(commentService).softDelete(eq(commentId), eq(requestUserId));
+      UUID invalidCommentId = UUID.randomUUID();
+      UUID requestUserId = savedUser.getId();
 
       // when & then
-      mockMvc.perform(delete("/api/comments/{commentId}", commentId)
+      mockMvc.perform(delete("/api/comments/{commentId}", invalidCommentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("댓글 논리 삭제 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다.")
-    void softDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    void softDelete_WhenUserIsNotAuthor_ShouldReturnForbidden() throws Exception {
       // given
-      doThrow(new CommentDeleteNotAllowedException(commentId))
-          .when(commentService).softDelete(eq(commentId), eq(requestUserId));
+      User anotherUser = new User("other@codeit.com", "다른유저", "Password123***");
+      userRepository.save(anotherUser);
+
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
 
       // when & then
-      mockMvc.perform(delete("/api/comments/{commentId}", commentId)
-              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
+      mockMvc.perform(delete("/api/comments/{commentId}", savedComment.getId())
+              .header("Deokhugam-Request-User-ID", anotherUser.getId().toString()))
           .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
     void softDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
-      // given & when & then
-      mockMvc.perform(delete("/api/comments/{commentId}", commentId))
+      // given
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}", savedComment.getId()))
           .andExpect(status().isBadRequest());
     }
   }
@@ -306,45 +319,58 @@ class CommentControllerTest {
     @DisplayName("댓글 물리 삭제 요청이 성공적으로 처리되어야 한다.")
     void hardDelete_Success() throws Exception {
       // given
-      doNothing().when(commentService).hardDelete(eq(commentId), eq(requestUserId));
+      UUID requestUserId = savedUser.getId();
+
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
 
       // when & then
-      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", savedComment.getId())
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isNoContent());
+
+      boolean exists = commentRepository.existsById(savedComment.getId());
+      assertThat(exists).isFalse();
     }
 
     @Test
     @DisplayName("댓글 물리 삭제 실패 - 존재하지 않은 댓글 Id인 경우 404 Not Found를 반환한다.")
-    void hardDelete_WhenCommentNotFound_ShouldThrowException() throws Exception {
+    void hardDelete_WhenCommentNotFound_ShouldReturnNotFound() throws Exception {
       // given
-      doThrow(new CommentNotFoundException(commentId))
-          .when(commentService).hardDelete(eq(commentId), eq(requestUserId));
+      UUID invalidCommentId = UUID.randomUUID();
+      UUID requestUserId = savedUser.getId();
 
       // when & then
-      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", invalidCommentId)
               .header("Deokhugam-Request-User-ID", requestUserId.toString()))
           .andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("댓글 물리 삭제 실패 - 작성자가 아닌 유저가 요청하면 403 Forbidden을 반환한다.")
-    void hardDelete_WhenUserIsNotAuthor_ShouldThrowException() throws Exception {
+    void hardDelete_WhenUserIsNotAuthor_ShouldReturnForbidden() throws Exception {
       // given
-      doThrow(new CommentDeleteNotAllowedException(commentId))
-          .when(commentService).hardDelete(eq(commentId), eq(requestUserId));
+      User anotherUser = new User("other@codeit.com", "다른유저", "Password123***");
+      userRepository.save(anotherUser);
+
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
 
       // when & then
-      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
-              .header("Deokhugam-Request-User-ID", requestUserId.toString()))
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", savedComment.getId())
+              .header("Deokhugam-Request-User-ID", anotherUser.getId().toString()))
           .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
     void hardDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
-      // given & when & then
-      mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId))
+      // given
+      Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
+      commentRepository.save(savedComment);
+
+      // when & then
+      mockMvc.perform(delete("/api/comments/{commentId}/hard", savedComment.getId()))
           .andExpect(status().isBadRequest());
     }
   }
@@ -357,22 +383,46 @@ class CommentControllerTest {
     @DisplayName("댓글 목록 조회 요청이 성공적으로 처리되어야 한다.")
     void findAll_Success() throws Exception {
       // given
-      CommentPageRequest request = new CommentPageRequest(reviewId, "DESC", null, null, 5);
+      commentRepository.save(new Comment("댓글 1", savedReview, savedUser));
+      commentRepository.save(new Comment("댓글 2", savedReview, savedUser));
+      commentRepository.save(new Comment("댓글 3", savedReview, savedUser));
 
-      CursorPageResponseCommentDto responseDto = new CursorPageResponseCommentDto(
-          List.of(), null, null, 5, 3L, false
-      );
-
-      given(commentService.findAll(any(CommentPageRequest.class))).willReturn(responseDto);
+      commentRepository.flush();
+      em.clear();
 
       // when & then
       mockMvc.perform(get("/api/comments")
-              .param("reviewId", reviewId.toString())
+              .param("reviewId", savedReview.getId().toString())
               .param("direction", "DESC")
               .param("limit", "5"))
           .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content.length()").value(3))
           .andExpect(jsonPath("$.size").value(5))
           .andExpect(jsonPath("$.hasNext").value(false));
+    }
+
+    @Test
+    @DisplayName("댓글 목록 조회 시 삭제된 댓글은 조회되지 않아야한다.")
+    void findAll_ExcludeDelete_Success() throws Exception {
+      // given
+      Comment comment1 = commentRepository.save(new Comment("댓글 1", savedReview, savedUser));
+      Comment comment2 = commentRepository.save(new Comment("댓글 2", savedReview, savedUser));
+      Comment comment3 = commentRepository.save(new Comment("댓글 3", savedReview, savedUser));
+
+      comment2.softDelete();
+
+      commentRepository.flush();
+      em.clear();
+
+      // when & then
+      mockMvc.perform(get("/api/comments")
+              .param("reviewId", savedReview.getId().toString())
+              .param("direction", "DESC")
+              .param("limit", "5"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content.length()").value(2))
+          .andExpect(jsonPath("$.content[0].content").value("댓글 3"))
+          .andExpect(jsonPath("$.content[1].content").value("댓글 1"));
     }
 
     @Test
