@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AlarmController.class)
 @ActiveProfiles("test")
+@DisplayName("알림 컨트롤러 테스트")
 class AlarmControllerTest {
 
     @Autowired

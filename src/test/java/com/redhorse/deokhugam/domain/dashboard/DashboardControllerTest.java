@@ -37,16 +37,13 @@ public class DashboardControllerTest {
     void getPopularReviews_Success() throws Exception {
         // given
         CursorPageResponsePopularReviewkDto mockResponse = mock(CursorPageResponsePopularReviewkDto.class);
-
-        given(dashboardService.getPopularReviews(any(DashboardRequest.class)))
-                .willReturn(mockResponse);
+        given(dashboardService.getPopularReviews(any(DashboardRequest.class))).willReturn(mockResponse);
 
         // when & then
         mockMvc.perform(get("/api/reviews/popular")
-                        .param("period", "WEEKLY")
-                        .param("limit", "10")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
+                .param("period", "WEEKLY")
+                .param("limit", "10")
+                .accept(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -55,14 +52,12 @@ public class DashboardControllerTest {
     void getPowerUsers_Success() throws Exception {
         // given
         CursorPageResponsePowerUserDto mockResponse = mock(CursorPageResponsePowerUserDto.class);
-
-        given(dashboardService.getPowerUsers(any(DashboardRequest.class)))
-                .willReturn(mockResponse);
+        given(dashboardService.getPowerUsers(any(DashboardRequest.class))).willReturn(mockResponse);
 
         // when & then
         mockMvc.perform(get("/api/users/power")
-                        .param("period", "MONTHLY")
-                        .accept(MediaType.APPLICATION_JSON))
+                .param("period", "MONTHLY")
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -72,14 +67,12 @@ public class DashboardControllerTest {
     void getPopularBooks_Success() throws Exception {
         // given
         CursorPageResponsePopularBookDto mockResponse = mock(CursorPageResponsePopularBookDto.class);
-
-        given(dashboardService.getPopularBooks(any(DashboardRequest.class)))
-                .willReturn(mockResponse);
+        given(dashboardService.getPopularBooks(any(DashboardRequest.class))).willReturn(mockResponse);
 
         // when & then
         mockMvc.perform(get("/api/books/popular")
-                        .param("period", "DAILY")
-                        .accept(MediaType.APPLICATION_JSON))
+                .param("period", "DAILY")
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }

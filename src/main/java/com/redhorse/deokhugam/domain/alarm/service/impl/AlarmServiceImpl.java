@@ -9,14 +9,8 @@ import com.redhorse.deokhugam.domain.alarm.exception.NoAlarmException;
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
 import com.redhorse.deokhugam.domain.alarm.repository.AlarmRepository;
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
-import com.redhorse.deokhugam.domain.book.entity.Book;
-import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
-import com.redhorse.deokhugam.domain.book.repository.BookRepository;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.popularbook.PopularBookDto;
-import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.PopularReviewDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.PowerUserDto;
-import com.redhorse.deokhugam.domain.dashboard.entity.PopularBook;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
 import com.redhorse.deokhugam.domain.review.entity.Review;
@@ -44,13 +38,12 @@ public class AlarmServiceImpl implements AlarmService {
     private final AlarmRepository alarmRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final BookRepository bookRepository;
     private final AlarmMapper alarmMapper;
 
     @Override
     public NotificationDto createCommentAlarm(CommentDto dto) {
         Review review = reviewRepository.findById(dto.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(dto.reviewId()));
         User reviewOwner = review.getUser();
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));
@@ -72,7 +65,7 @@ public class AlarmServiceImpl implements AlarmService {
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));
         Review review = reviewRepository.findById(dto.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(dto.reviewId()));
         User reviewOwner = review.getUser();
 
         Alarm alarm = new Alarm(
@@ -91,7 +84,7 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public NotificationDto createReviewAlarm(PopularReview popularReview) {
         Review review = reviewRepository.findById(popularReview.getReview().getId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(popularReview.getReview().getId()));
         User reviewOwner = review.getUser();
 
         String type = "";
@@ -146,7 +139,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         Alarm alarm = new Alarm(
                 dto.period().toString(),
-                user.getNickname()+"님이 유저랭킹" + type + dto.rank() + "위에 올랐습니다.",
+                user.getNickname() + "님이 유저랭킹" + type + dto.rank() + "위에 올랐습니다.",
                 "",
                 dto.userId(),
                 user
@@ -195,9 +188,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
 
-        Slice<Alarm> alarmSlice = "ASC".equalsIgnoreCase(request.direction())
-                ? alarmRepository.getAllAlarmsAsc(request, pageable)
-                : alarmRepository.getAllAlarmsDesc(request, pageable);
+        Slice<Alarm> alarmSlice = alarmRepository.getAllAlarms(request, pageable);
 
         List<Alarm> alarmList = alarmSlice.getContent();
         Long alarmCount = alarmRepository.countAlarmsByUserId(request.userId());
