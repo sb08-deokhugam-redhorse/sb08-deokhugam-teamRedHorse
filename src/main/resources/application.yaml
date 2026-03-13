@@ -28,6 +28,9 @@ spring:
     job:
       enabled: false # 다수 Job 빈 존재로 인한 기동 오류 방지 - 스케줄러(`@Scheduled`)로 별도 실행
 
+  cache:
+    type: caffeine
+
 # Common Logging
 logging:
   level:
@@ -38,7 +41,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches
   endpoint:
     health:
       show-details: always
