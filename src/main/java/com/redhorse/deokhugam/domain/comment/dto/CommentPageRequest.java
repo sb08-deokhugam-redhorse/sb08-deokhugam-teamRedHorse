@@ -11,7 +11,8 @@ public record CommentPageRequest(
     @NotNull(message = "리뷰 ID는 필수입니다.")
     UUID reviewId,
 
-    @Schema(description = "정렬 방향", defaultValue = "DESC", allowableValues = {"ASC", "DESC"}, example = "DESC")
+    @Schema(description = "정렬 방향", defaultValue = "DESC", allowableValues = {"ASC",
+        "DESC"}, example = "DESC")
     String direction,
 
     @Schema(description = "커서 페이지네이션 커서")
@@ -24,13 +25,19 @@ public record CommentPageRequest(
     @Min(value = 1, message = "limit은 1 이상이어야 합니다.")
     Integer limit
 ) {
-    public CommentPageRequest {
-        if (limit == null) {
-            limit = 50;
-        }
 
-        if (direction == null || direction.isBlank()) {
-            direction = "DESC";
-        }
+  public CommentPageRequest {
+    if (limit == null || limit <= 0) {
+      limit = 50;
     }
+
+    if (direction == null || direction.isBlank()) {
+      direction = "DESC";
+    } else {
+      direction = direction.trim().toUpperCase();
+      if (!direction.equals("ASC") && !direction.equals("DESC")) {
+        throw new IllegalArgumentException("direction은 ASC 또는 DESC만 허용됩니다.");
+      }
+    }
+  }
 }

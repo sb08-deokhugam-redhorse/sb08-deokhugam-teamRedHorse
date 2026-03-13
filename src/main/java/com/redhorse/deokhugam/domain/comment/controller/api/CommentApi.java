@@ -48,7 +48,7 @@ public interface CommentApi {
       @Parameter(description = "댓글 정보", required = true,
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
               schema = @Schema(implementation = CommentCreateRequest.class)))
-      @RequestBody CommentCreateRequest commentCreateRequest
+      @Valid @RequestBody CommentCreateRequest commentCreateRequest
   );
 
   @Operation(summary = "댓글 수정", description = "본인이 작성한 댓글을 수정합니다.")
@@ -82,7 +82,7 @@ public interface CommentApi {
       @Parameter(description = "댓글 수정 정보", required = true,
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
               schema = @Schema(implementation = CommentUpdateRequest.class)))
-      @RequestBody CommentUpdateRequest commentUpdateRequest
+      @Valid @RequestBody CommentUpdateRequest commentUpdateRequest
   );
 
   @Operation(summary = "댓글 상세 정보 조회", description = "특정 댓글의 상세 정보를 조회합니다.")
