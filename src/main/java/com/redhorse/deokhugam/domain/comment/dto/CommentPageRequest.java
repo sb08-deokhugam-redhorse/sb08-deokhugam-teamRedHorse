@@ -15,7 +15,7 @@ public record CommentPageRequest(
     Integer limit
 ) {
     public CommentPageRequest {
-        if (limit == null || limit <= 0) {
+        if (limit == null) {
             limit = 50;
         }
 
