@@ -43,7 +43,13 @@ class OcrSpaceClientImplTest
         given(restClientBuilder.requestFactory(any())).willReturn(restClientBuilder);
         given(restClientBuilder.build()).willReturn(restClient);
 
-        ocrSpaceClientImpl = new OcrSpaceClientImpl(restClientBuilder);
+        ocrSpaceClientImpl = new OcrSpaceClientImpl(
+                restClientBuilder,
+                "ocr-api-key",
+                "https://test-ocr.com",
+                3000,
+                5000
+        );
 
         ReflectionTestUtils.setField(ocrSpaceClientImpl, "ocrApiKey", "test-api-key");
         ReflectionTestUtils.setField(ocrSpaceClientImpl, "ocrUrl", "https://api.ocr.space/parse/image");

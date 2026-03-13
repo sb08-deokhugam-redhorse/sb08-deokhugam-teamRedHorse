@@ -19,23 +19,22 @@ import java.time.Duration;
 @Component
 public class OcrSpaceClientImpl implements OcrClient
 {
-    @Value("${ocr.space.api-key}")
-    private String ocrApiKey;
-
-    @Value("${ocr.space.url}")
-    private String ocrUrl;
-
-    @Value("${ocr.space.connect-timeout}")
-    private int connectTimeout;
-
-    @Value("${ocr.space.read-timeout}")
-    private int readTimeout;
+    private final String ocrApiKey;
+    private final String ocrUrl;
 
     private final RestClient restClient;
 
     private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
-    public OcrSpaceClientImpl(RestClient.Builder restClientBuilder) {
+    public OcrSpaceClientImpl(RestClient.Builder restClientBuilder,
+                              @Value("${ocr.space.api-key}") String ocrApiKey,
+                              @Value("${ocr.space.url}") String ocrUrl,
+                              @Value("${ocr.space.connect-timeout}") int connectTimeout,
+                              @Value("${ocr.space.read-timeout}") int readTimeout)
+    {
+        this.ocrApiKey = ocrApiKey;
+        this.ocrUrl = ocrUrl;
+
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeout)); // 3s
         requestFactory.setReadTimeout(Duration.ofMillis(readTimeout));       // 5s

@@ -41,7 +41,14 @@ class NaverBookClientImplTest
         given(restClientBuilder.requestFactory(any())).willReturn(restClientBuilder);
         given(restClientBuilder.build()).willReturn(restClient);
 
-        naverBookClientImpl = new NaverBookClientImpl(restClientBuilder);
+        naverBookClientImpl = new NaverBookClientImpl(
+                restClientBuilder,
+                "test-client-id",
+                "test-client-secret",
+                "https://openapi.naver.com/v1/search/book.json?query=",
+                3000,
+                1000
+        );
 
         ReflectionTestUtils.setField(naverBookClientImpl, "clientId", "test-client-id");
         ReflectionTestUtils.setField(naverBookClientImpl, "clientSecret", "test-client-secret");

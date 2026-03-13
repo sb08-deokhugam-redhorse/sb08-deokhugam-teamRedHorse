@@ -18,24 +18,22 @@ import java.util.Optional;
 @Component
 public class NaverBookClientImpl implements NaverBookClient
 {
-    @Value("${naver.api.client-id}")
-    private String clientId;
-
-    @Value("${naver.api.client-secret}")
-    private String clientSecret;
-
-    @Value("${naver.api.url}")
-    private String naverUrl;
-
-    @Value("${naver.api.connect-timeout}")
-    private int connectTimeout;
-
-    @Value("${naver.api.read-timeout}")
-    private int readTimeout;
-
+    private final String clientId;
+    private final String clientSecret;
+    private final String naverUrl;
     private final RestClient restClient;
 
-    public NaverBookClientImpl(RestClient.Builder restClientBuilder) {
+    public NaverBookClientImpl(RestClient.Builder restClientBuilder,
+                               @Value("${naver.api.client-id}") String clientId,
+                               @Value("${naver.api.client-secret}") String clientSecret,
+                               @Value("${naver.api.url}") String naverUrl,
+                               @Value("${naver.api.connect-timeout}") int connectTimeout,
+                               @Value("${naver.api.read-timeout}") int readTimeout)
+    {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.naverUrl = naverUrl;
+
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeout)); // 3s
         requestFactory.setReadTimeout(Duration.ofMillis(readTimeout));       // 1s
