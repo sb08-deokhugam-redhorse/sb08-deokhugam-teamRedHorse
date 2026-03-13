@@ -77,7 +77,7 @@ public interface CommentApi {
   ResponseEntity<CommentDto> update(
       @Parameter(description = "댓글 ID", example = "123e4567-e89b-12d3-a456-426614174000", required = true)
       @PathVariable UUID commentId,
-      @Parameter(description = "요청자 ID", example = " 123e4567-e89b-12d3-a456-426614174000", required = true)
+      @Parameter(description = "요청자 ID", example = "123e4567-e89b-12d3-a456-426614174000", required = true)
       @RequestHeader("Deokhugam-Request-User-ID") UUID requestUserId,
       @Parameter(description = "댓글 수정 정보", required = true,
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -92,7 +92,7 @@ public interface CommentApi {
           content = @Content(schema = @Schema(implementation = CommentDto.class))
       ),
       @ApiResponse(
-          responseCode = "400", description = "댓글 정보 없음",
+          responseCode = "404", description = "댓글 정보 없음",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class))
       ),
       @ApiResponse(
