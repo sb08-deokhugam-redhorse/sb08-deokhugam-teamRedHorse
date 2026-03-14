@@ -64,7 +64,7 @@ ocr:
     api-key: ${OCR_SPACE_API_KEY}
     url: https://api.ocr.space/parse/image
     connect-timeout: 3000
-    read-timeout: 5000
+    read-timeout: 10000
 
 # s3
 storage:
