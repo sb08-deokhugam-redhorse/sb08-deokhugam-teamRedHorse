@@ -16,7 +16,8 @@ import java.util.regex.Pattern;
 @Component
 public class OcrProvider
 {
-    private final OcrClient ocrClient;
+    private final OcrExecutor ocrExecutor;
+    private final AwsTextractClientImpl awsTextractClientImpl;
 
     /**
      * 이미지로부터 ISBN을 추출한다.
@@ -25,8 +26,16 @@ public class OcrProvider
      * @return ISBN
      */
     public String extractIsbn(MultipartFile image) {
-        String text = ocrClient.extractText(image);
-        String isbn = parseIsbn(normalize(text));
+        String ocrText = ocrExecutor.extractText(image);
+        String isbn = parseIsbn(normalize(ocrText));
+
+        // OCR Space 서버 장애가 아닌 인식 실패(이미지 품질 문제)의 경우
+        // 서킷브레이커를 거치지 않고 Textract로 직접 전환
+        if (isbn == null) {
+            log.warn("[OCR-Api] OCR Space ISBN 인식 실패, Textract로 전환: fileName={}", image.getOriginalFilename());
+            String textractText = awsTextractClientImpl.extractText(image);
+            isbn = parseIsbn(normalize(textractText));
+        }
 
         if (isbn == null) {
             throw new IsbnNotFoundException();
