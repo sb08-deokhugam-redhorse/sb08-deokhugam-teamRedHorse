@@ -66,7 +66,7 @@ public class PowerUserBatchConfig {
                         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
                             log.info("[PowerUser-batch] 작업 완료");
                             // 새 배치가 있으니 캐시 비우기
-                            dashboardService.cleaUserDashboardCache();
+                            dashboardService.clearUserDashboardCache();
                         }
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
@@ -88,12 +88,11 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryDailyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)user.exception.UserException.class)
+                .writer(userWriter())                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -103,12 +102,11 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryWeelyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)user.exception.UserException.class)
+                .writer(userWriter())                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -119,11 +117,11 @@ public class PowerUserBatchConfig {
                 .reader(userRepositoryMonthlyRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.user.exception.UserException.class)
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -133,12 +131,11 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryAllRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)user.exception.UserException.class)
+                .writer(userWriter())                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 

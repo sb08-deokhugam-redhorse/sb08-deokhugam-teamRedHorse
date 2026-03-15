@@ -26,7 +26,7 @@ public interface DashboardService {
     void clearReviewDashboardCache();
 
     @CacheEvict(value = "powerUsers", allEntries = true)
-    void cleaUserDashboardCache();
+    void clearUserDashboardCache();
 
     @CacheEvict(value = "popularBooks", allEntries = true)
     void clearBooksDashboardCache();

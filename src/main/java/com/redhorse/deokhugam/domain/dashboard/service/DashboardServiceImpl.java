@@ -174,7 +174,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @CacheEvict(value = "powerUsers", allEntries = true)
     @Override
-    public void cleaUserDashboardCache() {}
+    public void clearUserDashboardCache() {}
 
     @CacheEvict(value = "popularBooks", allEntries = true)
     @Override

@@ -85,11 +85,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryDailyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -100,11 +100,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryWeelyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -115,11 +115,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryMonthlyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -130,11 +130,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryAllRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                //.faultTolerant() // 내결함성 기능 활성화
-                //.processorNonTransactional()
-                //.retryLimit(3)   // 최대 3번 재시도
-                //.retry(org.springframework.dao.TransientDataAccessException.class)
-                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 

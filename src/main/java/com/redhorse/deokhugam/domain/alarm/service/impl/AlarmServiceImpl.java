@@ -44,7 +44,6 @@ public class AlarmServiceImpl implements AlarmService {
     private final AlarmMapper alarmMapper;
 
     @Override
-    @CacheEvict(value = "notifications", key = "#dto.userId()")
     public NotificationDto createCommentAlarm(CommentDto dto) {
         Review review = reviewRepository.findById(dto.reviewId())
                 .orElseThrow(() -> new ReviewNotFoundException(dto.reviewId()));
@@ -65,7 +64,6 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    @CacheEvict(value = "notifications", key = "#dto.userId()")
     public NotificationDto createLikeAlarm(ReviewLikeDto dto) {
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));
@@ -87,7 +85,6 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    @CacheEvict(value = "notifications", key = "#popularReview.review.user.id")
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 배치에서 중간에 끊여도 앞서한건 저장되도록
     public NotificationDto createReviewAlarm(PopularReview popularReview) {
         Review review = reviewRepository.findById(popularReview.getReview().getId())
@@ -124,7 +121,6 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    @CacheEvict(value = "notifications", key = "#dto.userId()")
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 배치에서 중간에 끊여도 앞서한건 저장되도록
     public NotificationDto createPowerUserAlarm(PowerUserDto dto) {
         User user = userRepository.findById(dto.userId())
@@ -160,7 +156,6 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    @CacheEvict(value = "notifications", key = "#userId")
     public void checkAlarm(UUID alarmId, UUID userId) {
         Alarm alarm = alarmRepository.findById(alarmId).orElseThrow(
                 () -> new AlarmNotFoundException(alarmId)
@@ -172,7 +167,6 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    @CacheEvict(value = "notifications", key = "#userId")
     public void checkAllAlarm(UUID userId) {
         List<Alarm> alarms = alarmRepository.findAllAlarmByUserId(userId);
 
@@ -186,7 +180,6 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    @Cacheable(value = "notifications", key = "#request")// DTO가 record 타입이면 DTO자체를 키로 설정 가능
     public CursorPageResponseNotificationDto getAlarmList(NotificationListRequest request) {
 
         /**
