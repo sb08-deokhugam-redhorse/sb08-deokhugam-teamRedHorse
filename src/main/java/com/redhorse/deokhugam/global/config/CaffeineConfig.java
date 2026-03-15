@@ -40,7 +40,21 @@ public class CaffeineConfig
                                 .maximumSize(500)
                                 .recordStats()
                                 .build()
-                        )
+                        ),
+
+                new CaffeineCache("notifications",
+                        Caffeine.newBuilder()
+                                .expireAfterWrite(24, TimeUnit.HOURS)
+                                .maximumSize(500)
+                                .recordStats()
+                                .build()),
+
+        new CaffeineCache("dashboard",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(24, TimeUnit.HOURS)
+                        .maximumSize(500)
+                        .recordStats()
+                        .build())
         ));
 
         return cacheManager;

@@ -51,6 +51,8 @@ management:
   metrics:
     tags:
       application: deokhugam # 그라파나에 앱 구분용 이름
+    cache:
+      instrument: true # 캐시 메트릭 수집 활성화
 
 # Naver API
 naver:

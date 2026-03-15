@@ -5,9 +5,8 @@ import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReviewBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.dashboard.repository.PopularReviewRepository;
+import com.redhorse.deokhugam.domain.dashboard.service.DashboardService;
 import com.redhorse.deokhugam.domain.review.entity.Review;
-import com.redhorse.deokhugam.domain.review.exception.ReviewException;
-import com.redhorse.deokhugam.domain.review.exception.ReviewNotFoundException;
 import com.redhorse.deokhugam.global.batch.repository.ReviewBatchRepository;
 import com.redhorse.deokhugam.global.entity.PeriodType;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +47,7 @@ public class PopularReviewBatchConfig {
     private final ReviewBatchRepository reviewBatchRepository;
     private final PopularReviewRepository popularReviewRepository;
     private final AlarmService alarmService;
+    private final DashboardService dashboardService;
 
     @Bean
     public Job reviewRankingBatchJob() {
@@ -59,6 +59,11 @@ public class PopularReviewBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
+                        if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
+                            log.info("[Popularreview-batch] 작업 완료");
+                            // 새 배치가 있으니 캐시 비우기
+                            dashboardService.clearReviewDashboardCache();
+                        }
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[Popularreview-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
@@ -80,10 +85,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryDailyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
                 .build();
     }
 
@@ -94,10 +100,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryWeelyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
                 .build();
     }
 
@@ -108,10 +115,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryMonthlyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
                 .build();
     }
 
@@ -122,10 +130,11 @@ public class PopularReviewBatchConfig {
                 .reader(reviewRepositoryAllRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)review.exception.ReviewException.class)
                 .build();
     }
 
@@ -238,8 +247,5 @@ public class PopularReviewBatchConfig {
                 .arguments(List.of(period.name(), startOfEnd, startOfToday)) // ★ 추가: 레포지토리에 넘길 파라미터 세팅
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
-
     }
-
 }
-

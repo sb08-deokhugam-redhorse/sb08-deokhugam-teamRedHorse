@@ -1,6 +1,5 @@
 package com.redhorse.deokhugam.global.batch.BatchConfig;
 
-
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularbook.BookBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularBook;
@@ -70,40 +69,60 @@ public class PopularBookBatchConfig {
     @Bean
     public Step bookRankingBatchDailyStep() {
         return new StepBuilder("dailyStep", jobRepository)
-                .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
+                .<BookBatchDto, PopularBook>chunk(500, transactionManager)
                 .reader(bookRepositoryDailyRead())
                 .processor(bookItemProcessor())
                 .writer(bookWriter())
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step bookRankingBatchWeeklyStep() {
         return new StepBuilder("weeklyStep", jobRepository)
-                .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
+                .<BookBatchDto, PopularBook>chunk(500, transactionManager)
                 .reader(bookRepositoryWeeklyRead())
                 .processor(bookItemProcessor())
                 .writer(bookWriter())
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step bookRankingBatchMonthlyStep() {
         return new StepBuilder("monthlyStep", jobRepository)
-                .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
+                .<BookBatchDto, PopularBook>chunk(500, transactionManager)
                 .reader(bookRepositoryMonthlyRead())
                 .processor(bookItemProcessor())
                 .writer(bookWriter())
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step bookRankingBatchAllStep() {
         return new StepBuilder("allTimeStep", jobRepository)
-                .<BookBatchDto, PopularBook>chunk(10000, transactionManager)
+                .<BookBatchDto, PopularBook>chunk(500, transactionManager)
                 .reader(bookRepositoryAllRead())
                 .processor(bookItemProcessor())
                 .writer(bookWriter())
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)book.exception.BookException.class)
                 .build();
     }
 
@@ -193,14 +212,11 @@ public class PopularBookBatchConfig {
 
         return new RepositoryItemReaderBuilder<BookBatchDto>()
                 .name("BookRepositoryRead_" + period.toString())
-                .pageSize(1000)
+                .pageSize(500)
                 .methodName("findBooks")
                 .repository(bookBatchRepository)
                 .arguments(List.of(period.name(), startOfEnd, startOfToday)) // ★ 추가: 레포지토리에 넘길 파라미터 세팅
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
-
     }
-
 }
-

@@ -6,9 +6,8 @@ import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.UserBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PowerUser;
 import com.redhorse.deokhugam.domain.dashboard.repository.PowerUserRepository;
+import com.redhorse.deokhugam.domain.dashboard.service.DashboardService;
 import com.redhorse.deokhugam.domain.user.entity.User;
-import com.redhorse.deokhugam.domain.user.exception.UserException;
-import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.batch.repository.UserBatchRepository;
 import com.redhorse.deokhugam.global.entity.PeriodType;
@@ -52,6 +51,7 @@ public class PowerUserBatchConfig {
     private final UserRepository userRepository;
     private final AlarmService alarmService;
     private final AlarmMapper alarmMapper;
+    private final DashboardService dashboardService;
 
     @Bean
     public Job userRankingBatchJob() {
@@ -63,6 +63,11 @@ public class PowerUserBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
+                        if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
+                            log.info("[PowerUser-batch] 작업 완료");
+                            // 새 배치가 있으니 캐시 비우기
+                            dashboardService.cleaUserDashboardCache();
+                        }
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[PowerUser-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
@@ -84,10 +89,11 @@ public class PowerUserBatchConfig {
                 .reader(userRepositoryDailyRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)user.exception.UserException.class)
                 .build();
     }
 
@@ -98,10 +104,11 @@ public class PowerUserBatchConfig {
                 .reader(userRepositoryWeelyRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)user.exception.UserException.class)
                 .build();
     }
 
@@ -111,10 +118,12 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryMonthlyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                .writer(userWriter())
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.user.exception.UserException.class)
                 .build();
     }
 
@@ -125,10 +134,11 @@ public class PowerUserBatchConfig {
                 .reader(userRepositoryAllRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
-                .faultTolerant() // 내결함성 기능 활성화
-                .retryLimit(3)   // 최대 3번 재시도
-                .retry(org.springframework.dao.TransientDataAccessException.class)
-                .noRetry(com.redhorse.deokhugam.domain.review.exception.ReviewException.class)
+                //.faultTolerant() // 내결함성 기능 활성화
+                //.processorNonTransactional()
+                //.retryLimit(3)   // 최대 3번 재시도
+                //.retry(org.springframework.dao.TransientDataAccessException.class)
+                //.noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)user.exception.UserException.class)
                 .build();
     }
 
@@ -242,8 +252,5 @@ public class PowerUserBatchConfig {
                 .arguments(List.of(period.name(), startOfEnd, startOfToday))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
-
     }
-
 }
-
