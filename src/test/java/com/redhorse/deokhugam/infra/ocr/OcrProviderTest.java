@@ -40,7 +40,7 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - 텍스트에서 ISBN-13을 추출한다")
         void success_withValidText_returnsIsbn() {
-            given(ocrExecutor.extractText(any())).willReturn("ISBN 9788994492032");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 9788994492032", OcrSource.OCR_SPACE));
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
@@ -50,7 +50,7 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - \"-\" 이 포함된 ISBN도 추출한다")
         void success_withHyphenatedIsbn_returnsIsbn() {
-            given(ocrExecutor.extractText(any())).willReturn("ISBN 978-89-944920-3-2");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 978-89-944920-3-2", OcrSource.OCR_SPACE));
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
@@ -60,7 +60,7 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - OCR 오인식 보정 후 ISBN을 추출한다")
         void success_withOcrMisrecognition_returnsIsbn() {
-            given(ocrExecutor.extractText(any())).willReturn("ISBN 9788994492O32"); // l → 1
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 9788994492O32", OcrSource.OCR_SPACE)); // O -> 0
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
@@ -70,8 +70,19 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - OCR Space ISBN 인식 실패 시 Textract로 추출한다")
         void success_withOcrSpaceFailure_returnsIsbnFromTextract() {
-            given(ocrExecutor.extractText(any())).willReturn("ISBN을 찾을 수 없는 텍스트");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN을 찾을 수 없는 텍스트", OcrSource.OCR_SPACE));
             given(awsTextractClient.extractText(any())).willReturn("ISBN 9788994492032");
+
+            String result = ocrProvider.extractIsbn(createMockImage());
+
+            assertThat(result).isEqualTo("9788994492032");
+        }
+
+        @Test
+        @DisplayName("성공 - OCR Space 서버 장애 시 Textract 폴백으로 추출한다")
+        void success_withOcrSpaceServerError_returnsIsbnFromTextract() {
+            given(ocrExecutor.extractText(any()))
+                    .willReturn(new OcrResult("ISBN 9788994492032", OcrSource.TEXTRACT));
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
@@ -81,7 +92,7 @@ class OcrProviderTest
         @Test
         @DisplayName("실패 - ISBN을 찾을 수 없으면 IsbnNotFoundException을 던진다")
         void fail_withNoIsbn_throwsIsbnNotFoundException() {
-            given(ocrExecutor.extractText(any())).willReturn("이 텍스트에는 ISBN이 없습니다");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN이 없음.", OcrSource.OCR_SPACE));
             given(awsTextractClient.extractText(any())).willReturn("ISBN을 찾을 수 없는 텍스트");
 
             assertThatThrownBy(() -> ocrProvider.extractIsbn(createMockImage()))

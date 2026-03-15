@@ -1,6 +1,5 @@
 package com.redhorse.deokhugam.infra.ocr;
 
-import com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException;
 import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 public class AwsTextractClientImpl implements OcrClient
 {
     private final TextractClient textractClient;
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 1MB
 
     /**
      * AWS Textract로 이미지에서 텍스트를 추출한다.
@@ -29,10 +27,6 @@ public class AwsTextractClientImpl implements OcrClient
      */
     @Override
     public String extractText(MultipartFile image) {
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new ImageSizeExceededException(image.getSize());
-        }
-
         try {
             // TextractSDK는 SdkBytes 타입으로 이미지를 받음 (btye[]과 같지만 AWS SDK API의 요구)
             SdkBytes imageBytes = SdkBytes.fromInputStream(image.getInputStream());
@@ -76,7 +70,7 @@ public class AwsTextractClientImpl implements OcrClient
             return text;
 
         } catch (Exception e) {
-            log.error("[Textract-Api] Textract ISBN 추출 작업 실패: fileName={}, error={}", image.getOriginalFilename(), e.getMessage());
+            log.error("[Textract-Api] Textract ISBN 추출 작업 실패: fileName={}", image.getOriginalFilename(), e);
             throw new OcrProcessingException();
         }
     }

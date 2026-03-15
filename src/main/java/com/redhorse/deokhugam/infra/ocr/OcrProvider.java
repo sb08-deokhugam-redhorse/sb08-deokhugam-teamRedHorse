@@ -1,5 +1,6 @@
 package com.redhorse.deokhugam.infra.ocr;
 
+import com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException;
 import com.redhorse.deokhugam.infra.ocr.exception.IsbnNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ public class OcrProvider
     private final OcrExecutor ocrExecutor;
     private final AwsTextractClientImpl awsTextractClientImpl;
 
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
     /**
      * 이미지로부터 ISBN을 추출한다.
      *
@@ -26,13 +29,17 @@ public class OcrProvider
      * @return ISBN
      */
     public String extractIsbn(MultipartFile image) {
-        String ocrText = ocrExecutor.extractText(image);
-        String isbn = parseIsbn(normalize(ocrText));
+        if (image.getSize() > MAX_FILE_SIZE) {
+            throw new ImageSizeExceededException(image.getSize());
+        }
 
-        // OCR Space 서버 장애가 아닌 인식 실패(이미지 품질 문제)의 경우
-        // 서킷브레이커를 거치지 않고 Textract로 직접 전환
-        if (isbn == null) {
-            log.warn("[OCR-Api] OCR Space ISBN 인식 실패, Textract로 전환: fileName={}", image.getOriginalFilename());
+        OcrResult ocrResult = ocrExecutor.extractText(image);
+        String isbn = parseIsbn(normalize(ocrResult.text()));
+
+        // OCR Space가 성공했으나 ISBN 파싱 실패(이미지 품질 문제)일 때만 Textract 2차 시도
+        if (isbn == null && ocrResult.source() == OcrSource.OCR_SPACE) {
+            log.warn("[OCR-Api] OCR Space ISBN 인식 실패, Textract로 전환: fileName={}",
+                    image.getOriginalFilename());
             String textractText = awsTextractClientImpl.extractText(image);
             isbn = parseIsbn(normalize(textractText));
         }

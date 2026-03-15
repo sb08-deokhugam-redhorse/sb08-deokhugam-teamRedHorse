@@ -29,14 +29,18 @@ public class OcrExecutor
 
     @CircuitBreaker(name = "ocrSpace", fallbackMethod = "extractWithTextract")
     @Retry(name = "ocrSpace")
-    public String extractText(MultipartFile image) {
-            return ocrSpaceClientImpl.extractText(image);
+    public OcrResult extractText(MultipartFile image) {
+        String text = ocrSpaceClientImpl.extractText(image);
+
+        return new OcrResult(text, OcrSource.OCR_SPACE);
     }
 
-    private String extractWithTextract(MultipartFile image, Throwable t) {
+    private OcrResult extractWithTextract(MultipartFile image, Throwable t) {
         log.warn("[OCR-Api] OCR 작업 실패, Textract 폴백: fileName={}, reason={}",
                 image.getOriginalFilename(), t.getMessage());
 
-        return awsTextractClientImpl.extractText(image);
+        String text = awsTextractClientImpl.extractText(image);
+
+        return new OcrResult(text, OcrSource.TEXTRACT);
     }
 }
