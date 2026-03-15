@@ -18,7 +18,7 @@ import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import com.redhorse.deokhugam.global.exception.AuthenticationException;
+import com.redhorse.deokhugam.global.exception.AccessDeniedException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -379,7 +379,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.deleteUserHard(anotherUserId, userId))
-        .isInstanceOf(AuthenticationException.class);
+        .isInstanceOf(AccessDeniedException.class);
   }
 
   @Test
