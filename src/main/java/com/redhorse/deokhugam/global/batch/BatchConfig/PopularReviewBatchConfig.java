@@ -5,6 +5,7 @@ import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReviewBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.dashboard.repository.PopularReviewRepository;
+import com.redhorse.deokhugam.domain.dashboard.service.DashboardService;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.global.batch.repository.ReviewBatchRepository;
 import com.redhorse.deokhugam.global.entity.PeriodType;
@@ -46,6 +47,7 @@ public class PopularReviewBatchConfig {
     private final ReviewBatchRepository reviewBatchRepository;
     private final PopularReviewRepository popularReviewRepository;
     private final AlarmService alarmService;
+    private final DashboardService dashboardService;
 
     @Bean
     public Job reviewRankingBatchJob() {
@@ -57,6 +59,11 @@ public class PopularReviewBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
+                        if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
+                            log.info("[Popularreview-batch] 작업 완료");
+                            // 새 배치가 있으니 캐시 비우기
+                            dashboardService.clearReviewDashboardCache();
+                        }
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[Popularreview-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
@@ -74,40 +81,60 @@ public class PopularReviewBatchConfig {
     @Bean
     public Step reviewRankingBatchDailyStep() {
         return new StepBuilder("dailyStep", jobRepository)
-                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(500, transactionManager)
                 .reader(reviewRepositoryDailyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step reviewRankingBatchWeeklyStep() {
         return new StepBuilder("weeklyStep", jobRepository)
-                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(500, transactionManager)
                 .reader(reviewRepositoryWeelyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step reviewRankingBatchMonthlyStep() {
         return new StepBuilder("monthlyStep", jobRepository)
-                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(500, transactionManager)
                 .reader(reviewRepositoryMonthlyRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step reviewRankingBatchAllStep() {
         return new StepBuilder("allTimeStep", jobRepository)
-                .<ReviewBatchDto, PopularReview>chunk(10000, transactionManager)
+                .<ReviewBatchDto, PopularReview>chunk(500, transactionManager)
                 .reader(reviewRepositoryAllRead())
                 .processor(reviewItemProcessor())
                 .writer(reviewWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -169,7 +196,6 @@ public class PopularReviewBatchConfig {
 
     @Bean
     public ItemWriter<PopularReview> reviewWriter() {
-
         RepositoryItemWriter<PopularReview> repositoryItemWriter =
                 new RepositoryItemWriterBuilder<PopularReview>()
                         .repository(popularReviewRepository)
@@ -215,14 +241,11 @@ public class PopularReviewBatchConfig {
 
         return new RepositoryItemReaderBuilder<ReviewBatchDto>()
                 .name("reviewRepositoryRead_" + period.toString())
-                .pageSize(1000)
+                .pageSize(500)
                 .methodName("findReviews")
                 .repository(reviewBatchRepository)
                 .arguments(List.of(period.name(), startOfEnd, startOfToday)) // ★ 추가: 레포지토리에 넘길 파라미터 세팅
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
-
     }
-
 }
-

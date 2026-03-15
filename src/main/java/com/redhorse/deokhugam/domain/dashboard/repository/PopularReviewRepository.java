@@ -21,7 +21,7 @@ public interface PopularReviewRepository extends JpaRepository<PopularReview, UU
             "  (a.createdAt < :#{#request.after}) OR " +
             "  (a.createdAt = :#{#request.after} AND a.id < :#{#request.cursor}) " +
             ")"+
-            "ORDER BY a.ranking ASC")
+            "ORDER BY a.ranking desc ")
     Slice<PopularReview> getAllPopularReviewDesc(@Param("request") DashboardRequest request, Pageable pageable);
 
     @Query("SELECT a FROM PopularReview a " +

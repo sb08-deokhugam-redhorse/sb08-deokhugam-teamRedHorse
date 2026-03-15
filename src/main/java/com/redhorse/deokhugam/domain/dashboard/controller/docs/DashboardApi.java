@@ -4,6 +4,7 @@ import com.redhorse.deokhugam.domain.dashboard.dto.request.DashboardRequest;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularBookDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularReviewkDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePowerUserDto;
+import com.redhorse.deokhugam.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,9 +40,9 @@ public interface DashboardApi {
                     @ApiResponse(responseCode = "200", description = "파워 유저 목록 조회 성공",
                             content = @Content(schema = @Schema(implementation = CursorPageResponsePowerUserDto.class))),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (랭킹 기간 오류, 정렬 방향 오류 등)",
-                            content = @Content(schema = @Schema(implementation = CursorPageResponsePowerUserDto.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
-                            content = @Content(schema = @Schema(implementation = CursorPageResponsePowerUserDto.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             }
     )
     ResponseEntity<CursorPageResponsePowerUserDto>  getPowerUsers(
@@ -56,9 +57,9 @@ public interface DashboardApi {
                     @ApiResponse(responseCode = "200", description = "인기 도서 목록 조회 성공",
                             content = @Content(schema = @Schema(implementation = CursorPageResponsePopularBookDto.class))),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (랭킹 기간 오류, 정렬 방향 오류 등)",
-                            content = @Content(schema = @Schema(implementation = CursorPageResponsePopularBookDto.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
-                            content = @Content(schema = @Schema(implementation = CursorPageResponsePopularBookDto.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             }
     )
     ResponseEntity<CursorPageResponsePopularBookDto> getPopularBooks(
