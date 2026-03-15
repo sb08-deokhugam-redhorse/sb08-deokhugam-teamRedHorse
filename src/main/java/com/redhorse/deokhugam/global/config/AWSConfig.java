@@ -5,10 +5,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.textract.TextractClient;
+
+import java.time.Duration;
 
 @Configuration
 public class AWSConfig
@@ -29,6 +33,9 @@ public class AWSConfig
         return S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .httpClientBuilder(ApacheHttpClient.builder()
+                        .connectionTimeout(Duration.ofSeconds(5))
+                        .socketTimeout(Duration.ofSeconds(30)))
                 .build();
     }
 
@@ -49,6 +56,13 @@ public class AWSConfig
         return TextractClient.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .httpClientBuilder(ApacheHttpClient.builder()
+                        .connectionTimeout(Duration.ofSeconds(5))
+                        .socketTimeout(Duration.ofSeconds(30)))
+                .overrideConfiguration(ClientOverrideConfiguration.builder()
+                        .apiCallTimeout(Duration.ofSeconds(30))
+                        .apiCallAttemptTimeout(Duration.ofSeconds(10))
+                        .build())
                 .build();
     }
 }
