@@ -1,7 +1,6 @@
 package com.redhorse.deokhugam.infra.ocr;
 
 import com.redhorse.deokhugam.infra.ocr.dto.OcrSpaceResponse;
-import com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException;
 import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("OcrSpaceClientImpl Unit Test")
@@ -60,7 +57,6 @@ class OcrSpaceClientImplTest
             // given
             MultipartFile image = mock(MultipartFile.class);
 
-            given(image.getSize()).willReturn(1024L);
             given(image.getResource()).willReturn(mock(org.springframework.core.io.Resource.class));
             given(image.getOriginalFilename()).willReturn("image.jpg");
 
@@ -113,18 +109,6 @@ class OcrSpaceClientImplTest
             // when & then
             assertThatThrownBy(() -> ocrSpaceClientImpl.extractText(image))
                     .isInstanceOf(OcrProcessingException.class);
-        }
-
-        @Test
-        @DisplayName("실패 - 파일 크기가 1MB를 초과하면 ImageSizeExceededException을 던진다")
-        void fail_withOversizedImage_throwsImageSizeExceededException() {
-            // given
-            MockMultipartFile image = mock(MockMultipartFile.class);
-            when(image.getSize()).thenReturn(1024 * 1024 + 1L);
-
-            // when & then
-            assertThatThrownBy(() -> ocrSpaceClientImpl.extractText(image))
-                    .isInstanceOf(ImageSizeExceededException.class);
         }
 
         @Test

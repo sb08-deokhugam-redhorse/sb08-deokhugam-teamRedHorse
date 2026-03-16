@@ -2,11 +2,11 @@ package com.redhorse.deokhugam.infra.ocr;
 
 import com.redhorse.deokhugam.infra.ocr.exception.IsbnNotFoundException;
 import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
@@ -20,8 +20,15 @@ import static org.mockito.BDDMockito.given;
 @DisplayName("OcrProvider Unit Test")
 class OcrProviderTest
 {
-    @InjectMocks private OcrProvider ocrProvider;
-    @Mock private OcrSpaceClientImpl ocrSpaceClient;
+    @Mock private OcrExecutor ocrExecutor;
+    @Mock private AwsTextractClientImpl awsTextractClient;
+
+    private OcrProvider ocrProvider;
+
+    @BeforeEach
+    void setUp() {
+        ocrProvider = new OcrProvider(ocrExecutor, awsTextractClient);
+    }
 
     private MockMultipartFile createMockImage() {
         return new MockMultipartFile("image", "test.png", "image/png", new byte[100]);
@@ -33,7 +40,7 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - 텍스트에서 ISBN-13을 추출한다")
         void success_withValidText_returnsIsbn() {
-            given(ocrSpaceClient.extractText(any())).willReturn("ISBN 9788994492032");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 9788994492032", OcrSource.OCR_SPACE));
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
@@ -43,7 +50,7 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - \"-\" 이 포함된 ISBN도 추출한다")
         void success_withHyphenatedIsbn_returnsIsbn() {
-            given(ocrSpaceClient.extractText(any())).willReturn("ISBN 978-89-944920-3-2");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 978-89-944920-3-2", OcrSource.OCR_SPACE));
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
@@ -53,17 +60,40 @@ class OcrProviderTest
         @Test
         @DisplayName("성공 - OCR 오인식 보정 후 ISBN을 추출한다")
         void success_withOcrMisrecognition_returnsIsbn() {
-            given(ocrSpaceClient.extractText(any())).willReturn("ISBN 978899449203l"); // l → 1
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 9788994492O32", OcrSource.OCR_SPACE)); // O -> 0
 
             String result = ocrProvider.extractIsbn(createMockImage());
 
-            assertThat(result).isEqualTo("9788994492031");
+            assertThat(result).isEqualTo("9788994492032");
+        }
+
+        @Test
+        @DisplayName("성공 - OCR Space ISBN 인식 실패 시 Textract로 추출한다")
+        void success_withOcrSpaceFailure_returnsIsbnFromTextract() {
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN을 찾을 수 없는 텍스트", OcrSource.OCR_SPACE));
+            given(awsTextractClient.extractText(any())).willReturn("ISBN 9788994492032");
+
+            String result = ocrProvider.extractIsbn(createMockImage());
+
+            assertThat(result).isEqualTo("9788994492032");
+        }
+
+        @Test
+        @DisplayName("성공 - OCR Space 서버 장애 시 Textract 폴백으로 추출한다")
+        void success_withOcrSpaceServerError_returnsIsbnFromTextract() {
+            given(ocrExecutor.extractText(any()))
+                    .willReturn(new OcrResult("ISBN 9788994492032", OcrSource.TEXTRACT));
+
+            String result = ocrProvider.extractIsbn(createMockImage());
+
+            assertThat(result).isEqualTo("9788994492032");
         }
 
         @Test
         @DisplayName("실패 - ISBN을 찾을 수 없으면 IsbnNotFoundException을 던진다")
         void fail_withNoIsbn_throwsIsbnNotFoundException() {
-            given(ocrSpaceClient.extractText(any())).willReturn("이 텍스트에는 ISBN이 없습니다");
+            given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN이 없음.", OcrSource.OCR_SPACE));
+            given(awsTextractClient.extractText(any())).willReturn("ISBN을 찾을 수 없는 텍스트");
 
             assertThatThrownBy(() -> ocrProvider.extractIsbn(createMockImage()))
                     .isInstanceOf(IsbnNotFoundException.class);
@@ -72,7 +102,7 @@ class OcrProviderTest
         @Test
         @DisplayName("실패 - OCR 처리 실패 시 OcrProcessingException을 전파한다")
         void fail_withOcrFailure_propagatesOcrProcessingException() {
-            given(ocrSpaceClient.extractText(any())).willThrow(new OcrProcessingException());
+            given(ocrExecutor.extractText(any())).willThrow(new OcrProcessingException());
 
             assertThatThrownBy(() -> ocrProvider.extractIsbn(createMockImage()))
                     .isInstanceOf(OcrProcessingException.class);
