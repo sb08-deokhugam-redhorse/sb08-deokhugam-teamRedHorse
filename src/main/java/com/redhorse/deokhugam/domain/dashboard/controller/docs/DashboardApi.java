@@ -23,9 +23,9 @@ public interface DashboardApi {
                     @ApiResponse(responseCode = "200", description = "인기 리뷰 목록 조회 성공",
                             content = @Content(schema = @Schema(implementation = CursorPageResponsePopularReviewkDto.class))),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (랭킹 기간 오류, 정렬 방향 오류 등)",
-                            content = @Content(schema = @Schema(implementation = CursorPageResponsePopularReviewkDto.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
-                            content = @Content(schema = @Schema(implementation = CursorPageResponsePopularReviewkDto.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             }
     )
     ResponseEntity<CursorPageResponsePopularReviewkDto> getPopularReviews(

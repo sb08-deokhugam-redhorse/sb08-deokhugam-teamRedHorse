@@ -1,6 +1,6 @@
 package com.redhorse.deokhugam.batch;
 
-import com.redhorse.deokhugam.global.batch.BatchConfig.AlarmsCleanupBatchConfig;
+import com.redhorse.deokhugam.global.batch.batchConfig.AlarmsCleanupBatchConfig;
 import com.redhorse.deokhugam.global.batch.repository.AlarmBatchRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

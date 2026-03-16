@@ -15,6 +15,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -23,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DashboardController.class)
-@ActiveProfiles("test")
 public class DashboardControllerTest {
 
     @Autowired
@@ -41,11 +42,14 @@ public class DashboardControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/reviews/popular")
+                        .header("Deokhugam-Request-User-ID", mockUserId)
                 .param("period", "WEEKLY")
                 .param("limit", "10")
                 .accept(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isOk());
     }
+
+    String mockUserId = UUID.randomUUID().toString(); // 공용 헤더용
 
     @Test
     @DisplayName("대시보드 파워 유저 조회 성공")
@@ -56,6 +60,7 @@ public class DashboardControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/users/power")
+                        .header("Deokhugam-Request-User-ID", mockUserId)
                 .param("period", "MONTHLY")
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -71,6 +76,7 @@ public class DashboardControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/books/popular")
+                        .header("Deokhugam-Request-User-ID", mockUserId)
                 .param("period", "DAILY")
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())

@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.global.batch.BatchConfig;
+package com.redhorse.deokhugam.global.batch.batchConfig;
 
 
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
@@ -243,7 +243,7 @@ public class PowerUserBatchConfig {
                 .pageSize(500)
                 .methodName("findPowerUsers")
                 .repository(userBatchRepository)
-                .arguments(List.of(period.name(), startOfEnd, startOfToday))
+                .arguments(List.of(period.name(),startOfToday, startOfEnd))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }

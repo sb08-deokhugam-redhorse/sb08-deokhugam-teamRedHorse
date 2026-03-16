@@ -29,7 +29,7 @@ public class DashboardController implements DashboardApi {
 
     @Override
     @GetMapping("/reviews/popular") // 대시보드용 인기 리뷰
-    public ResponseEntity<CursorPageResponsePopularReviewkDto> getPopularReviews(DashboardRequest request) {
+    public ResponseEntity<CursorPageResponsePopularReviewkDto> getPopularReviews(@Valid DashboardRequest request) {
        return ResponseEntity
                .status(HttpStatus.OK)
                .body(dashboardService.getPopularReviews(request));
@@ -37,7 +37,7 @@ public class DashboardController implements DashboardApi {
 
     @Override
     @GetMapping("/users/power") // 대시보드용 파워 유저
-    public ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(DashboardRequest request) {
+    public ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(@Valid DashboardRequest request) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(dashboardService.getPowerUsers(request));
@@ -46,7 +46,7 @@ public class DashboardController implements DashboardApi {
 
     @Override
     @GetMapping("/books/popular") // 대시보드용 인기 도서
-    public ResponseEntity<CursorPageResponsePopularBookDto> getPopularBooks(DashboardRequest request) {
+    public ResponseEntity<CursorPageResponsePopularBookDto> getPopularBooks(@Valid DashboardRequest request) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(dashboardService.getPopularBooks(request));

@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.global.batch.BatchConfig;
+package com.redhorse.deokhugam.global.batch.batchConfig;
 
 import com.redhorse.deokhugam.global.batch.repository.UserBatchRepository;
 import lombok.RequiredArgsConstructor;

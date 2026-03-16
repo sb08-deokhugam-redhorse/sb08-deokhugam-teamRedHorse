@@ -51,7 +51,7 @@ public interface AlarmApi {
             responses = {
                     @ApiResponse(responseCode = "200", description = "알림 읽음 처리 성공"),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (사용자 ID 누락)"),
-                    @ApiResponse(responseCode = "404", description = "사용자 정보 없음"),
+                    @ApiResponse(responseCode = "403", description = "사용자 정보 없음"),
                     @ApiResponse(responseCode = "404", description = "알림 정보 없음"),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류")
             }

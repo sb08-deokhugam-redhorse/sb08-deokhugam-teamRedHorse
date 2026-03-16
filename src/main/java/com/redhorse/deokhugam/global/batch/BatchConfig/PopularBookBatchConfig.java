@@ -1,4 +1,4 @@
-package com.redhorse.deokhugam.global.batch.BatchConfig;
+package com.redhorse.deokhugam.global.batch.batchConfig;
 
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.dashboard.dto.popularbook.BookBatchDto;
@@ -220,7 +220,7 @@ public class PopularBookBatchConfig {
                 .pageSize(500)
                 .methodName("findBooks")
                 .repository(bookBatchRepository)
-                .arguments(List.of(period.name(), startOfEnd, startOfToday)) // ★ 추가: 레포지토리에 넘길 파라미터 세팅
+                .arguments(List.of(period.name(),startOfToday, startOfEnd)) // ★ 추가: 레포지토리에 넘길 파라미터 세팅
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }
