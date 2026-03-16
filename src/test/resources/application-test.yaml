@@ -35,7 +35,7 @@ logging:
 # 인증 인터셉터
 auth:
   interceptor:
-    enabled: false
+    enabled: true
 
 # NAVER
 naver:
