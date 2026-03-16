@@ -20,11 +20,14 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -82,6 +85,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 배치에서 중간에 끊여도 앞서한건 저장되도록
     public NotificationDto createReviewAlarm(PopularReview popularReview) {
         Review review = reviewRepository.findById(popularReview.getReview().getId())
                 .orElseThrow(() -> new ReviewNotFoundException(popularReview.getReview().getId()));
@@ -117,6 +121,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 배치에서 중간에 끊여도 앞서한건 저장되도록
     public NotificationDto createPowerUserAlarm(PowerUserDto dto) {
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new UserNotFoundException(dto.userId()));

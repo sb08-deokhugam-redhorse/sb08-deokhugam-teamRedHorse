@@ -12,4 +12,17 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface ReviewBatchRepository extends JpaRepository<Review, UUID> {
+    @Query("SELECT new com.redhorse.deokhugam.domain.dashboard.dto.popularreview.ReviewBatchDto(" +
+            "CAST(:period AS string), r.id, r.commentCount,  r.likeCount, CAST(r.likeCount * 0.3 + r.commentCount * 0.7 AS double)) " +
+            "FROM Review r " +
+            "WHERE r.createdAt >= :startDay " +
+            "AND r.createdAt < :endDay " +
+            "AND r.deletedAt IS NULL " +
+            "ORDER BY r.likeCount * 0.3 + r.commentCount * 0.7 DESC")
+    Page<ReviewBatchDto> findReviews(
+            @Param("period") String period,
+            @Param("startDay") Instant startDay,
+            @Param("endDay") Instant endDay,
+            Pageable pageable
+    );
 }
