@@ -2,12 +2,13 @@ package com.redhorse.deokhugam.domain.review.repository;
 
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import jakarta.persistence.LockModeType;
-import java.util.Optional;
-import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
+import java.util.UUID;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRepositoryCustom {
 
@@ -22,4 +23,9 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
   boolean existsByIdAndDeletedAtIsNull(UUID id);
 
   Boolean existsByBookIdAndUserId(UUID bookId, UUID userId);
+
+  @Query("SELECT COUNT(r) FROM Review r WHERE r.book.id = :bookId AND r.deletedAt IS NULL")
+  long countByBookId(UUID bookId);
+  @Query("SELECT AVG(r.rating) FROM Review r WHERE r.book.id = :bookId AND r.deletedAt IS NULL")
+  Double averageRatingByBookId(@Param("bookId") UUID bookId);
 }
