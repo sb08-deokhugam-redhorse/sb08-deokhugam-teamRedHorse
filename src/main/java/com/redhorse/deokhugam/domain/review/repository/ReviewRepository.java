@@ -27,4 +27,10 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
   boolean existsByIdAndDeletedAtIsNull(UUID id);
 
   boolean existsByBookIdAndUserIdAndDeletedAtIsNull(UUID bookId, UUID userId);
+
+  @Query("SELECT COUNT(r) FROM Review r WHERE r.book.id = :bookId AND r.deletedAt IS NULL")
+  long countByBookId(UUID bookId);
+
+  @Query("SELECT AVG(r.rating) FROM Review r WHERE r.book.id = :bookId AND r.deletedAt IS NULL")
+  Double averageRatingByBookId(@Param("bookId") UUID bookId);
 }
