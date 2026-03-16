@@ -57,7 +57,7 @@ public class ReviewServiceImpl implements ReviewService {
     Book book = getBook(bookId);
     User user = getUser(userId);
 
-    if (reviewRepository.existsByBookIdAndUserId(bookId, userId)) {
+    if (reviewRepository.existsByBookIdAndUserIdAndDeletedAtIsNull(bookId, userId)) {
       throw new BookIdUserIdExistsException(bookId, userId);
     }
 
