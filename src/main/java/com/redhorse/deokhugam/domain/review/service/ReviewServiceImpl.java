@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Slice;
@@ -161,7 +160,9 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   @Override
   public CursorPageResponseReviewDto findAll(ReviewSearchRequest request, UUID requestUserId) {
-    getUser(requestUserId);
+    if (!userRepository.existsById(requestUserId)) {
+      throw new UserNotFoundException(requestUserId);
+    }
 
     Slice<Review> slice = reviewRepository.getAllReviews(request);
 
@@ -209,7 +210,6 @@ public class ReviewServiceImpl implements ReviewService {
     return lastReview.getCreatedAt().toString();
   }
 
-  @Cacheable(value = "review", key = "#reviewId + '_' + #userId")
   @Transactional(readOnly = true)
   @Override
   public ReviewDto findById(UUID reviewId, UUID userId) {
@@ -247,6 +247,4 @@ public class ReviewServiceImpl implements ReviewService {
       throw new OnlyTheReviewAuthorException(userId);
     }
   }
-
-
 }
