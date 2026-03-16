@@ -83,6 +83,7 @@ jobs:
             --task-definition ${{ env.ECS_TASK_DEFINITION }} \
             --query taskDefinition \
             --region ${{ env.AWS_REGION }} > task-definition.json
+          cat task-definition.json
 
       - name: UpdateECS task definition
         id: ecs-task-def
@@ -92,16 +93,6 @@ jobs:
           container-name: deokhugam-app
           image: ${{ needs.build-and-push.outputs.image }}
 
-      - name: Stop running ECS tasks
-        run: |
-          aws ecs update-service \
-          --cluster ${{ env.ECS_CLUSTER }} \
-          --service ${{ env.ECS_SERVICE }} \
-          --desired-count 1 \
-          --region ${{ env.AWS_REGION }}
-          sleep 30
-
-      # 태스크 수 조절 후 배포
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
