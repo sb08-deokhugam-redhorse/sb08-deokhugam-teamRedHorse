@@ -83,7 +83,6 @@ jobs:
             --task-definition ${{ env.ECS_TASK_DEFINITION }} \
             --query taskDefinition \
             --region ${{ env.AWS_REGION }} > task-definition.json
-          cat task-definition.json
 
       - name: UpdateECS task definition
         id: ecs-task-def
