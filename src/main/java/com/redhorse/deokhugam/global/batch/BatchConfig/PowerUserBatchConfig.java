@@ -6,6 +6,7 @@ import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
 import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.UserBatchDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PowerUser;
 import com.redhorse.deokhugam.domain.dashboard.repository.PowerUserRepository;
+import com.redhorse.deokhugam.domain.dashboard.service.DashboardService;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.global.batch.repository.UserBatchRepository;
@@ -50,6 +51,7 @@ public class PowerUserBatchConfig {
     private final UserRepository userRepository;
     private final AlarmService alarmService;
     private final AlarmMapper alarmMapper;
+    private final DashboardService dashboardService;
 
     @Bean
     public Job userRankingBatchJob() {
@@ -61,6 +63,8 @@ public class PowerUserBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
+                        // 새 배치가 있으니 캐시 비우기
+                        dashboardService.clearUserDashboardCache();
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[PowerUser-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
@@ -78,40 +82,57 @@ public class PowerUserBatchConfig {
     @Bean
     public Step userRankingBatchDailyStep() {
         return new StepBuilder("dailyStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryDailyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step userRankingBatchWeeklyStep() {
         return new StepBuilder("weeklyStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryWeelyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step userRankingBatchmonthlyStep() {
         return new StepBuilder("monthlyStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryMonthlyRead())
                 .processor(userItemProcessor())
                 .writer(userWriter())
+                .faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
     @Bean
     public Step userRankingBatchAllStep() {
         return new StepBuilder("allTimeStep", jobRepository)
-                .<UserBatchDto, PowerUser>chunk(10000, transactionManager)
+                .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryAllRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
+                .processorNonTransactional()
+                .retryLimit(3)   // 최대 3번 재시도
+                .retry(org.springframework.dao.TransientDataAccessException.class)
+                .noRetry(com.redhorse.deokhugam.domain.book.exception.BookException.class)
                 .build();
     }
 
@@ -219,14 +240,11 @@ public class PowerUserBatchConfig {
 
         return new RepositoryItemReaderBuilder<UserBatchDto>()
                 .name("userRepositoryRead_" + period.toString())
-                .pageSize(1000)
+                .pageSize(500)
                 .methodName("findPowerUsers")
                 .repository(userBatchRepository)
                 .arguments(List.of(period.name(), startOfEnd, startOfToday))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
-
     }
-
 }
-

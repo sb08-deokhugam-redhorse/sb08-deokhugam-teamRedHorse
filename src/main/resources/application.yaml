@@ -41,7 +41,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers, caches, circuitbreakers
+        include: health, info, metrics, loggers, caches, circuitbreakers, prometheus
   endpoint:
     health:
       show-details: always
@@ -51,6 +51,9 @@ management:
   info:
     env:
       enabled: true
+  metrics:
+    tags:
+      application: deokhugam # 그라파나에 앱 구분용 이름
 
 # Naver API
 naver:
