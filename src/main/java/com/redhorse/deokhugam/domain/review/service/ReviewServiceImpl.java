@@ -56,9 +56,9 @@ public class ReviewServiceImpl implements ReviewService {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
 
-      long newReviceCount = reviewRepository.countByBookId(bookId);
-      double newRating = reviewRepository.averageRatingByBookId(bookId);
-      book.updateReviewsStats(newReviceCount, newRating);
+      long newReviewCount = reviewRepository.countByBookId(bookId);
+      Double newRating = reviewRepository.averageRatingByBookId(bookId);
+      book.updateReviewsStats(newReviewCount, newRating != null ? newRating : 0.0);
 
       log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(), userId);
       return reviewMapper.toDto(review);
@@ -91,8 +91,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     review.update(content, rating);
 
-    double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
-    review.getBook().updateRating(newRating);
+    Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
+    review.getBook().updateRating(newRating != null ? newRating : 0.0);
 
     log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
     return reviewMapper.toDto(review);
