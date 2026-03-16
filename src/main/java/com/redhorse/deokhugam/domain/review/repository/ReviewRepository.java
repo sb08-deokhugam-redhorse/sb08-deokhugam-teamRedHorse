@@ -18,8 +18,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
   Optional<Review> findByIdForUpdate(@Param("id") UUID id);
 
   // 조회용
-  @Cacheable(value = "review", key = "#id")
-  Optional<Review> findByIdAndDeletedAtIsNull(UUID id);
+  @Cacheable(value = "review", key = "#reviewId")
+  Optional<Review> findByIdAndDeletedAtIsNull(UUID reviewId);
 
   boolean existsByIdAndDeletedAtIsNull(UUID id);
 

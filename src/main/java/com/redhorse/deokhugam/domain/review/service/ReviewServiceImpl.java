@@ -213,7 +213,6 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   @Override
   public ReviewDto findById(UUID reviewId, UUID userId) {
-    log.info("[Review-Service] DB 조회 실행 (캐시 미스 시에만 찍힘): reviewId = {}", reviewId);
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
     getUser(userId);
