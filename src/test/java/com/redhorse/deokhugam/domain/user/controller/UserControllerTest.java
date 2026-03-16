@@ -32,13 +32,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
 @DisplayName("UserController 슬라이스 테스트")
-@ActiveProfiles("test")
 class UserControllerTest {
 
   @Autowired
@@ -383,8 +381,8 @@ class UserControllerTest {
     var result = mockMvc.perform(delete("/api/users/{userId}", userId));
 
     // then
-    result.andExpect(status().isBadRequest());
-    result.andExpect(jsonPath("$.message").value("필수 헤더가 누락되었습니다: Deokhugam-Request-User-ID"));
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.message").value("인증에 실패하였습니다."));
   }
 
   @Test
@@ -493,8 +491,8 @@ class UserControllerTest {
     var result = mockMvc.perform(delete("/api/users/{userId}/hard", userId));
 
     // then
-    result.andExpect(status().isBadRequest());
-    result.andExpect(jsonPath("$.message").value("필수 헤더가 누락되었습니다: Deokhugam-Request-User-ID"));
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.message").value("인증에 실패하였습니다."));
   }
 
 }
