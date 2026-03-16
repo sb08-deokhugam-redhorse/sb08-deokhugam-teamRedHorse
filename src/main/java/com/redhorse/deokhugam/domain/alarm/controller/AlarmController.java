@@ -38,7 +38,7 @@ public class AlarmController implements AlarmApi {
 
     @GetMapping
     @Override
-    public ResponseEntity<CursorPageResponseNotificationDto> getAlarmList(NotificationListRequest request) {
+    public ResponseEntity<CursorPageResponseNotificationDto> getAlarmList(@Valid NotificationListRequest request) {
         CursorPageResponseNotificationDto response = alarmService.getAlarmList(request);
         return ResponseEntity.ok(response);
     }

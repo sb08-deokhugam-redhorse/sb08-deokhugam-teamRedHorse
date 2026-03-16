@@ -63,11 +63,8 @@ public class PowerUserBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
-                        if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-                            log.info("[PowerUser-batch] 작업 완료");
-                            // 새 배치가 있으니 캐시 비우기
-                            dashboardService.clearUserDashboardCache();
-                        }
+                        // 새 배치가 있으니 캐시 비우기
+                        dashboardService.clearUserDashboardCache();
 
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[PowerUser-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
@@ -88,7 +85,7 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryDailyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())                .faultTolerant() // 내결함성 기능 활성화
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
                 .processorNonTransactional()
                 .retryLimit(3)   // 최대 3번 재시도
                 .retry(org.springframework.dao.TransientDataAccessException.class)
@@ -102,7 +99,7 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryWeelyRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())                .faultTolerant() // 내결함성 기능 활성화
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
                 .processorNonTransactional()
                 .retryLimit(3)   // 최대 3번 재시도
                 .retry(org.springframework.dao.TransientDataAccessException.class)
@@ -131,7 +128,7 @@ public class PowerUserBatchConfig {
                 .<UserBatchDto, PowerUser>chunk(500, transactionManager)
                 .reader(userRepositoryAllRead())
                 .processor(userItemProcessor())
-                .writer(userWriter())                .faultTolerant() // 내결함성 기능 활성화
+                .writer(userWriter()).faultTolerant() // 내결함성 기능 활성화
                 .processorNonTransactional()
                 .retryLimit(3)   // 최대 3번 재시도
                 .retry(org.springframework.dao.TransientDataAccessException.class)
