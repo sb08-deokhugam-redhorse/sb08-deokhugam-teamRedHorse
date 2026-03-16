@@ -54,7 +54,7 @@ public class UserController implements UserApi {
 
   @GetMapping("/{userId}")
   public ResponseEntity<UserDto> getUser(@PathVariable UUID userId) {
-    log.info("[User-Controller] 조회 요청 시작: userId = {}", userId);
+    log.debug("[User-Controller] 조회 요청 시작: userId = {}", userId);
 
     UserDto userDto = userService.getUser(userId);
 

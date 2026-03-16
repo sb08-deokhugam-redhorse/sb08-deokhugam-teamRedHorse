@@ -41,13 +41,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers, caches
+        include: health, info, metrics, loggers, caches, circuitbreakers, prometheus
   endpoint:
     health:
       show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
   info:
     env:
       enabled: true
+  metrics:
+    tags:
+      application: deokhugam # 그라파나에 앱 구분용 이름
 
 # Naver API
 naver:
@@ -55,12 +61,16 @@ naver:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
     url: https://openapi.naver.com/v1/search/book_adv.json?d_isbn=
+    connect-timeout: 3000
+    read-timeout: 1000
 
 # OCR Space API
 ocr:
   space:
     api-key: ${OCR_SPACE_API_KEY}
     url: https://api.ocr.space/parse/image
+    connect-timeout: 3000
+    read-timeout: 10000
 
 # s3
 storage:
@@ -70,5 +80,41 @@ storage:
     region: ${AWS_S3_REGION}
     bucket: ${AWS_S3_BUCKET}
     expiration-duration-in-minutes: ${AWS_S3_PRESIGNED_URL_EXPIRATION_MINUTES:10}
+
+# resilience4j
+resilience4j:
+  circuitbreaker:
+    instances:
+      ocrSpace:
+        # COUNT_BASED: 최근 N회 호출 기준, TIME_BASED: 최근 N초 기준
+        sliding-window-type: COUNT_BASED
+        # 최근 호출 횟수 (최근 5회 호출 결과를 보고 실패율 계산)
+        sliding-window-size: 5
+        # 실패율이 60% 이상이면 OPEN 상태로 전환
+        failure-rate-threshold: 60
+        # 30초 후 HALF_OPEN
+        wait-duration-in-open-state: 30s
+        # HALF_OPEN에서 3회 시도
+        permitted-number-of-calls-in-half-open-state: 3
+        # 최소 3회 호출 후 통계 집계
+        minimum-number-of-calls: 3
+        record-exceptions:
+          - com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException
+        # 등록 O: 예외를 "없던 일"로 취급
+        # 등록 X: 예외를 "실패"로 취급하지 않지만 폴백 메서드는 호출함
+        # ignore-exceptions:
+          # - com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException
+  retry:
+    instances:
+      ocrSpace:
+        # 최초 1회 + 재시도 1회
+        max-attempts: 2
+        # 재시도 간격
+        wait-duration: 1000ms
+        retry-exceptions:
+          - com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException
+        # 예외 발생 시 재시도 안함
+        ignore-exceptions:
+          - com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException
 
 # Spring Batch

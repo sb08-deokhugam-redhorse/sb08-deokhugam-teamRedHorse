@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.domain.dashboard.controller;
 
 
+import com.redhorse.deokhugam.domain.dashboard.controller.docs.DashboardApi;
 import com.redhorse.deokhugam.domain.dashboard.dto.request.DashboardRequest;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularBookDto;
 import com.redhorse.deokhugam.domain.dashboard.dto.response.CursorPageResponsePopularReviewkDto;
@@ -23,32 +24,29 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
-public class DashboardController {
+public class DashboardController implements DashboardApi {
     private final DashboardService dashboardService;
 
+    @Override
     @GetMapping("/reviews/popular") // 대시보드용 인기 리뷰
-    public ResponseEntity<CursorPageResponsePopularReviewkDto> getPopularReviews(
-            @Valid DashboardRequest request
-    ) {
+    public ResponseEntity<CursorPageResponsePopularReviewkDto> getPopularReviews(DashboardRequest request) {
        return ResponseEntity
                .status(HttpStatus.OK)
                .body(dashboardService.getPopularReviews(request));
     }
 
+    @Override
     @GetMapping("/users/power") // 대시보드용 파워 유저
-    public ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(
-            @Valid DashboardRequest request
-    ) {
+    public ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(DashboardRequest request) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(dashboardService.getPowerUsers(request));
     }
 
 
-    @GetMapping("/books/popular") // 대시보드용 파워 유저
-    public ResponseEntity<CursorPageResponsePopularBookDto> getPopularBooks(
-            @Valid DashboardRequest request
-    ) {
+    @Override
+    @GetMapping("/books/popular") // 대시보드용 인기 도서
+    public ResponseEntity<CursorPageResponsePopularBookDto> getPopularBooks(DashboardRequest request) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(dashboardService.getPopularBooks(request));

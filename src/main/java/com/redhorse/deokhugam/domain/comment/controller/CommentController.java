@@ -1,6 +1,7 @@
 package com.redhorse.deokhugam.domain.comment.controller;
 
 import com.redhorse.deokhugam.domain.alarm.service.AlarmService;
+import com.redhorse.deokhugam.domain.comment.controller.api.CommentApi;
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comments")
-public class CommentController {
+public class CommentController implements CommentApi {
 
   private final CommentService commentService;
   private final AlarmService alarmService;

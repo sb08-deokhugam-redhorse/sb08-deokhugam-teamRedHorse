@@ -1,0 +1,101 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+    steps:
+      # checkout
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # setup jdk
+      - name: JDK 17 설치
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # grant to build
+      - name: 실행 권한 부여
+        run: chmod +x gradlew
+
+      # build -x test
+      - name: 빌드
+        run: ./gradlew clean build -x test
+
+      # aws 인증
+      - name: Login to AWS
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      # ecr docker 로그인
+      - name: Login to ECR
+        run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_REPOSITORY }}
+
+      # docker image build and push
+      - name: Build and Push Image
+        id: build-image
+        run: |
+          docker build \
+          -t ${{ env.ECR_REPOSITORY_URI }}:latest \
+          -t ${{ env.ECR_REPOSITORY_URI }}:${{ github.sha }} \
+          .
+          
+          docker push ${{ env.ECR_REPOSITORY_URI }}:latest
+          docker push ${{ env.ECR_REPOSITORY_URI }}:${{ github.sha }}
+          echo "image=${{ env.ECR_REPOSITORY_URI }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download Task Definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query taskDefinition \
+            --region ${{ env.AWS_REGION }} > task-definition.json
+
+      - name: UpdateECS task definition
+        id: ecs-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: deokhugam-app
+          image: ${{ needs.build-and-push.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.ecs-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
