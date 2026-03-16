@@ -28,7 +28,7 @@ public class AwsTextractClientImpl implements OcrClient
     @Override
     public String extractText(MultipartFile image) {
         try {
-            // TextractSDK는 SdkBytes 타입으로 이미지를 받음 (btye[]과 같지만 AWS SDK API의 요구)
+            // TextractSDK는 SdkBytes 타입으로 이미지를 받음 (byte[]과 같지만 AWS SDK API의 요구)
             SdkBytes imageBytes = SdkBytes.fromInputStream(image.getInputStream());
 
             /* 일반 텍스트 추출 */
@@ -65,12 +65,12 @@ public class AwsTextractClientImpl implements OcrClient
                             .map(Block::text)
                             .collect(Collectors.joining("\n"));
 
-            log.info("[Textract-Api] Textract ISBN 추출 작업 완료: fileName={}", image.getOriginalFilename());
+            log.info("[Textract-Api] Textract Text 추출 작업 완료: fileName={}", image.getOriginalFilename());
 
             return text;
 
         } catch (Exception e) {
-            log.error("[Textract-Api] Textract ISBN 추출 작업 실패: fileName={}", image.getOriginalFilename(), e);
+            log.error("[Textract-Api] Textract Text 추출 작업 실패: fileName={}", image.getOriginalFilename(), e);
             throw new OcrProcessingException();
         }
     }
