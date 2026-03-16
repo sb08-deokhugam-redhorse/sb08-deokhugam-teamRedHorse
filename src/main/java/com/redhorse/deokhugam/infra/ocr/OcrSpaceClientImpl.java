@@ -1,7 +1,6 @@
 package com.redhorse.deokhugam.infra.ocr;
 
 import com.redhorse.deokhugam.infra.ocr.dto.OcrSpaceResponse;
-import com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException;
 import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +22,6 @@ public class OcrSpaceClientImpl implements OcrClient
     private final String ocrUrl;
 
     private final RestClient restClient;
-
-    private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
     public OcrSpaceClientImpl(RestClient.Builder restClientBuilder,
                               @Value("${ocr.space.api-key}") String ocrApiKey,
@@ -50,10 +47,6 @@ public class OcrSpaceClientImpl implements OcrClient
      */
     @Override
     public String extractText(MultipartFile image) {
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new ImageSizeExceededException(image.getSize());
-        }
-
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("language", "eng");
         body.add("OCREngine", "2");
