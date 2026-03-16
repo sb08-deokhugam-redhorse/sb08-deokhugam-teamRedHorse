@@ -37,9 +37,9 @@ services:
     container_name: deokhugam
     restart: unless-stopped
 
-    depends_on:
-      db:
-        condition: service_healthy
+#    depends_on:
+#      db:
+#        condition: service_healthy
 
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
@@ -68,6 +68,29 @@ services:
       retries: 3
       start_period: 40s
 
+    networks:
+      - deokhugam-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - deokhugam-network
+
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
     networks:
       - deokhugam-network
 

@@ -1,16 +1,18 @@
 package com.redhorse.deokhugam.infra.ocr;
 
 import com.redhorse.deokhugam.infra.ocr.dto.OcrSpaceResponse;
-import com.redhorse.deokhugam.infra.ocr.exception.ImageSizeExceededException;
 import com.redhorse.deokhugam.infra.ocr.exception.OcrProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -18,17 +20,23 @@ public class OcrSpaceClientImpl implements OcrClient
 {
     private final String ocrApiKey;
     private final String ocrUrl;
+
     private final RestClient restClient;
 
-    private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
-
-    public OcrSpaceClientImpl(RestClient restClient,
+    public OcrSpaceClientImpl(RestClient.Builder restClientBuilder,
                               @Value("${ocr.space.api-key}") String ocrApiKey,
-                              @Value("${ocr.space.url}") String ocrUrl)
+                              @Value("${ocr.space.url}") String ocrUrl,
+                              @Value("${ocr.space.connect-timeout}") int connectTimeout,
+                              @Value("${ocr.space.read-timeout}") int readTimeout)
     {
-        this.restClient = restClient;
         this.ocrApiKey = ocrApiKey;
         this.ocrUrl = ocrUrl;
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeout)); // 3s
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeout));       // 5s
+
+        this.restClient = restClientBuilder.requestFactory(requestFactory).build();
     }
 
     /**
@@ -39,10 +47,6 @@ public class OcrSpaceClientImpl implements OcrClient
      */
     @Override
     public String extractText(MultipartFile image) {
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new ImageSizeExceededException(image.getSize());
-        }
-
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("language", "eng");
         body.add("OCREngine", "2");

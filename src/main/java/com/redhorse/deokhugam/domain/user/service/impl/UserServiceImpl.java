@@ -13,12 +13,14 @@ import com.redhorse.deokhugam.domain.user.exception.UserNotSoftDeletedException;
 import com.redhorse.deokhugam.domain.user.mapper.UserMapper;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import com.redhorse.deokhugam.domain.user.service.UserService;
-import com.redhorse.deokhugam.global.exception.AuthenticationException;
+import com.redhorse.deokhugam.global.exception.AccessDeniedException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +79,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(value = "getUser", key = "#userId")
   public UserDto getUser(UUID userId) {
     // 사용자 조회
     User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException(userId));
@@ -89,6 +92,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "getUser", key = "#userId")
   @Transactional
   public UserDto updateUser(UUID userId, UUID requestUserId, UserUpdateRequest request) {
 
@@ -98,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
-      throw new AuthenticationException();
+      throw new AccessDeniedException();
     }
 
     // 변경하려는 닉네임이 기존과 다를 경우에만 수정
@@ -113,6 +117,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "getUser", key = "#userId")
   @Transactional
   public void deleteUserSoft(UUID requestUserId ,UUID userId) {
     // 유저 체크
@@ -121,13 +126,14 @@ public class UserServiceImpl implements UserService {
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
-      throw new AuthenticationException();
+      throw new AccessDeniedException();
     }
 
     findUser.softDelete();
   }
 
   @Override
+  @CacheEvict(value = "getUser", key = "#userId")
   @Transactional
   public void deleteUserHard(UUID requestUserId, UUID userId) {
     // 유저 체크 - Soft Delete 여부와 상관없이 유저 조회 (Native Query 사용)
@@ -136,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
     // 헤더의 ID와 비교
     if (!findUser.getId().equals(requestUserId)) {
-      throw new AuthenticationException();
+      throw new AccessDeniedException();
     }
 
     // 소프트 삭제 여부 확인

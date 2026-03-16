@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
 import com.redhorse.deokhugam.domain.comment.entity.Comment;
+import com.redhorse.deokhugam.global.exception.InvalidCursorException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +51,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
           ? comment.createdAt.gt(after).or(comment.createdAt.eq(after).and(comment.id.gt(cursorId)))
           : comment.createdAt.lt(after).or(comment.createdAt.eq(after).and(comment.id.lt(cursorId)));
     } catch (IllegalArgumentException e) {
-      return null;
+      throw new InvalidCursorException("유효하지 않은 커서 형식입니다. " + cursor);
     }
   }
 
