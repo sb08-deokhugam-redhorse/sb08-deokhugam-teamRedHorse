@@ -77,7 +77,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: ECS task definition
+      - name: Download Task Definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query taskDefinition \
+            --region ${{ env.AWS_REGION }} > task-definition.json
+
+      - name: UpdateECS task definition
         id: ecs-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -90,7 +97,7 @@ jobs:
           aws ecs update-service \
           --cluster ${{ env.ECS_CLUSTER }} \
           --service ${{ env.ECS_SERVICE }} \
-          --desired-count 0 \
+          --desired-count 1 \
           --region ${{ env.AWS_REGION }}
           sleep 30
 
