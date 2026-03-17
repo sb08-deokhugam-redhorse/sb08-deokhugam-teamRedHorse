@@ -23,7 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AlarmController.class)
-@ActiveProfiles("test")
 @DisplayName("알림 컨트롤러 테스트")
 class AlarmControllerTest {
 
@@ -78,7 +77,7 @@ class AlarmControllerTest {
         // when & then
         mockMvc.perform(patch("/api/notifications/{notificationId}", testAlarmId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -96,6 +95,7 @@ class AlarmControllerTest {
 
         // 2. When & Then: MockMvc를 통해 컨트롤러 엔드포인트 호출 및 검증
         mockMvc.perform(get("/api/notifications")
+                        .header("Deokhugam-Request-User-ID", userId)
                         .param("userId", userId.toString())
                         .param("direction", "DESC")
                         .param("limit", "20") // "size"에서 DTO 필드명인 "limit"으로 수정됨

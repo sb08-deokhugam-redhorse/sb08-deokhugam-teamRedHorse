@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name = "도서 관리")
 public interface BookInfoApi
 {
@@ -48,7 +50,7 @@ public interface BookInfoApi
             @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<String> getIsbnFromOcr(
+    ResponseEntity<List<String>> getIsbnFromOcr(
             @Parameter(description = "도서 이미지", required = true)
             @RequestParam("image") MultipartFile image
     );

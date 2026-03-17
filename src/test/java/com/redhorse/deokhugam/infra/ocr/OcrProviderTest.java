@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,9 +44,9 @@ class OcrProviderTest
         void success_withValidText_returnsIsbn() {
             given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 9788994492032", OcrSource.OCR_SPACE));
 
-            String result = ocrProvider.extractIsbn(createMockImage());
+            List<String> result = ocrProvider.extractIsbn(createMockImage());
 
-            assertThat(result).isEqualTo("9788994492032");
+            assertThat(result).isEqualTo(List.of("9788994492032"));
         }
 
         @Test
@@ -52,9 +54,9 @@ class OcrProviderTest
         void success_withHyphenatedIsbn_returnsIsbn() {
             given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 978-89-944920-3-2", OcrSource.OCR_SPACE));
 
-            String result = ocrProvider.extractIsbn(createMockImage());
+            List<String> result = ocrProvider.extractIsbn(createMockImage());
 
-            assertThat(result).isEqualTo("9788994492032");
+            assertThat(result).isEqualTo(List.of("9788994492032"));
         }
 
         @Test
@@ -62,9 +64,9 @@ class OcrProviderTest
         void success_withOcrMisrecognition_returnsIsbn() {
             given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN 9788994492O32", OcrSource.OCR_SPACE)); // O -> 0
 
-            String result = ocrProvider.extractIsbn(createMockImage());
+            List<String> result = ocrProvider.extractIsbn(createMockImage());
 
-            assertThat(result).isEqualTo("9788994492032");
+            assertThat(result).isEqualTo(List.of("9788994492032"));
         }
 
         @Test
@@ -73,9 +75,9 @@ class OcrProviderTest
             given(ocrExecutor.extractText(any())).willReturn(new OcrResult("ISBN을 찾을 수 없는 텍스트", OcrSource.OCR_SPACE));
             given(awsTextractClient.extractText(any())).willReturn("ISBN 9788994492032");
 
-            String result = ocrProvider.extractIsbn(createMockImage());
+            List<String> result = ocrProvider.extractIsbn(createMockImage());
 
-            assertThat(result).isEqualTo("9788994492032");
+            assertThat(result).isEqualTo(List.of("9788994492032"));
         }
 
         @Test
@@ -84,9 +86,9 @@ class OcrProviderTest
             given(ocrExecutor.extractText(any()))
                     .willReturn(new OcrResult("ISBN 9788994492032", OcrSource.TEXTRACT));
 
-            String result = ocrProvider.extractIsbn(createMockImage());
+            List<String> result = ocrProvider.extractIsbn(createMockImage());
 
-            assertThat(result).isEqualTo("9788994492032");
+            assertThat(result).isEqualTo(List.of("9788994492032"));
         }
 
         @Test

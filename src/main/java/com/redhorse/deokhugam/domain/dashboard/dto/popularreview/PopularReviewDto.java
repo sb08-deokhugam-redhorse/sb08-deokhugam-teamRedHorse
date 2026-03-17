@@ -13,6 +13,7 @@ public record PopularReviewDto(
         String bookThumbnailUrl,
         UUID userId,
         String userNickname,
+        String reviewContent,
         long reviewCount,
         double reviewRating,
         PeriodType period,

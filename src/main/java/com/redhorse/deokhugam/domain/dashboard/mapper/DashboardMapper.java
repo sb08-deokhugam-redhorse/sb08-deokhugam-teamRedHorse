@@ -6,21 +6,24 @@ import com.redhorse.deokhugam.domain.dashboard.dto.poweruser.PowerUserDto;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularBook;
 import com.redhorse.deokhugam.domain.dashboard.entity.PopularReview;
 import com.redhorse.deokhugam.domain.dashboard.entity.PowerUser;
+import com.redhorse.deokhugam.infra.s3.S3ImageStorage;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(
         componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = {S3ImageStorage.class}
 )
 public interface DashboardMapper {
     @Mapping(source = "review.id", target = "reviewId")
     @Mapping(source = "review.book.id", target = "bookId")
     @Mapping(source = "review.book.title", target = "bookTitle")
-    @Mapping(source = "review.book.thumbnailUrl", target = "bookThumbnailUrl")
+    @Mapping(source = "review.book.thumbnailUrl", target = "bookThumbnailUrl", qualifiedByName = "toPresignedUrl")
     @Mapping(source = "review.user.id", target = "userId")
     @Mapping(source = "review.user.nickname", target = "userNickname")
+    @Mapping(source = "review.content", target = "reviewContent")
     @Mapping(source = "review.rating", target = "reviewRating")
     @Mapping(source = "ranking", target = "rank")
     @Mapping(target = "reviewCount", constant = "0L")
@@ -33,7 +36,7 @@ public interface DashboardMapper {
 
     @Mapping(source = "book.id", target = "bookId")
     @Mapping(source = "book.title", target = "title")
-    @Mapping(source = "book.thumbnailUrl", target = "thumbnailUrl")
+    @Mapping(source = "book.thumbnailUrl", target = "thumbnailUrl", qualifiedByName = "toPresignedUrl")
     @Mapping(source = "ranking", target = "rank")
     PopularBookDto entityToBookDto(PopularBook popularBook);
 }

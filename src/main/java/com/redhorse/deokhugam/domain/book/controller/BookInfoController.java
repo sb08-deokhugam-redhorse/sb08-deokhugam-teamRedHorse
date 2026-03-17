@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/books")
@@ -31,11 +33,11 @@ public class BookInfoController implements BookInfoApi
     }
 
     @PostMapping(value = "/isbn/ocr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> getIsbnFromOcr(@RequestParam("image") MultipartFile image) {
+    public ResponseEntity<List<String>> getIsbnFromOcr(@RequestParam("image") MultipartFile image) {
         log.debug("[BookInfo-Controller] ISBN 인식 요청 시작: fileName={}", image.getOriginalFilename());
 
-        String isbn = ocrProvider.extractIsbn(image);
+        List<String> isbnList = ocrProvider.extractIsbn(image);
 
-        return ResponseEntity.status(HttpStatus.OK).body(isbn);
+        return ResponseEntity.status(HttpStatus.OK).body(isbnList);
     }
 }
