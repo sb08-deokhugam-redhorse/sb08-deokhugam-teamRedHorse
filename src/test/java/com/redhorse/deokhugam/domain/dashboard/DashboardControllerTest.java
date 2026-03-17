@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DashboardController.class)
-@ActiveProfiles("test")
 public class DashboardControllerTest {
 
     @Autowired
@@ -47,7 +45,7 @@ public class DashboardControllerTest {
         mockMvc.perform(get("/api/reviews/popular")
                         .header("Deokhugam-Request-User-ID", userId)
                         .param("period", "WEEKLY")
-                        .param("direction", "DESC") 
+                        .param("direction", "DESC")
                         .param("limit", "10")
                         .accept(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isOk());
@@ -64,7 +62,7 @@ public class DashboardControllerTest {
         mockMvc.perform(get("/api/users/power")
                         .header("Deokhugam-Request-User-ID", userId)
                         .param("period", "MONTHLY")
-                        .param("direction", "DESC") 
+                        .param("direction", "DESC")
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -81,7 +79,7 @@ public class DashboardControllerTest {
         mockMvc.perform(get("/api/books/popular")
                         .header("Deokhugam-Request-User-ID", userId)
                         .param("period", "DAILY")
-                        .param("direction", "DESC") 
+                        .param("direction", "DESC")
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());

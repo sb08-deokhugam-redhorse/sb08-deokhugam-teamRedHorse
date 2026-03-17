@@ -17,4 +17,10 @@ public interface PopularReviewRepository extends JpaRepository<PopularReview, UU
             "AND FUNCTION('DATE', a.createdAt) = CURRENT_DATE " +
             "ORDER BY a.ranking DESC")
     Slice<PopularReview> getAllPopularReview(@Param("request") DashboardRequest request, Pageable pageable);
+
+
+    @Query("SELECT COUNT(a) FROM PopularReview a " +
+            "WHERE a.period = :#{#request.period} " +
+            "AND FUNCTION('DATE', a.createdAt) = CURRENT_DATE")
+    Long countByRequest(@Param("request") DashboardRequest request);
 }

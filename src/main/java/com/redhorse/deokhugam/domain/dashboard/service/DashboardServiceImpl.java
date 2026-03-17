@@ -50,7 +50,7 @@ public class DashboardServiceImpl implements DashboardService {
         Slice<PopularReview> slice = reviewRepository.getAllPopularReview(request, pageable);
 
         List<PopularReview> objectList = slice.getContent();
-        Long objectCount = reviewRepository.count();
+        Long objectCount = reviewRepository.countByRequest(request);
 
         String nextCursor = null;
         Instant nextAfter = null;
@@ -164,13 +164,16 @@ public class DashboardServiceImpl implements DashboardService {
     // CacheEvict로 배치에서 캐시만 비울려고 만들었습니다.
     @CacheEvict(value = "popularReviews", allEntries = true)
     @Override
-    public void clearReviewDashboardCache() {}
+    public void clearReviewDashboardCache() {
+    }
 
     @CacheEvict(value = "powerUsers", allEntries = true)
     @Override
-    public void clearUserDashboardCache() {}
+    public void clearUserDashboardCache() {
+    }
 
     @CacheEvict(value = "popularBooks", allEntries = true)
     @Override
-    public void clearBooksDashboardCache() {}
+    public void clearBooksDashboardCache() {
+    }
 }
