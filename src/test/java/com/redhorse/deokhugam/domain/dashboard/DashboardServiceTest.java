@@ -69,7 +69,7 @@ public class DashboardServiceTest {
 
         given(reviewRepository.getAllPopularReview(any(DashboardRequest.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(reviewRepository.countByRequest(mockRequest)).willReturn(10L);
+        given(reviewRepository.count()).willReturn(10L);
 
         PopularReviewDto mockDto = mock(PopularReviewDto.class);
         given(dashboardMapper.entityToReviewDto(any(PopularReview.class))).willReturn(mockDto);
