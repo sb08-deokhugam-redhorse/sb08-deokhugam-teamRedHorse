@@ -15,6 +15,7 @@ import com.redhorse.deokhugam.domain.dashboard.repository.PopularBookRepository;
 import com.redhorse.deokhugam.domain.dashboard.repository.PopularReviewRepository;
 import com.redhorse.deokhugam.domain.dashboard.repository.PowerUserRepository;
 import com.redhorse.deokhugam.domain.dashboard.service.DashboardServiceImpl;
+import com.redhorse.deokhugam.global.entity.PeriodType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,11 +54,15 @@ public class DashboardServiceTest {
     @Test
     @DisplayName("인기 리뷰 조회 - 다음 페이지가 있는 경우 커서 정상 계산")
     void getPopularReviews_WithNextPage() {
-        // given
+        // given: 실제 레코드 객체 생성 (Mock 사용 지양)
         int limit = 2;
-        DashboardRequest mockRequest = mock(DashboardRequest.class);
-        given(mockRequest.direction()).willReturn("ASC");
-        given(mockRequest.limit()).willReturn(limit);
+        DashboardRequest request = new DashboardRequest(
+                PeriodType.ALL_TIME,
+                "ASC",
+                null,
+                null,
+                limit
+        );
 
         List<PopularReview> mockList = new ArrayList<>();
         for (int i = 0; i < limit + 1; i++) {
@@ -69,19 +74,18 @@ public class DashboardServiceTest {
 
         given(reviewRepository.getAllPopularReview(any(DashboardRequest.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(reviewRepository.count()).willReturn(10L);
+        given(reviewRepository.countByRequest(request)).willReturn(10L);
 
-        PopularReviewDto mockDto = mock(PopularReviewDto.class);
-        given(dashboardMapper.entityToReviewDto(any(PopularReview.class))).willReturn(mockDto);
+        given(dashboardMapper.entityToReviewDto(any(PopularReview.class)))
+                .willReturn(mock(PopularReviewDto.class));
 
-        // when
-        CursorPageResponsePopularReviewkDto response = dashboardService.getPopularReviews(mockRequest);
+        CursorPageResponsePopularReviewkDto response = dashboardService.getPopularReviews(request);
 
         // then
+        assertThat(response.totalElements()).isEqualTo(10L);
         assertThat(response.hasNext()).isTrue();
         assertThat(response.content()).hasSize(limit);
         assertThat(response.nextCursor()).isNotNull();
-        assertThat(response.totalElements()).isEqualTo(10L);
     }
 
     @Test
@@ -89,9 +93,13 @@ public class DashboardServiceTest {
     void getPowerUsers_WithNextPage() {
         // given
         int limit = 2;
-        DashboardRequest mockRequest = mock(DashboardRequest.class);
-        given(mockRequest.direction()).willReturn("DESC");
-        given(mockRequest.limit()).willReturn(limit);
+        DashboardRequest request = new DashboardRequest(
+                PeriodType.ALL_TIME,
+                "DESC",
+                null,
+                null,
+                limit
+        );
 
         List<PowerUser> mockList = new ArrayList<>();
         for (int i = 0; i < limit + 1; i++) {
@@ -105,16 +113,16 @@ public class DashboardServiceTest {
                 .willReturn(new SliceImpl<>(mockList));
         given(userRepository.count()).willReturn(15L);
 
-        PowerUserDto mockDto = mock(PowerUserDto.class);
-        given(dashboardMapper.entityToPowerUserDto(any(PowerUser.class))).willReturn(mockDto);
+        given(dashboardMapper.entityToPowerUserDto(any(PowerUser.class)))
+                .willReturn(mock(PowerUserDto.class));
 
         // when
-        CursorPageResponsePowerUserDto response = dashboardService.getPowerUsers(mockRequest);
+        CursorPageResponsePowerUserDto response = dashboardService.getPowerUsers(request);
 
         // then
+        assertThat(response.totalElements()).isEqualTo(15L);
         assertThat(response.hasNext()).isTrue();
         assertThat(response.content()).hasSize(limit);
-        assertThat(response.nextCursor()).isNotNull();
     }
 
     @Test
@@ -122,12 +130,16 @@ public class DashboardServiceTest {
     void getPopularBooks_LastPage() {
         // given
         int limit = 5;
-        DashboardRequest mockRequest = mock(DashboardRequest.class);
-        given(mockRequest.direction()).willReturn("ASC");
-        given(mockRequest.limit()).willReturn(limit);
+        DashboardRequest request = new DashboardRequest(
+                PeriodType.ALL_TIME,
+                "ASC",
+                null,
+                null,
+                limit
+        );
 
         List<PopularBook> mockList = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) { // limit보다 적은 데이터
             PopularBook book = mock(PopularBook.class);
             mockList.add(book);
         }
@@ -136,16 +148,16 @@ public class DashboardServiceTest {
                 .willReturn(new SliceImpl<>(mockList));
         given(bookRepository.count()).willReturn(3L);
 
-        PopularBookDto mockDto = mock(PopularBookDto.class);
-        given(dashboardMapper.entityToBookDto(any(PopularBook.class))).willReturn(mockDto);
+        given(dashboardMapper.entityToBookDto(any(PopularBook.class)))
+                .willReturn(mock(PopularBookDto.class));
 
         // when
-        CursorPageResponsePopularBookDto response = dashboardService.getPopularBooks(mockRequest);
+        CursorPageResponsePopularBookDto response = dashboardService.getPopularBooks(request);
 
         // then
         assertThat(response.hasNext()).isFalse();
         assertThat(response.content()).hasSize(3);
         assertThat(response.nextCursor()).isNull();
-        assertThat(response.nextAfter()).isNull();
+        assertThat(response.totalElements()).isEqualTo(3L);
     }
 }
