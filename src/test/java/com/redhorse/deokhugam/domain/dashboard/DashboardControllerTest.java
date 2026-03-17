@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,9 +42,9 @@ public class DashboardControllerTest {
         // when & then
         mockMvc.perform(get("/api/reviews/popular")
                         .header("Deokhugam-Request-User-ID", mockUserId)
-                .param("period", "WEEKLY")
-                .param("limit", "10")
-                .accept(MediaType.APPLICATION_JSON)).andDo(print())
+                        .param("period", "WEEKLY")
+                        .param("limit", "10")
+                        .accept(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -61,8 +60,8 @@ public class DashboardControllerTest {
         // when & then
         mockMvc.perform(get("/api/users/power")
                         .header("Deokhugam-Request-User-ID", mockUserId)
-                .param("period", "MONTHLY")
-                .accept(MediaType.APPLICATION_JSON))
+                        .param("period", "MONTHLY")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -77,8 +76,8 @@ public class DashboardControllerTest {
         // when & then
         mockMvc.perform(get("/api/books/popular")
                         .header("Deokhugam-Request-User-ID", mockUserId)
-                .param("period", "DAILY")
-                .accept(MediaType.APPLICATION_JSON))
+                        .param("period", "DAILY")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }

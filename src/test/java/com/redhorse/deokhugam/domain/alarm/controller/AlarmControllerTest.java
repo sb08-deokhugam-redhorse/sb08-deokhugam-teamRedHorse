@@ -31,12 +31,14 @@ class AlarmControllerTest {
     @MockitoBean
     private AlarmService alarmService;
 
+
+    String testUserId = UUID.randomUUID().toString(); // 공용 헤더용
+
     @Test
     @DisplayName("단건 알림 읽음 처리 API 성공 - 200 OK 반환")
     void updateAlarmToRead_Single_Success() throws Exception {
         // given
         String testAlarmId = UUID.randomUUID().toString();
-        String testUserId = UUID.randomUUID().toString();
 
         doNothing().when(alarmService).checkAlarm(any(UUID.class), any(UUID.class));
 
@@ -53,8 +55,6 @@ class AlarmControllerTest {
     @Test
     @DisplayName("전체 알림 읽음 처리 API 성공 - 200 OK 반환")
     void updateAlarmToRead_All_Success() throws Exception {
-        // given
-        String testUserId = UUID.randomUUID().toString();
 
         doNothing().when(alarmService).checkAllAlarm(any(UUID.class));
 
@@ -76,7 +76,7 @@ class AlarmControllerTest {
         // when & then
         mockMvc.perform(patch("/api/notifications/{notificationId}", testAlarmId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -94,6 +94,7 @@ class AlarmControllerTest {
 
         // 2. When & Then: MockMvc를 통해 컨트롤러 엔드포인트 호출 및 검증
         mockMvc.perform(get("/api/notifications")
+                        .header("Deokhugam-Request-User-ID", testUserId)
                         .param("userId", userId.toString())
                         .param("direction", "DESC")
                         .param("limit", "20") // "size"에서 DTO 필드명인 "limit"으로 수정됨
