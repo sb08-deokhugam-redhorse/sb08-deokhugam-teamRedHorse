@@ -47,9 +47,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
 
-        Slice<PopularReview> slice = "ASC".equalsIgnoreCase(request.direction())
-                ? reviewRepository.getAllPopularReviewAsc(request, pageable)
-                : reviewRepository.getAllPopularReviewDesc(request, pageable);
+        Slice<PopularReview> slice = reviewRepository.getAllPopularReview(request, pageable);
 
         List<PopularReview> objectList = slice.getContent();
         Long objectCount = reviewRepository.count();
@@ -91,9 +89,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
 
-        Slice<PowerUser> slice = "ASC".equalsIgnoreCase(request.direction())
-                ? userRepository.getAllPowerUserAsc(request, pageable)
-                : userRepository.getAllPowerUserDesc(request, pageable);
+        Slice<PowerUser> slice = userRepository.getAllPowerUser(request, pageable);
 
         List<PowerUser> objectList = slice.getContent();
         Long objectCount = userRepository.count();
@@ -134,9 +130,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
 
-        Slice<PopularBook> slice = "ASC".equalsIgnoreCase(request.direction())
-                ? bookRepository.getAllPopularBookAsc(request, pageable)
-                : bookRepository.getAllPopularBookDesc(request, pageable);
+        Slice<PopularBook> slice = bookRepository.getAllPopularBook(request, pageable);
 
         List<PopularBook> objectList = slice.getContent();
         Long objectCount = bookRepository.count();

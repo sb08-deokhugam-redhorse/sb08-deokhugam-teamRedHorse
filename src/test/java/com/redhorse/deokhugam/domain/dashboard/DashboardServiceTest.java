@@ -67,7 +67,7 @@ public class DashboardServiceTest {
             mockList.add(review);
         }
 
-        given(reviewRepository.getAllPopularReviewAsc(any(DashboardRequest.class), any(Pageable.class)))
+        given(reviewRepository.getAllPopularReview(any(DashboardRequest.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
         given(reviewRepository.count()).willReturn(10L);
 
@@ -101,7 +101,7 @@ public class DashboardServiceTest {
             mockList.add(user);
         }
 
-        given(userRepository.getAllPowerUserDesc(any(DashboardRequest.class), any(Pageable.class)))
+        given(userRepository.getAllPowerUser(any(DashboardRequest.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
         given(userRepository.count()).willReturn(15L);
 
@@ -132,7 +132,7 @@ public class DashboardServiceTest {
             mockList.add(book);
         }
 
-        given(bookRepository.getAllPopularBookAsc(any(DashboardRequest.class), any(Pageable.class)))
+        given(bookRepository.getAllPopularBook(any(DashboardRequest.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
         given(bookRepository.count()).willReturn(3L);
 

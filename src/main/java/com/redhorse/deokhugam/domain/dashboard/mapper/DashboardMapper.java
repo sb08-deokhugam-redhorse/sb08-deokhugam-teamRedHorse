@@ -23,6 +23,7 @@ public interface DashboardMapper {
     @Mapping(source = "review.book.thumbnailUrl", target = "bookThumbnailUrl", qualifiedByName = "toPresignedUrl")
     @Mapping(source = "review.user.id", target = "userId")
     @Mapping(source = "review.user.nickname", target = "userNickname")
+    @Mapping(source = "review.content", target = "reviewContent")
     @Mapping(source = "review.rating", target = "reviewRating")
     @Mapping(source = "ranking", target = "rank")
     @Mapping(target = "reviewCount", constant = "0L")
