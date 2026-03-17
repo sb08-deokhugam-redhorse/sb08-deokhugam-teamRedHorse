@@ -26,9 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Slice;
+import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @Import(JpaConfig.class)
+@ActiveProfiles("test")
 @DisplayName("리뷰 목록 조회")
 public class ReviewRepositoryImplTest {
 
