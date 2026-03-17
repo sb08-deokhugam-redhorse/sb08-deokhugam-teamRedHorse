@@ -4,6 +4,7 @@ import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
+import com.redhorse.deokhugam.domain.alarm.exception.AlarmAccessDeniedException;
 import com.redhorse.deokhugam.domain.alarm.exception.AlarmNotFoundException;
 import com.redhorse.deokhugam.domain.alarm.exception.NoAlarmException;
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
@@ -161,9 +162,10 @@ public class AlarmServiceImpl implements AlarmService {
                 () -> new AlarmNotFoundException(alarmId)
         );
 
-        if (alarm.getUser().getId().equals(userId)) {
-            alarm.update();
+        if (!alarm.getUser().getId().equals(userId)) {
+            throw new AlarmAccessDeniedException(userId);
         }
+        alarm.update();
     }
 
     @Override

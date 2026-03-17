@@ -33,6 +33,7 @@ public enum ErrorCode {
 
     // alarm
     ALARM_NOT_FOUND("알림을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
+    AlarmAccessDeniedException("알림 수정 권한 없습니다.",HttpStatus.FORBIDDEN),
 
 
     // dashboard
