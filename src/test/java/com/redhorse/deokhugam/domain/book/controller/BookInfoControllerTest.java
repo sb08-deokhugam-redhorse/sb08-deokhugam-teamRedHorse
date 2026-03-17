@@ -19,13 +19,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import(GlobalExceptionHandler.class)
 @WebMvcTest(BookInfoController.class)
@@ -97,13 +99,13 @@ public class BookInfoControllerTest
             MockMultipartFile image = new MockMultipartFile(
                     "image", "book.jpg", MediaType.IMAGE_JPEG_VALUE, "image-content".getBytes()
             );
-            given(ocrProvider.extractIsbn(any())).willReturn("9788912345678");
+            given(ocrProvider.extractIsbn(any())).willReturn(List.of("9788912345678"));
 
             // when & then
             mockMvc.perform(multipart("/api/books/isbn/ocr").file(image)
                             .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isOk())
-                    .andExpect(content().string("9788912345678"));
+                    .andExpect(jsonPath("$[0]").value("9788912345678"));
         }
 
         @Test
