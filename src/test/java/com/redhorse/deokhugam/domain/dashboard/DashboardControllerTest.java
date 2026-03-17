@@ -15,6 +15,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -32,6 +34,8 @@ public class DashboardControllerTest {
     @MockitoBean
     private DashboardService dashboardService;
 
+    UUID userId = UUID.randomUUID();
+
     @Test
     @DisplayName("대시보드 인기 리뷰 조회 성공")
     void getPopularReviews_Success() throws Exception {
@@ -41,9 +45,11 @@ public class DashboardControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/reviews/popular")
-                .param("period", "WEEKLY")
-                .param("limit", "10")
-                .accept(MediaType.APPLICATION_JSON)).andDo(print())
+                        .header("Deokhugam-Request-User-ID", userId)
+                        .param("period", "WEEKLY")
+                        .param("direction", "DESC") 
+                        .param("limit", "10")
+                        .accept(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -56,8 +62,10 @@ public class DashboardControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/users/power")
-                .param("period", "MONTHLY")
-                .accept(MediaType.APPLICATION_JSON))
+                        .header("Deokhugam-Request-User-ID", userId)
+                        .param("period", "MONTHLY")
+                        .param("direction", "DESC") 
+                        .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -71,8 +79,10 @@ public class DashboardControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/books/popular")
-                .param("period", "DAILY")
-                .accept(MediaType.APPLICATION_JSON))
+                        .header("Deokhugam-Request-User-ID", userId)
+                        .param("period", "DAILY")
+                        .param("direction", "DESC") 
+                        .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
