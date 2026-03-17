@@ -38,9 +38,13 @@ public class LogUploadScheduler
      */
     @Scheduled(cron = "0 0 1 * * *")
     // @Scheduled(cron = "0 * * * * *")
-    public void uploadLog() throws IOException {
+    public void uploadLog() {
         // 1. 이전 실패 목록 재시도
-        retryFailedUploads();
+        try {
+            retryFailedUploads();
+        } catch (IOException e) {
+            log.error("[Log-Scheduler] 실패 목록 재시도 작업 실패: ", e);
+        }
 
         // 2. 전날 로그 업로드
         String yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -50,7 +54,7 @@ public class LogUploadScheduler
             files.filter(path -> path.getFileName().toString().contains(yesterday))
                     .forEach(this::uploadWithFailureChecking);
         } catch (IOException e) {
-            log.error("[Scheduler] 로그 파일 업로드 작업 실패: {}", e.getMessage());
+            log.error("[Log-Scheduler] 로그 파일 업로드 작업 실패: {}", e.getMessage());
         }
     }
 
@@ -76,9 +80,11 @@ public class LogUploadScheduler
         for (String pathStr : failedPaths) {
             try {
                 s3LogStorage.upload(Paths.get(pathStr));
-                log.info("[Scheduler] 재업로드 성공: path={}", pathStr);
+                stillFailed.remove(pathStr);
+                Files.write(failedFile, stillFailed);
+                log.info("[Log-Scheduler] 재업로드 성공: path={}", pathStr);
             } catch (S3UploadException e) {
-                log.error("[Scheduler] 재업로드 실패: path={}", pathStr);
+                log.error("[Log-Scheduler] 재업로드 실패: path={}", pathStr);
                 stillFailed.add(pathStr);  // 실패한 것만 유지
             }
         }
