@@ -40,26 +40,6 @@ public class AwsTextractClientImpl implements OcrClient
 
             DetectDocumentTextResponse response = textractClient.detectDocumentText(request);
 
-            /* 쿼리 추출 */
-//            AnalyzeDocumentRequest request = AnalyzeDocumentRequest.builder()
-//                    .document(Document.builder()
-//                            .bytes(imageBytes)
-//                            .build())
-//                    .featureTypes(FeatureType.QUERIES)
-//                    .queriesConfig(QueriesConfig.builder()
-//                            .queries(Query.builder()
-//                                    .text("What is the ISBN numbers?")
-//                                    .build())
-//                            .build())
-//                    .build();
-//
-//            AnalyzeDocumentResponse response = textractClient.analyzeDocument(request);
-
-//            String text = response.blocks().stream()
-//                    .filter(block -> block.blockType() == BlockType.QUERY_RESULT)
-//                    .map(Block::text)
-//                    .collect(Collectors.joining("\n"));
-
             String text = response.blocks().stream()
                             .filter(block -> block.blockType() == BlockType.LINE)
                             .map(Block::text)

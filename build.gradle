@@ -107,7 +107,8 @@ jacocoTestReport {
                     "**/entity/Q*", // QueryDSL QClass 제외
                     "**/*Application*",
                     "**/global/**",
-                    "**/infra/s3/scheduler/**"
+                    "**/infra/s3/scheduler/**",
+                    "**/infra/ocr/OcrExecutor**"
             ])
         }))
     }
