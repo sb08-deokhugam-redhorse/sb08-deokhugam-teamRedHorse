@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public record DashboardRequest(
         @NotNull PeriodType period,
+        @NotNull
         @Pattern(regexp = "^(ASC|DESC)$",
                 flags = Pattern.Flag.CASE_INSENSITIVE,
                 message = "정렬 방향은 ASC 또는 DESC만 허용됩니다.")

@@ -4,6 +4,7 @@ import com.redhorse.deokhugam.domain.alarm.dto.CursorPageResponseNotificationDto
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationDto;
 import com.redhorse.deokhugam.domain.alarm.dto.NotificationListRequest;
 import com.redhorse.deokhugam.domain.alarm.entity.Alarm;
+import com.redhorse.deokhugam.domain.alarm.exception.AlarmAccessDeniedException;
 import com.redhorse.deokhugam.domain.alarm.exception.AlarmNotFoundException;
 import com.redhorse.deokhugam.domain.alarm.exception.NoAlarmException;
 import com.redhorse.deokhugam.domain.alarm.mapper.AlarmMapper;
@@ -20,8 +21,6 @@ import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -161,9 +160,10 @@ public class AlarmServiceImpl implements AlarmService {
                 () -> new AlarmNotFoundException(alarmId)
         );
 
-        if (alarm.getUser().getId().equals(userId)) {
-            alarm.update();
+        if (!alarm.getUser().getId().equals(userId)) {
+            throw new AlarmAccessDeniedException(alarmId);
         }
+        alarm.update();
     }
 
     @Override
