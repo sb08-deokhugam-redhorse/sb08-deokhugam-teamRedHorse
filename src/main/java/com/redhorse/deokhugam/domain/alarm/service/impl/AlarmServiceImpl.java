@@ -160,7 +160,7 @@ public class AlarmServiceImpl implements AlarmService {
                 () -> new AlarmNotFoundException(alarmId)
         );
 
-        if (!alarm.getUser().getId().equals(alarmId)) {
+        if (!alarm.getUser().getId().equals(userId)) {
             throw new AlarmAccessDeniedException(alarmId);
         }
         alarm.update();

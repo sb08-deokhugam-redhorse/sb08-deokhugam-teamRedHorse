@@ -40,15 +40,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Cacheable(value = "popularReviews", key = "#request") // DTO가 record 타입이면 DTO자체를 키로 설정 가능
     public CursorPageResponsePopularReviewkDto getPopularReviews(DashboardRequest request) {
 
-        Sort.Direction direction = "ASC".equalsIgnoreCase(request.direction())
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
-
-        Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
-
+        Pageable pageable = PageRequest.of(0, request.limit() + 1);
         Slice<PopularReview> slice = reviewRepository.getAllPopularReview(request, pageable);
-
         List<PopularReview> objectList = slice.getContent();
         Long objectCount = reviewRepository.countByRequest(request);
 
@@ -82,15 +75,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Cacheable(value = "powerUsers", key = "#request")
     public CursorPageResponsePowerUserDto getPowerUsers(DashboardRequest request) {
 
-        Sort.Direction direction = "ASC".equalsIgnoreCase(request.direction())
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
-
-        Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
-
+        Pageable pageable = PageRequest.of(0, request.limit() + 1);
         Slice<PowerUser> slice = userRepository.getAllPowerUser(request, pageable);
-
         List<PowerUser> objectList = slice.getContent();
         Long objectCount = userRepository.count();
 
@@ -123,15 +109,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Cacheable(value = "popularBooks", key = "#request")
     public CursorPageResponsePopularBookDto getPopularBooks(DashboardRequest request) {
 
-        Sort.Direction direction = "ASC".equalsIgnoreCase(request.direction())
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
-
-        Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
-
+        Pageable pageable = PageRequest.of(0, request.limit() + 1);
         Slice<PopularBook> slice = bookRepository.getAllPopularBook(request, pageable);
-
         List<PopularBook> objectList = slice.getContent();
         Long objectCount = bookRepository.count();
 
