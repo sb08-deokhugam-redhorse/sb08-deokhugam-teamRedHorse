@@ -62,7 +62,7 @@ naver:
     client-secret: ${NAVER_CLIENT_SECRET}
     url: https://openapi.naver.com/v1/search/book_adv.json?d_isbn=
     connect-timeout: 3000
-    read-timeout: 1000
+    read-timeout: 500
 
 # OCR Space API
 ocr:
@@ -70,7 +70,7 @@ ocr:
     api-key: ${OCR_SPACE_API_KEY}
     url: https://api.ocr.space/parse/image
     connect-timeout: 3000
-    read-timeout: 10000
+    read-timeout: 5000
 
 # s3
 storage:
