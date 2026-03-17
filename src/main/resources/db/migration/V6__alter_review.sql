@@ -1,0 +1,1 @@
+ALTER TABLE reviews DROP CONSTRAINT IF EXISTS uk_book_user_id;

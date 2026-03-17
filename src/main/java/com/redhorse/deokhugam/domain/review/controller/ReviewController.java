@@ -83,7 +83,13 @@ public class ReviewController implements ReviewApi {
 
     log.info("[Review-Controller] 좋아요 요청 시작: reviewId = {}", reviewId);
     ReviewLikeDto dto = reviewService.like(reviewId, userId);
-    alarmService.createLikeAlarm(dto);
+    if (dto.liked()) {
+      try {
+        alarmService.createLikeAlarm(dto);
+      } catch (Exception e) {
+        log.error("[Review-controller] 에러 <LIKE_ALARM_CREATE_FAILED> : reviewId = {}", reviewId);
+      }
+    }
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
