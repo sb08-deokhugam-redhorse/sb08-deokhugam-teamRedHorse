@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
 import com.redhorse.deokhugam.infra.s3.S3ImageStorage;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -60,7 +61,8 @@ class BookIntegrationTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                            .file(bookData))
+                            .file(bookData)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.title").value("자바 프로그래밍"))
                     .andExpect(jsonPath("$.author").value("김자바"))
@@ -81,7 +83,8 @@ class BookIntegrationTest
 
             mockMvc.perform(multipart("/api/books")
                             .file(bookData)
-                            .file(thumbnailImage))
+                            .file(thumbnailImage)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.title").value("자바 프로그래밍"));
         }
@@ -100,7 +103,8 @@ class BookIntegrationTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                            .file(bookData))
+                            .file(bookData)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.isbn").doesNotExist());
         }
@@ -119,7 +123,8 @@ class BookIntegrationTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                            .file(bookData))
+                            .file(bookData)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isBadRequest());
         }
 
@@ -137,7 +142,8 @@ class BookIntegrationTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                            .file(bookData))
+                            .file(bookData)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isBadRequest());
         }
 
@@ -150,7 +156,8 @@ class BookIntegrationTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                            .file(bookData))
+                            .file(bookData)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isCreated());
 
             MockMultipartFile bookData2 = new MockMultipartFile(
@@ -159,7 +166,8 @@ class BookIntegrationTest
             );
 
             mockMvc.perform(multipart("/api/books")
-                            .file(bookData2))
+                            .file(bookData2)
+                            .header("Deokhugam-Request-User-ID", UUID.randomUUID().toString()))
                     .andExpect(status().isConflict());
         }
     }
