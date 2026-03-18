@@ -1,16 +1,5 @@
 package com.redhorse.deokhugam.domain.comment.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
@@ -27,11 +16,6 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,6 +23,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -77,7 +74,7 @@ class CommentServiceTest {
       Review mockReview = mock(Review.class);
       User mockUser = mock(User.class);
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+      given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(
           Optional.of(mockReview));
       given(userRepository.findById(eq(userId))).willReturn(Optional.of(mockUser));
       given(mockUser.getNickname()).willReturn("감자");
@@ -106,7 +103,7 @@ class CommentServiceTest {
       UUID userId = UUID.randomUUID();
       CommentCreateRequest commentReq = new CommentCreateRequest(invalidReviewId, userId, "하이");
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(
+      given(reviewRepository.findByIdForUpdate(eq(invalidReviewId))).willReturn(
           Optional.empty());
 
       // when & then
@@ -126,7 +123,7 @@ class CommentServiceTest {
       CommentCreateRequest commentReq = new CommentCreateRequest(reviewId, invalidUserId, "하이");
 
       Review mockReview = mock(Review.class);
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+      given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(
           Optional.of(mockReview));
       given(userRepository.findById(eq(invalidUserId))).willReturn(Optional.empty());
 
