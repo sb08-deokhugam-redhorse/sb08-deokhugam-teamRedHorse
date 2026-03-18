@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -72,9 +73,9 @@ public class DashboardServiceTest {
             mockList.add(review);
         }
 
-        given(reviewRepository.getAllPopularReview(any(DashboardRequest.class), any(Pageable.class)))
+        given(reviewRepository.getAllPopularReview(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(reviewRepository.countByRequest(request)).willReturn(10L);
+        given(reviewRepository.countByRequest(request, LocalDate.now().minusDays(1))).willReturn(10L);
 
         given(dashboardMapper.entityToReviewDto(any(PopularReview.class)))
                 .willReturn(mock(PopularReviewDto.class));
@@ -109,9 +110,10 @@ public class DashboardServiceTest {
             mockList.add(user);
         }
 
-        given(userRepository.getAllPowerUser(any(DashboardRequest.class), any(Pageable.class)))
+        given(userRepository.getAllPowerUser(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(userRepository.count()).willReturn(15L);
+        given(userRepository.countByRequestAndDate(any(DashboardRequest.class), any(LocalDate.class)))
+                .willReturn(15L);
 
         given(dashboardMapper.entityToPowerUserDto(any(PowerUser.class)))
                 .willReturn(mock(PowerUserDto.class));
@@ -144,9 +146,10 @@ public class DashboardServiceTest {
             mockList.add(book);
         }
 
-        given(bookRepository.getAllPopularBook(any(DashboardRequest.class), any(Pageable.class)))
+        given(bookRepository.getAllPopularBook(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(bookRepository.count()).willReturn(3L);
+        given(bookRepository.countByRequestAndDate(any(DashboardRequest.class), any(LocalDate.class)))
+                .willReturn(3L);
 
         given(dashboardMapper.entityToBookDto(any(PopularBook.class)))
                 .willReturn(mock(PopularBookDto.class));
