@@ -26,7 +26,7 @@ public class S3ImageStorage
     @Value("${storage.s3.bucket}")
     private String bucket;
 
-    @Value("${storage.s3.expiration-duration-in-minutes:10}")
+    @Value("${storage.s3.expiration-duration-in-minutes:10080}")
     private long expirationDurationInMinutes;
 
     private final S3Client s3Client;
