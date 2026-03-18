@@ -49,7 +49,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         Slice<PopularReview> slice = reviewRepository.getAllPopularReview(request, yesterday, pageable);
         List<PopularReview> objectList = slice.getContent();
-        Long objectCount = reviewRepository.countByRequest(request);
+        Long objectCount = reviewRepository.countByRequest(request,yesterday);
 
         String nextCursor = null;
         Instant nextAfter = null;
@@ -88,7 +88,7 @@ public class DashboardServiceImpl implements DashboardService {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         Slice<PowerUser> slice = userRepository.getAllPowerUser(request,yesterday, pageable);
         List<PowerUser> objectList = slice.getContent();
-        Long objectCount = userRepository.count();
+        Long objectCount = userRepository.countByRequestAndDate(request, yesterday);
 
         String nextCursor = null;
         Instant nextAfter = null;
@@ -127,7 +127,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         Slice<PopularBook> slice = bookRepository.getAllPopularBook(request,yesterday, pageable);
         List<PopularBook> objectList = slice.getContent();
-        Long objectCount = bookRepository.count();
+        Long objectCount = bookRepository.countByRequestAndDate(request, yesterday);
 
         String nextCursor = null;
         Instant nextAfter = null;

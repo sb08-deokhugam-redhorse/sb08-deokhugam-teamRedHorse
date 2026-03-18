@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public interface PopularBookRepository extends JpaRepository<PopularBook, UUID> {
-
     @Query("SELECT a FROM PopularBook a " +
             "WHERE a.period = :#{#request.period} " +
             "AND FUNCTION('DATE', a.createdAt) = :yesterday ")
@@ -20,4 +19,9 @@ public interface PopularBookRepository extends JpaRepository<PopularBook, UUID> 
             @Param("request") DashboardRequest request,
             @Param("yesterday") LocalDate yesterday,
             Pageable pageable);
+
+    @Query("SELECT COUNT(a) FROM PopularReview a " +
+            "WHERE a.period = :#{#request.period} " +
+            "AND FUNCTION('DATE', a.createdAt) = :yesterday ")
+    Long countByRequestAndDate(@Param("request") DashboardRequest request, @Param("yesterday") LocalDate yesterday);
 }
