@@ -112,7 +112,8 @@ public class DashboardServiceTest {
 
         given(userRepository.getAllPowerUser(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(userRepository.count()).willReturn(15L);
+        given(userRepository.countByRequestAndDate(any(DashboardRequest.class), any(LocalDate.class)))
+                .willReturn(15L);
 
         given(dashboardMapper.entityToPowerUserDto(any(PowerUser.class)))
                 .willReturn(mock(PowerUserDto.class));
@@ -147,7 +148,8 @@ public class DashboardServiceTest {
 
         given(bookRepository.getAllPopularBook(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
-        given(bookRepository.count()).willReturn(3L);
+        given(bookRepository.countByRequestAndDate(any(DashboardRequest.class), any(LocalDate.class)))
+                .willReturn(3L);
 
         given(dashboardMapper.entityToBookDto(any(PopularBook.class)))
                 .willReturn(mock(PopularBookDto.class));
