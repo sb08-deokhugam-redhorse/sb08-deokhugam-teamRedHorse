@@ -138,6 +138,8 @@ public class CommentServiceImpl implements CommentService {
                     .ifPresent(cache -> cache.evict(comment.getReview().getId()));
 
     commentRepository.delete(comment);
+    Review review = comment.getReview();
+    review.decrementCommentCount();
 
     log.info("[Comment-Service] 물리 삭제 작업 완료: commentId={}", commentId);
   }
