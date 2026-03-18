@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -72,7 +73,7 @@ public class DashboardServiceTest {
             mockList.add(review);
         }
 
-        given(reviewRepository.getAllPopularReview(any(DashboardRequest.class), any(Pageable.class)))
+        given(reviewRepository.getAllPopularReview(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
         given(reviewRepository.countByRequest(request)).willReturn(10L);
 
@@ -109,7 +110,7 @@ public class DashboardServiceTest {
             mockList.add(user);
         }
 
-        given(userRepository.getAllPowerUser(any(DashboardRequest.class), any(Pageable.class)))
+        given(userRepository.getAllPowerUser(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
         given(userRepository.count()).willReturn(15L);
 
@@ -144,7 +145,7 @@ public class DashboardServiceTest {
             mockList.add(book);
         }
 
-        given(bookRepository.getAllPopularBook(any(DashboardRequest.class), any(Pageable.class)))
+        given(bookRepository.getAllPopularBook(any(DashboardRequest.class),  any(LocalDate.class), any(Pageable.class)))
                 .willReturn(new SliceImpl<>(mockList));
         given(bookRepository.count()).willReturn(3L);
 

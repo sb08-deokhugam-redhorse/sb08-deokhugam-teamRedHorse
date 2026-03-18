@@ -8,12 +8,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public interface PopularBookRepository extends JpaRepository<PopularBook, UUID> {
 
     @Query("SELECT a FROM PopularBook a " +
             "WHERE a.period = :#{#request.period} " +
-            "AND FUNCTION('DATE', a.createdAt) = CURRENT_DATE")
-    Slice<PopularBook> getAllPopularBook(@Param("request") DashboardRequest request, Pageable pageable);
+            "AND FUNCTION('DATE', a.createdAt) = :yesterday ")
+    Slice<PopularBook> getAllPopularBook(
+            @Param("request") DashboardRequest request,
+            @Param("yesterday") LocalDate yesterday,
+            Pageable pageable);
 }

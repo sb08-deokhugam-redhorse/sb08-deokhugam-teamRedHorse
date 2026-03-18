@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -44,8 +45,9 @@ public class DashboardServiceImpl implements DashboardService {
         Sort sort = Sort.by(direction, "ranking");
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
 
-        Slice<PopularReview> slice = reviewRepository.getAllPopularReview(request, pageable);
+        Slice<PopularReview> slice = reviewRepository.getAllPopularReview(request, yesterday, pageable);
         List<PopularReview> objectList = slice.getContent();
         Long objectCount = reviewRepository.countByRequest(request);
 
@@ -83,7 +85,8 @@ public class DashboardServiceImpl implements DashboardService {
         Sort sort = Sort.by(direction, "ranking");
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
-        Slice<PowerUser> slice = userRepository.getAllPowerUser(request, pageable);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        Slice<PowerUser> slice = userRepository.getAllPowerUser(request,yesterday, pageable);
         List<PowerUser> objectList = slice.getContent();
         Long objectCount = userRepository.count();
 
@@ -120,8 +123,9 @@ public class DashboardServiceImpl implements DashboardService {
         Sort sort = Sort.by(direction, "ranking");
 
         Pageable pageable = PageRequest.of(0, request.limit() + 1, sort);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
 
-        Slice<PopularBook> slice = bookRepository.getAllPopularBook(request, pageable);
+        Slice<PopularBook> slice = bookRepository.getAllPopularBook(request,yesterday, pageable);
         List<PopularBook> objectList = slice.getContent();
         Long objectCount = bookRepository.count();
 
