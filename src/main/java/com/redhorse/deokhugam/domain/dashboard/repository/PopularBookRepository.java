@@ -14,7 +14,6 @@ public interface PopularBookRepository extends JpaRepository<PopularBook, UUID> 
 
     @Query("SELECT a FROM PopularBook a " +
             "WHERE a.period = :#{#request.period} " +
-            "AND FUNCTION('DATE', a.createdAt) = CURRENT_DATE " +
-            "ORDER BY a.ranking DESC")
+            "AND FUNCTION('DATE', a.createdAt) = CURRENT_DATE")
     Slice<PopularBook> getAllPopularBook(@Param("request") DashboardRequest request, Pageable pageable);
 }

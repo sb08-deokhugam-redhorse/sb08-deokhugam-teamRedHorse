@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public class AlarmAccessDeniedException extends AlarmException {
     public AlarmAccessDeniedException(UUID alarmId) {
-        super(ErrorCode.AlarmAccessDeniedException, Map.of("alarm", alarmId));
+        super(ErrorCode.ALARM_ACCES_DENIED, Map.of("alarm", alarmId));
     }
 }
