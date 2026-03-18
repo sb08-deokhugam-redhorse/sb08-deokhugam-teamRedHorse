@@ -134,7 +134,7 @@ public class CommentServiceImpl implements CommentService {
       throw new CommentDeleteNotAllowedException(commentId);
     }
 
-    // 논리 삭제가 이루어지 않은 경우에만 count 깎기
+    // 논리 삭제가 이루어지지 않은 경우에만 count 깎기
     if (comment.getDeletedAt() == null) {
       Review review = comment.getReview();
       review.decrementCommentCount();
