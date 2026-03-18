@@ -21,7 +21,7 @@ public interface PowerUserRepository extends JpaRepository<PowerUser, UUID> {
             @Param("yesterday") LocalDate yesterday,
             Pageable pageable);
 
-    @Query("SELECT COUNT(a) FROM PopularReview a " +
+    @Query("SELECT COUNT(a) FROM PopularBook a " +
             "WHERE a.period = :#{#request.period} " +
             "AND FUNCTION('DATE', a.createdAt) = :yesterday ")
     Long countByRequestAndDate(@Param("request") DashboardRequest request, @Param("yesterday") LocalDate yesterday);
