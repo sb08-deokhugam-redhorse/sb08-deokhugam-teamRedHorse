@@ -1,10 +1,6 @@
 package com.redhorse.deokhugam.domain.comment.service;
 
-import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
-import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
-import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
-import com.redhorse.deokhugam.domain.comment.dto.CommentUpdateRequest;
-import com.redhorse.deokhugam.domain.comment.dto.CursorPageResponseCommentDto;
+import com.redhorse.deokhugam.domain.comment.dto.*;
 import com.redhorse.deokhugam.domain.comment.entity.Comment;
 import com.redhorse.deokhugam.domain.comment.exception.CommentDeleteNotAllowedException;
 import com.redhorse.deokhugam.domain.comment.exception.CommentNotFoundException;
@@ -17,13 +13,17 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +36,17 @@ public class CommentServiceImpl implements CommentService {
   private final CommentRepository commentRepository;
   private final CommentMapper commentMapper;
 
+  @Caching(evict = {
+          @CacheEvict(value = "review", key = "#commentCreateRequest.reviewId()"),
+          @CacheEvict(value = "comment", key = "#commentCreateRequest.reviewId()")
+  })
   @Override
   public CommentDto create(CommentCreateRequest commentCreateRequest) {
     UUID reviewId = commentCreateRequest.reviewId();
     UUID userId = commentCreateRequest.userId();
     String content = commentCreateRequest.content();
 
-    Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+    Review review = reviewRepository.findByIdForUpdate(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
@@ -57,6 +61,7 @@ public class CommentServiceImpl implements CommentService {
     return commentMapper.toDto(savedComment);
   }
 
+  @CacheEvict(value = "comment", key = "#commentId")
   @Override
   public CommentDto update(UUID commentId, UUID requestUserId,
       CommentUpdateRequest commentUpdateRequest) {
@@ -76,6 +81,7 @@ public class CommentServiceImpl implements CommentService {
     return commentMapper.toDto(comment);
   }
 
+  @Cacheable(value = "comment", key = "#commentId")
   @Override
   @Transactional(readOnly = true)
   public CommentDto find(UUID commentId) {
@@ -84,11 +90,13 @@ public class CommentServiceImpl implements CommentService {
 
     log.debug("[Comment-Service] 단건 조회 작업 완료: commentId={}", commentId);
 
-    log.debug("[Comment-Service] 단건 조회 작업 완료: commentId={}", commentId);
-
     return commentMapper.toDto(comment);
   }
 
+  @Caching(evict = {
+          @CacheEvict(value = "comment", key = "#commentId"),
+          @CacheEvict(value = "review", allEntries = true)
+  })
   @Override
   public void softDelete(UUID commentId, UUID requestUserId) {
     validateRequestUser(requestUserId);
@@ -106,6 +114,10 @@ public class CommentServiceImpl implements CommentService {
     log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
 
+  @Caching(evict = {
+          @CacheEvict(value = "comment", key = "#commentId"),
+          @CacheEvict(value = "review", allEntries = true)
+  })
   @Override
   public void hardDelete(UUID commentId, UUID requestUserId) {
     validateRequestUser(requestUserId);
