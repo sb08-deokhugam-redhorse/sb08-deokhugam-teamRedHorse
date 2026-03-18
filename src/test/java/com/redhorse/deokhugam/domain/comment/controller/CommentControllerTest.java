@@ -89,6 +89,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
@@ -111,6 +112,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
@@ -131,6 +133,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNotFound());
@@ -149,6 +152,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNotFound());
@@ -162,6 +166,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(invalidRequest)))
           .andExpect(status().isBadRequest());
@@ -225,6 +230,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(get("/api/comments/{commentId}", commentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.id").value(commentId.toString()))
@@ -242,6 +248,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(get("/api/comments/{commentId}", invalidCommentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isNotFound());
     }
@@ -290,11 +297,11 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
-    void softDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
+    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 401 Unauthorized를 반환한다")
+    void softDelete_WhenHeaderMissing_ShouldReturnUnauthorized() throws Exception {
       // given & when & then
       mockMvc.perform(delete("/api/comments/{commentId}", commentId))
-          .andExpect(status().isBadRequest());
+          .andExpect(status().isUnauthorized());
     }
   }
 
@@ -341,11 +348,11 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
-    void hardDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
+    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 401 Unauthorized를 반환한다")
+    void hardDelete_WhenHeaderMissing_ShouldReturnUnauthorized() throws Exception {
       // given & when & then
       mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId))
-          .andExpect(status().isBadRequest());
+          .andExpect(status().isUnauthorized());
     }
   }
 
@@ -367,6 +374,7 @@ class CommentControllerTest {
 
       // when & then
       mockMvc.perform(get("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .param("reviewId", reviewId.toString())
               .param("direction", "DESC")
               .param("limit", "5"))
@@ -381,6 +389,7 @@ class CommentControllerTest {
       // given & when & then
       // review Id 파라미터 누락
       mockMvc.perform(get("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .param("direction", "DESC")
               .param("limit", "5"))
           .andExpect(status().isBadRequest());

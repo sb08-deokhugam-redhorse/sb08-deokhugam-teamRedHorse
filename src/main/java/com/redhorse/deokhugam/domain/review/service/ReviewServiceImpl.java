@@ -3,12 +3,7 @@ package com.redhorse.deokhugam.domain.review.service;
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
-import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
-import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
-import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
-import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
-import com.redhorse.deokhugam.domain.review.dto.ReviewSearchRequest;
-import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
+import com.redhorse.deokhugam.domain.review.dto.*;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.domain.review.exception.BookIdUserIdExistsException;
@@ -21,19 +16,18 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,24 +39,30 @@ public class ReviewServiceImpl implements ReviewService {
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
   private final ReviewMapper reviewMapper;
+  private final CacheManager cacheManager;
 
+  @CacheEvict(value = "book", key = "#request.bookId")
   @Transactional
   @Override
   public ReviewDto create(ReviewCreateRequest request) {
     UUID bookId = request.bookId();
     UUID userId = request.userId();
 
-    Book book = bookRepository.findById(bookId)
-        .orElseThrow(() -> new BookNotFoundException(bookId));
-    User user = userRepository
-        .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    Book book = getBook(bookId);
+    User user = getUser(userId);
 
-    if (reviewRepository.existsByBookIdAndUserId(bookId, userId)) {
+    if (reviewRepository.existsByBookIdAndUserIdAndDeletedAtIsNull(bookId, userId)) {
       throw new BookIdUserIdExistsException(bookId, userId);
     }
+
     try {
       Review review = new Review(request.content(), request.rating(), book, user);
       reviewRepository.save(review);
+
+      long newReviewCount = reviewRepository.countByBookId(bookId);
+      Double newRating = reviewRepository.averageRatingByBookId(bookId);
+      book.updateReviewsStats(newReviewCount, newRating != null ? newRating : 0.0);
+
       log.info("[Review-Service] 생성 작업 완료: reviewId = {}, userId = {}", review.getId(), userId);
       return reviewMapper.toDto(review);
     } catch (DataIntegrityViolationException e) {
@@ -71,6 +71,7 @@ public class ReviewServiceImpl implements ReviewService {
 
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
@@ -85,54 +86,60 @@ public class ReviewServiceImpl implements ReviewService {
       throw new ReviewValidationException("내용이 비면 안됩니다.");
     }
 
-    Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    if (!review.getUser().getId().equals(userId)) {
-      throw new OnlyTheReviewAuthorException(userId);
-    }
+    Review review = getReviewWithLock(reviewId);
+    validateReviewAuthor(review, userId);
 
     review.update(content, rating);
+
+    Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
+    review.getBook().updateRating(newRating != null ? newRating : 0.0);
+
+    Optional.ofNullable(cacheManager.getCache("book"))
+                    .ifPresent(cache -> cache.evict(review.getBook().getId()));
+
     log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
+
     return reviewMapper.toDto(review);
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public void softDelete(UUID reviewId, UUID userId) {
-    Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    if (!review.getUser().getId().equals(userId)) {
-      throw new OnlyTheReviewAuthorException(userId);
-    }
+    Review review = getReviewWithLock(reviewId);
+    validateReviewAuthor(review, userId);
 
     review.delete();
+
+    long newReviewCount = reviewRepository.countByBookId(review.getBook().getId());
+    Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
+    review.getBook().updateReviewsStats(newReviewCount, newRating != null ? newRating : 0.0);
+
+    Optional.ofNullable(cacheManager.getCache("book"))
+            .ifPresent(cache -> cache.evict(review.getBook().getId()));
+
     log.info("[Review-Service] 논리 삭제 작업 완료: reviewId = {}", reviewId);
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public void hardDelete(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
-    if (!review.getUser().getId().equals(userId)) {
-      throw new OnlyTheReviewAuthorException(userId);
-    }
+    validateReviewAuthor(review, userId);
 
     reviewRepository.delete(review);
     log.info("[Review-Service] 물리 삭제 작업 완료: reviewId = {}", reviewId);
   }
 
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public ReviewLikeDto like(UUID reviewId, UUID userId) {
-    Review review = reviewRepository.findByIdForUpdate(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+    Review review = getReviewWithLock(reviewId);
+    User user = getUser(userId);
 
     boolean like;
 
@@ -223,8 +230,7 @@ public class ReviewServiceImpl implements ReviewService {
   public ReviewDto findById(UUID reviewId, UUID userId) {
     Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-    userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+    getUser(userId);
 
     boolean likedByMe = reviewLikeRepository.findByReviewIdAndUserIdAndDeletedAtIsNull(reviewId,
             userId)
@@ -234,4 +240,25 @@ public class ReviewServiceImpl implements ReviewService {
     return reviewMapper.toDto(review, likedByMe);
   }
 
+  // 공통 로직
+  private Book getBook(UUID bookId) {
+    return bookRepository.findById(bookId)
+        .orElseThrow(() -> new BookNotFoundException(bookId));
+  }
+
+  private User getUser(UUID userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(userId));
+  }
+
+  private Review getReviewWithLock(UUID reviewId) {
+    return reviewRepository.findByIdForUpdate(reviewId)
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+  }
+
+  private void validateReviewAuthor(Review review, UUID userId) {
+    if (!review.getUser().getId().equals(userId)) {
+      throw new OnlyTheReviewAuthorException(userId);
+    }
+  }
 }

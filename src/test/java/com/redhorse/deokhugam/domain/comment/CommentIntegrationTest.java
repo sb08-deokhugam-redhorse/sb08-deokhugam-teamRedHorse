@@ -72,6 +72,7 @@ public class CommentIntegrationTest {
   User savedUser;
   Book savedBook;
   Review savedReview;
+  UUID requestUserId;
 
   @BeforeEach
   void setUp() {
@@ -84,6 +85,8 @@ public class CommentIntegrationTest {
 
     savedReview = new Review("너무 재밌어요", 5, savedBook, savedUser);
     reviewRepository.save(savedReview);
+
+    requestUserId = savedUser.getId();
   }
 
   @Nested
@@ -99,6 +102,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
@@ -118,6 +122,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
@@ -134,6 +139,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNotFound());
@@ -149,6 +155,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNotFound());
@@ -162,6 +169,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(post("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(invalidRequest)))
           .andExpect(status().isBadRequest());
@@ -227,6 +235,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(get("/api/comments/{commentId}", savedComment.getId())
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.id").value(savedComment.getId().toString()))
@@ -241,6 +250,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(get("/api/comments/{commentId}", invalidCommentId)
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isNotFound());
     }
@@ -299,15 +309,15 @@ public class CommentIntegrationTest {
     }
 
     @Test
-    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
-    void softDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
+    @DisplayName("댓글 논리 삭제 실패 - 요청 헤더가 누락된 경우 401 Unauthorized를 반환한다")
+    void softDelete_WhenHeaderMissing_ShouldReturnUnauthorized() throws Exception {
       // given
       Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
       commentRepository.save(savedComment);
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}", savedComment.getId()))
-          .andExpect(status().isBadRequest());
+          .andExpect(status().isUnauthorized());
     }
   }
 
@@ -363,15 +373,15 @@ public class CommentIntegrationTest {
     }
 
     @Test
-    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 400 Bad Request를 반환한다")
-    void hardDelete_WhenHeaderMissing_ShouldReturnBadRequest() throws Exception {
+    @DisplayName("댓글 물리 삭제 실패 - 요청 헤더가 누락된 경우 401 Unauthorized를 반환한다")
+    void hardDelete_WhenHeaderMissing_ShouldReturnUnauthorized() throws Exception {
       // given
       Comment savedComment = new Comment("댓글 등록", savedReview, savedUser);
       commentRepository.save(savedComment);
 
       // when & then
       mockMvc.perform(delete("/api/comments/{commentId}/hard", savedComment.getId()))
-          .andExpect(status().isBadRequest());
+          .andExpect(status().isUnauthorized());
     }
   }
 
@@ -392,6 +402,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(get("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .param("reviewId", savedReview.getId().toString())
               .param("direction", "DESC")
               .param("limit", "5"))
@@ -416,6 +427,7 @@ public class CommentIntegrationTest {
 
       // when & then
       mockMvc.perform(get("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .param("reviewId", savedReview.getId().toString())
               .param("direction", "DESC")
               .param("limit", "5"))
@@ -431,6 +443,7 @@ public class CommentIntegrationTest {
       // given & when & then
       // review Id 파라미터 누락
       mockMvc.perform(get("/api/comments")
+              .header("Deokhugam-Request-User-ID", requestUserId.toString())
               .param("direction", "DESC")
               .param("limit", "5"))
           .andExpect(status().isBadRequest());

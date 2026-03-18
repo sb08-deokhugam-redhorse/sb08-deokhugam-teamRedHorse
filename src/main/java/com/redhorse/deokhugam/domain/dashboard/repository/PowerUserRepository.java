@@ -14,21 +14,7 @@ public interface PowerUserRepository extends JpaRepository<PowerUser, UUID> {
 
     @Query("SELECT a FROM PowerUser a " +
             "WHERE a.period = :#{#request.period} " +
-            "AND (" +
-            "  (:#{#request.after == null ? true : false} = true) OR " +
-            "  (a.createdAt < :#{#request.after}) OR " +
-            "  (a.createdAt = :#{#request.after} AND a.id < :#{#request.cursor}) " +
-            ")"+
-            "ORDER BY a.ranking ASC")
-    Slice<PowerUser> getAllPowerUserDesc(@Param("request") DashboardRequest request, Pageable pageable);
-
-    @Query("SELECT a FROM PowerUser a " +
-            "WHERE a.period = :#{#request.period} " +
-            "AND (" +
-            "  (:#{#request.after == null ? true : false} = true) OR " +
-            "  (a.createdAt > :#{#request.after}) " +
-            "  OR (a.createdAt = :#{#request.after} AND a.id > :#{#request.cursor})" +
-            ")"+
-            "ORDER BY a.ranking ASC")
-    Slice<PowerUser> getAllPowerUserAsc(@Param("request") DashboardRequest request, Pageable pageable);
+            "AND FUNCTION('DATE', a.createdAt) = CURRENT_DATE " +
+            "ORDER BY a.ranking DESC")
+    Slice<PowerUser> getAllPowerUser(@Param("request") DashboardRequest request, Pageable pageable);
 }
