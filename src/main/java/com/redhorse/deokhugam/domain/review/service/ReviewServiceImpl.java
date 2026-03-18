@@ -94,7 +94,8 @@ public class ReviewServiceImpl implements ReviewService {
     Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
     review.getBook().updateRating(newRating != null ? newRating : 0.0);
 
-    cacheManager.getCache("book").evict(review.getBook().getId());
+    Optional.ofNullable(cacheManager.getCache("book"))
+                    .ifPresent(cache -> cache.evict(review.getBook().getId()));
 
     log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
 
@@ -114,7 +115,8 @@ public class ReviewServiceImpl implements ReviewService {
     Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
     review.getBook().updateReviewsStats(newReviewCount, newRating != null ? newRating : 0.0);
 
-    cacheManager.getCache("book").evict(review.getBook().getId());
+    Optional.ofNullable(cacheManager.getCache("book"))
+            .ifPresent(cache -> cache.evict(review.getBook().getId()));
 
     log.info("[Review-Service] 논리 삭제 작업 완료: reviewId = {}", reviewId);
   }

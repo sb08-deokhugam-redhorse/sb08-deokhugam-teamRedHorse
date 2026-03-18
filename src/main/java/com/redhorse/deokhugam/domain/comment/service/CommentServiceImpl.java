@@ -15,6 +15,7 @@ import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,10 +37,10 @@ public class CommentServiceImpl implements CommentService {
   private final UserRepository userRepository;
   private final CommentRepository commentRepository;
   private final CommentMapper commentMapper;
+  private final CacheManager cacheManager;
 
   @Caching(evict = {
-          @CacheEvict(value = "review", key = "#commentCreateRequest.reviewId()"),
-          @CacheEvict(value = "comment", key = "#commentCreateRequest.reviewId()")
+          @CacheEvict(value = "review", key = "#commentCreateRequest.reviewId()")
   })
   @Override
   public CommentDto create(CommentCreateRequest commentCreateRequest) {
@@ -94,8 +96,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   @Caching(evict = {
-          @CacheEvict(value = "comment", key = "#commentId"),
-          @CacheEvict(value = "review", allEntries = true)
+          @CacheEvict(value = "comment", key = "#commentId")
   })
   @Override
   public void softDelete(UUID commentId, UUID requestUserId) {
@@ -111,12 +112,15 @@ public class CommentServiceImpl implements CommentService {
     comment.softDelete();
     Review review = comment.getReview();
     review.decrementCommentCount();
+
+    Optional.ofNullable(cacheManager.getCache("review"))
+                    .ifPresent(cache -> cache.evict(review.getId()));
+
     log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
 
   @Caching(evict = {
-          @CacheEvict(value = "comment", key = "#commentId"),
-          @CacheEvict(value = "review", allEntries = true)
+          @CacheEvict(value = "comment", key = "#commentId")
   })
   @Override
   public void hardDelete(UUID commentId, UUID requestUserId) {
@@ -129,6 +133,9 @@ public class CommentServiceImpl implements CommentService {
     if (!comment.getUser().getId().equals(requestUserId)) {
       throw new CommentDeleteNotAllowedException(commentId);
     }
+
+    Optional.ofNullable(cacheManager.getCache("review"))
+                    .ifPresent(cache -> cache.evict(comment.getReview().getId()));
 
     commentRepository.delete(comment);
 

@@ -23,6 +23,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -51,6 +53,9 @@ class CommentServiceTest {
 
   @Mock
   private CommentMapper commentMapper;
+
+  @Mock
+  private CacheManager cacheManager;
 
   @InjectMocks
   private CommentServiceImpl commentService;
@@ -277,7 +282,10 @@ class CommentServiceTest {
       given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
           Optional.of(mockComment));
 
-      // when
+      Cache cache = mock(Cache.class);
+      given(cacheManager.getCache("review")).willReturn(cache);
+
+        // when
       commentService.softDelete(commentId, requestUserId);
 
       // then
@@ -361,6 +369,12 @@ class CommentServiceTest {
       Comment mockComment = mock(Comment.class);
       given(mockComment.getUser()).willReturn(mockUser);
       given(commentRepository.findById(eq(commentId))).willReturn(Optional.of(mockComment));
+
+      Review mockReview = mock(Review.class);
+      given(mockComment.getReview()).willReturn(mockReview);
+
+      Cache cache = mock(Cache.class);
+      given(cacheManager.getCache("review")).willReturn(cache);
 
       // when
       commentService.hardDelete(commentId, requestUserId);
