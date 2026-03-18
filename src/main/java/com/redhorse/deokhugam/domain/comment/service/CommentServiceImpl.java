@@ -134,12 +134,16 @@ public class CommentServiceImpl implements CommentService {
       throw new CommentDeleteNotAllowedException(commentId);
     }
 
-    Optional.ofNullable(cacheManager.getCache("review"))
-                    .ifPresent(cache -> cache.evict(comment.getReview().getId()));
+    // 논리 삭제가 이루어지 않은 경우에만 count 깎기
+    if (comment.getDeletedAt() == null) {
+      Review review = comment.getReview();
+      review.decrementCommentCount();
+
+      Optional.ofNullable(cacheManager.getCache("review"))
+          .ifPresent(cache -> cache.evict(comment.getReview().getId()));
+    }
 
     commentRepository.delete(comment);
-    Review review = comment.getReview();
-    review.decrementCommentCount();
 
     log.info("[Comment-Service] 물리 삭제 작업 완료: commentId={}", commentId);
   }
