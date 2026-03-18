@@ -25,8 +25,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRep
     @Cacheable(value = "review", key = "#reviewId")
     Optional<Review> findByIdAndDeletedAtIsNull(UUID reviewId);
 
-    boolean existsByIdAndDeletedAtIsNull(UUID id);
-
     boolean existsByBookIdAndUserIdAndDeletedAtIsNull(UUID bookId, UUID userId);
 
     @Query("SELECT COUNT(r) FROM Review r WHERE r.book.id = :bookId AND r.deletedAt IS NULL")
