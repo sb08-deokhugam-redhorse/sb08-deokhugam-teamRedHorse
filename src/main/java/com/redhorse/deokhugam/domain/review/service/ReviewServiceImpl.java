@@ -3,12 +3,7 @@ package com.redhorse.deokhugam.domain.review.service;
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
-import com.redhorse.deokhugam.domain.review.dto.CursorPageResponseReviewDto;
-import com.redhorse.deokhugam.domain.review.dto.ReviewCreateRequest;
-import com.redhorse.deokhugam.domain.review.dto.ReviewDto;
-import com.redhorse.deokhugam.domain.review.dto.ReviewLikeDto;
-import com.redhorse.deokhugam.domain.review.dto.ReviewSearchRequest;
-import com.redhorse.deokhugam.domain.review.dto.ReviewUpdateRequest;
+import com.redhorse.deokhugam.domain.review.dto.*;
 import com.redhorse.deokhugam.domain.review.entity.Review;
 import com.redhorse.deokhugam.domain.review.entity.ReviewLike;
 import com.redhorse.deokhugam.domain.review.exception.BookIdUserIdExistsException;
@@ -21,21 +16,18 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -47,7 +39,9 @@ public class ReviewServiceImpl implements ReviewService {
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
   private final ReviewMapper reviewMapper;
+  private final CacheManager cacheManager;
 
+  @CacheEvict(value = "book", key = "#request.bookId")
   @Transactional
   @Override
   public ReviewDto create(ReviewCreateRequest request) {
@@ -77,7 +71,7 @@ public class ReviewServiceImpl implements ReviewService {
 
   }
 
-  @Caching(evict = {@CacheEvict(value = "review", key = "#reviewId")})
+  @CacheEvict(value = "review", key = "#reviewId")
   @Transactional
   @Override
   public ReviewDto update(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
@@ -100,6 +94,9 @@ public class ReviewServiceImpl implements ReviewService {
     Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
     review.getBook().updateRating(newRating != null ? newRating : 0.0);
 
+    Optional.ofNullable(cacheManager.getCache("book"))
+                    .ifPresent(cache -> cache.evict(review.getBook().getId()));
+
     log.info("[Review-Service] 수정 작업 완료: reviewId = {}, userID = {}", reviewId, userId);
 
     return reviewMapper.toDto(review);
@@ -117,6 +114,9 @@ public class ReviewServiceImpl implements ReviewService {
     long newReviewCount = reviewRepository.countByBookId(review.getBook().getId());
     Double newRating = reviewRepository.averageRatingByBookId(review.getBook().getId());
     review.getBook().updateReviewsStats(newReviewCount, newRating != null ? newRating : 0.0);
+
+    Optional.ofNullable(cacheManager.getCache("book"))
+            .ifPresent(cache -> cache.evict(review.getBook().getId()));
 
     log.info("[Review-Service] 논리 삭제 작업 완료: reviewId = {}", reviewId);
   }

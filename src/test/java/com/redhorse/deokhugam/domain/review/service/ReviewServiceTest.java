@@ -1,13 +1,5 @@
 package com.redhorse.deokhugam.domain.review.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import com.redhorse.deokhugam.domain.book.entity.Book;
 import com.redhorse.deokhugam.domain.book.exception.BookNotFoundException;
 import com.redhorse.deokhugam.domain.book.repository.BookRepository;
@@ -26,11 +18,6 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +25,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewServiceTest {
@@ -60,6 +63,9 @@ public class ReviewServiceTest {
 
   @InjectMocks
   private ReviewServiceImpl reviewService;
+
+  @Mock
+  private CacheManager cacheManager;
 
   private UUID reviewId;
   private UUID bookId;
@@ -181,6 +187,9 @@ public class ReviewServiceTest {
     );
     given(reviewMapper.toDto(any(Review.class))).willReturn(updateReviewDto);
 
+    Cache cache = mock(Cache.class);
+    given(cacheManager.getCache("book")).willReturn(cache);
+
     // when
     ReviewDto result = reviewService.update(reviewId, userId, request);
 
@@ -225,6 +234,9 @@ public class ReviewServiceTest {
     // given
     given(reviewRepository.findByIdForUpdate(eq(reviewId)))
         .willReturn(Optional.of(review));
+
+    Cache cache = mock(Cache.class);
+    given(cacheManager.getCache("book")).willReturn(cache);
 
     // when
     reviewService.softDelete(reviewId, userId);
