@@ -451,7 +451,11 @@ class CommentServiceTest {
       int limit = 5;
       CommentPageRequest request = new CommentPageRequest(reviewId, "DESC", null, null, limit);
 
-      given(reviewRepository.existsByIdAndDeletedAtIsNull(reviewId)).willReturn(true);
+      Review mockReview = mock(Review.class);
+      given(mockReview.getCommentCount()).willReturn(10L);
+
+      given(reviewRepository.findByIdAndDeletedAtIsNull(reviewId))
+          .willReturn(Optional.of(mockReview));
 
       List<Comment> mockComments = new ArrayList<>();
       for (int i = 0; i < limit + 1 ; i++) {
@@ -466,7 +470,6 @@ class CommentServiceTest {
       Comment lastCommentOfContent = mockComments.get(limit - 1);
 
       given(commentRepository.findAllByCursor(request)).willReturn(mockComments);
-      given(commentRepository.countByReviewIdAndDeletedAtIsNull(eq(reviewId))).willReturn(10L);
       given(commentMapper.toDto(any(Comment.class))).willReturn(mock(CommentDto.class));
 
       // when
@@ -488,7 +491,7 @@ class CommentServiceTest {
       UUID invalidReviewId = UUID.randomUUID();
       CommentPageRequest request = new CommentPageRequest(invalidReviewId, "DESC", null, null, 5);
 
-      given(reviewRepository.existsByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(false);
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> commentService.findAll(request))

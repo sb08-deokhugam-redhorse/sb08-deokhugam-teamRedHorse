@@ -151,9 +151,8 @@ public class CommentServiceImpl implements CommentService {
   @Override
   @Transactional(readOnly = true)
   public CursorPageResponseCommentDto findAll(CommentPageRequest commentPageRequest) {
-    if (!reviewRepository.existsByIdAndDeletedAtIsNull(commentPageRequest.reviewId())) {
-      throw new ReviewNotFoundException(commentPageRequest.reviewId());
-    }
+    Review review = reviewRepository.findByIdAndDeletedAtIsNull(commentPageRequest.reviewId())
+        .orElseThrow(() -> new ReviewNotFoundException(commentPageRequest.reviewId()));
 
     List<Comment> comments = commentRepository.findAllByCursor(commentPageRequest);
 
@@ -169,8 +168,7 @@ public class CommentServiceImpl implements CommentService {
       nextAfter = lastComment.getCreatedAt();
     }
 
-    long totalElements = commentRepository.countByReviewIdAndDeletedAtIsNull(
-        commentPageRequest.reviewId());
+    long totalElements = review.getCommentCount();
 
     log.debug("[Comment-Service] 다건 조회 작업 완료: 결과 건수={}, 전체 건수={}, 다음 커서 존재={}",
         content.size(), totalElements, hasNext);

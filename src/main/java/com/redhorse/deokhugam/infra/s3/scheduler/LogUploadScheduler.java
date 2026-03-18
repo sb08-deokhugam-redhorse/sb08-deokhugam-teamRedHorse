@@ -80,8 +80,6 @@ public class LogUploadScheduler
         for (String pathStr : failedPaths) {
             try {
                 s3LogStorage.upload(Paths.get(pathStr));
-                stillFailed.remove(pathStr);
-                Files.write(failedFile, stillFailed);
                 log.info("[Log-Scheduler] 재업로드 성공: path={}", pathStr);
             } catch (S3UploadException e) {
                 log.error("[Log-Scheduler] 재업로드 실패: path={}", pathStr);
@@ -106,7 +104,7 @@ public class LogUploadScheduler
             s3LogStorage.upload(path);
         } catch (S3UploadException e) {
             log.error("[Log-Scheduler] 로그 파일 업로드 실패, 실패 목록에 저장: path={}", path);
-            saveFiledPath(path);
+            saveFailedPath(path);
         }
     }
 
@@ -115,7 +113,7 @@ public class LogUploadScheduler
      *
      * @param path 저장할 실패 파일 경로
      */
-    private void saveFiledPath(Path path) {
+    private void saveFailedPath(Path path) {
         Path failedFile = Paths.get(logDir, FAILED_UPLOADS_FILE);
 
         try {
