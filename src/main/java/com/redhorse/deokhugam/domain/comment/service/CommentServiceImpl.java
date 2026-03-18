@@ -134,8 +134,14 @@ public class CommentServiceImpl implements CommentService {
       throw new CommentDeleteNotAllowedException(commentId);
     }
 
-    Optional.ofNullable(cacheManager.getCache("review"))
-                    .ifPresent(cache -> cache.evict(comment.getReview().getId()));
+    // 논리 삭제가 이루어지지 않은 경우에만 count 깎기
+    if (comment.getDeletedAt() == null) {
+      Review review = comment.getReview();
+      review.decrementCommentCount();
+
+      Optional.ofNullable(cacheManager.getCache("review"))
+          .ifPresent(cache -> cache.evict(comment.getReview().getId()));
+    }
 
     commentRepository.delete(comment);
 
