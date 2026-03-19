@@ -172,4 +172,7 @@ public class UserServiceImpl implements UserService {
 
     log.info("[User-Service] 사용자 물리 삭제 완료: userId = {}", userId);
   }
+  /**
+   * CI테스트입니다
+   */
 }
