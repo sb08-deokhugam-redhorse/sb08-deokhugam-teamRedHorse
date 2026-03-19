@@ -1,16 +1,5 @@
 package com.redhorse.deokhugam.domain.comment.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
 import com.redhorse.deokhugam.domain.comment.dto.CommentCreateRequest;
 import com.redhorse.deokhugam.domain.comment.dto.CommentDto;
 import com.redhorse.deokhugam.domain.comment.dto.CommentPageRequest;
@@ -27,11 +16,6 @@ import com.redhorse.deokhugam.domain.review.repository.ReviewRepository;
 import com.redhorse.deokhugam.domain.user.entity.User;
 import com.redhorse.deokhugam.domain.user.exception.UserNotFoundException;
 import com.redhorse.deokhugam.domain.user.repository.UserRepository;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,6 +23,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -54,6 +53,9 @@ class CommentServiceTest {
 
   @Mock
   private CommentMapper commentMapper;
+
+  @Mock
+  private CacheManager cacheManager;
 
   @InjectMocks
   private CommentServiceImpl commentService;
@@ -77,7 +79,7 @@ class CommentServiceTest {
       Review mockReview = mock(Review.class);
       User mockUser = mock(User.class);
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+      given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(
           Optional.of(mockReview));
       given(userRepository.findById(eq(userId))).willReturn(Optional.of(mockUser));
       given(mockUser.getNickname()).willReturn("감자");
@@ -106,7 +108,7 @@ class CommentServiceTest {
       UUID userId = UUID.randomUUID();
       CommentCreateRequest commentReq = new CommentCreateRequest(invalidReviewId, userId, "하이");
 
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(
+      given(reviewRepository.findByIdForUpdate(eq(invalidReviewId))).willReturn(
           Optional.empty());
 
       // when & then
@@ -126,7 +128,7 @@ class CommentServiceTest {
       CommentCreateRequest commentReq = new CommentCreateRequest(reviewId, invalidUserId, "하이");
 
       Review mockReview = mock(Review.class);
-      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(reviewId))).willReturn(
+      given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(
           Optional.of(mockReview));
       given(userRepository.findById(eq(invalidUserId))).willReturn(Optional.empty());
 
@@ -280,7 +282,10 @@ class CommentServiceTest {
       given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
           Optional.of(mockComment));
 
-      // when
+      Cache cache = mock(Cache.class);
+      given(cacheManager.getCache("review")).willReturn(cache);
+
+        // when
       commentService.softDelete(commentId, requestUserId);
 
       // then
@@ -365,6 +370,12 @@ class CommentServiceTest {
       given(mockComment.getUser()).willReturn(mockUser);
       given(commentRepository.findById(eq(commentId))).willReturn(Optional.of(mockComment));
 
+      Review mockReview = mock(Review.class);
+      given(mockComment.getReview()).willReturn(mockReview);
+
+      Cache cache = mock(Cache.class);
+      given(cacheManager.getCache("review")).willReturn(cache);
+
       // when
       commentService.hardDelete(commentId, requestUserId);
 
@@ -440,7 +451,11 @@ class CommentServiceTest {
       int limit = 5;
       CommentPageRequest request = new CommentPageRequest(reviewId, "DESC", null, null, limit);
 
-      given(reviewRepository.existsByIdAndDeletedAtIsNull(reviewId)).willReturn(true);
+      Review mockReview = mock(Review.class);
+      given(mockReview.getCommentCount()).willReturn(10L);
+
+      given(reviewRepository.findByIdAndDeletedAtIsNull(reviewId))
+          .willReturn(Optional.of(mockReview));
 
       List<Comment> mockComments = new ArrayList<>();
       for (int i = 0; i < limit + 1 ; i++) {
@@ -455,7 +470,6 @@ class CommentServiceTest {
       Comment lastCommentOfContent = mockComments.get(limit - 1);
 
       given(commentRepository.findAllByCursor(request)).willReturn(mockComments);
-      given(commentRepository.countByReviewIdAndDeletedAtIsNull(eq(reviewId))).willReturn(10L);
       given(commentMapper.toDto(any(Comment.class))).willReturn(mock(CommentDto.class));
 
       // when
@@ -477,7 +491,7 @@ class CommentServiceTest {
       UUID invalidReviewId = UUID.randomUUID();
       CommentPageRequest request = new CommentPageRequest(invalidReviewId, "DESC", null, null, 5);
 
-      given(reviewRepository.existsByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(false);
+      given(reviewRepository.findByIdAndDeletedAtIsNull(eq(invalidReviewId))).willReturn(Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> commentService.findAll(request))
