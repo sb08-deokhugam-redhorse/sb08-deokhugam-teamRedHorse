@@ -40,27 +40,6 @@ public class CaffeineConfig {
                                 .recordStats()
                                 .build()
                 ),
-
-                new CaffeineCache("popularReviews",
-                        Caffeine.newBuilder()
-                                .expireAfterWrite(24, TimeUnit.HOURS)
-                                .maximumSize(500)
-                                .recordStats()
-                                .build()),
-
-                new CaffeineCache("powerUsers",
-                        Caffeine.newBuilder()
-                                .expireAfterWrite(24, TimeUnit.HOURS)
-                                .maximumSize(500)
-                                .recordStats()
-                                .build()),
-
-                new CaffeineCache("popularBooks",
-                        Caffeine.newBuilder()
-                                .expireAfterWrite(24, TimeUnit.HOURS)
-                                .maximumSize(500)
-                                .recordStats()
-                                .build()),
                 new CaffeineCache("review",
                        Caffeine.newBuilder()
                                .expireAfterWrite(1, TimeUnit.HOURS)
