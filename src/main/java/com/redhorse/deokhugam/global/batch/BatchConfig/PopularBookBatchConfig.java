@@ -55,9 +55,6 @@ public class PopularBookBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
-                        // 새 배치가 있으니 캐시 비우기
-                        dashboardService.clearBooksDashboardCache();
-
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[PopularBook-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
                                     jobExecution.getAllFailureExceptions());
