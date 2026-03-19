@@ -59,9 +59,6 @@ public class PopularReviewBatchConfig {
                 .listener(new JobExecutionListener() {
                     @Override
                     public void afterJob(JobExecution jobExecution) {
-                        // 새 배치가 있으니 캐시 비우기
-                        dashboardService.clearReviewDashboardCache();
-
                         if (jobExecution.getStatus() == BatchStatus.FAILED) {
                             log.error("[Popularreview-batch] 에러 <배치 실행 중 에러 발생>: detail = {}",
                                     jobExecution.getAllFailureExceptions());

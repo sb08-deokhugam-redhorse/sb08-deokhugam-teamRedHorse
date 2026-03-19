@@ -37,6 +37,7 @@ public interface DashboardMapper {
     @Mapping(source = "book.id", target = "bookId")
     @Mapping(source = "book.title", target = "title")
     @Mapping(source = "book.thumbnailUrl", target = "thumbnailUrl", qualifiedByName = "toPresignedUrl")
+    @Mapping(source = "book.author", target = "author")
     @Mapping(source = "ranking", target = "rank")
     PopularBookDto entityToBookDto(PopularBook popularBook);
 }

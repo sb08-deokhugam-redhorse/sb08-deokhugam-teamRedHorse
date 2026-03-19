@@ -9,6 +9,7 @@ public record PopularBookDto(
         UUID id,
         UUID bookId,
         String title,
+        String author,
         String thumbnailUrl,
         PeriodType period,
         long rank,
