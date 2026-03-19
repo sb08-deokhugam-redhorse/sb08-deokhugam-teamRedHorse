@@ -21,13 +21,4 @@ public interface DashboardService {
     CursorPageResponsePowerUserDto getPowerUsers(DashboardRequest request);
 
     CursorPageResponsePopularBookDto getPopularBooks(DashboardRequest request);
-
-    @CacheEvict(value = "popularReviews", allEntries = true)
-    void clearReviewDashboardCache();
-
-    @CacheEvict(value = "powerUsers", allEntries = true)
-    void clearUserDashboardCache();
-
-    @CacheEvict(value = "popularBooks", allEntries = true)
-    void clearBooksDashboardCache();
 }

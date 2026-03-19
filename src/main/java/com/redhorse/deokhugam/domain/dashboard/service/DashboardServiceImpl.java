@@ -38,7 +38,6 @@ public class DashboardServiceImpl implements DashboardService {
     private final DashboardMapper dashboardMapper;
 
     @Override
-    @Cacheable(value = "popularReviews", key = "#request") // DTO가 record 타입이면 DTO자체를 키로 설정 가능
     public CursorPageResponsePopularReviewkDto getPopularReviews(DashboardRequest request) {
 
         Sort.Direction direction = Sort.Direction.fromString(request.direction());
@@ -78,7 +77,6 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    @Cacheable(value = "powerUsers", key = "#request")
     public CursorPageResponsePowerUserDto getPowerUsers(DashboardRequest request) {
 
         Sort.Direction direction = Sort.Direction.fromString(request.direction());
@@ -116,7 +114,6 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    @Cacheable(value = "popularBooks", key = "#request")
     public CursorPageResponsePopularBookDto getPopularBooks(DashboardRequest request) {
 
         Sort.Direction direction = Sort.Direction.fromString(request.direction());
@@ -153,21 +150,5 @@ public class DashboardServiceImpl implements DashboardService {
                 objectCount,
                 hasNext
         );
-    }
-
-    // CacheEvict로 배치에서 캐시만 비울려고 만들었습니다.
-    @CacheEvict(value = "popularReviews", allEntries = true)
-    @Override
-    public void clearReviewDashboardCache() {
-    }
-
-    @CacheEvict(value = "powerUsers", allEntries = true)
-    @Override
-    public void clearUserDashboardCache() {
-    }
-
-    @CacheEvict(value = "popularBooks", allEntries = true)
-    @Override
-    public void clearBooksDashboardCache() {
     }
 }
