@@ -109,15 +109,16 @@ public class CommentServiceImpl implements CommentService {
       throw new CommentDeleteNotAllowedException(commentId);
     }
 
-    comment.softDelete();
-
     // 삭제 처리 트랜잭션동안 락 걸기
-    Review review = reviewRepository.findByIdForUpdate(comment.getReview().getId())
-        .orElseThrow(() -> new ReviewNotFoundException(comment.getReview().getId()));
+    UUID reviewId = comment.getReview().getId();
+    Review review = reviewRepository.findByIdForUpdate(reviewId)
+        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+
+    comment.softDelete();
     review.decrementCommentCount();
 
     Optional.ofNullable(cacheManager.getCache("review"))
-        .ifPresent(cache -> cache.evict(review.getId()));
+        .ifPresent(cache -> cache.evict(reviewId));
 
     log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
@@ -140,12 +141,13 @@ public class CommentServiceImpl implements CommentService {
     // 논리 삭제가 이루어지지 않은 경우에만 count 깎기
     if (comment.getDeletedAt() == null) {
       // 삭제 처리 트랜잭션동안 락 걸기
-      Review review = reviewRepository.findByIdForUpdate(comment.getReview().getId())
-          .orElseThrow(() -> new ReviewNotFoundException(comment.getReview().getId()));
+      UUID reviewId = comment.getReview().getId();
+      Review review = reviewRepository.findByIdForUpdate(reviewId)
+          .orElseThrow(() -> new ReviewNotFoundException(reviewId));
       review.decrementCommentCount();
 
       Optional.ofNullable(cacheManager.getCache("review"))
-          .ifPresent(cache -> cache.evict(comment.getReview().getId()));
+          .ifPresent(cache -> cache.evict(reviewId));
     }
 
     commentRepository.delete(comment);
