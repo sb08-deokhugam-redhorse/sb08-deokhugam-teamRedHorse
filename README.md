@@ -465,7 +465,7 @@
         │   │   │   ├── controller
         │   │   │   ├── repository
         │   │   │   ├── service
-        │   │   │   └── CommentInregrationTest
+        │   │   │   └── CommentIntegrationTest
         │   │   ├── alarm/
         │   │   ├── book/
         │   │   ├── dashboard/
