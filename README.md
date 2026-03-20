@@ -14,9 +14,10 @@
 
 <br/>
 
-## AWS Architecture
+## 🏝️ AWS Architecture
 <img width="970" height="434" alt="Image" src="https://github.com/user-attachments/assets/67b2cb22-2b27-4a7b-aff7-c7660e456847" />
 
+<br/>
 <br/>
 
 ## 📌 프로젝트 개요
