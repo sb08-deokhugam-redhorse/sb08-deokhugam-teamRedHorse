@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID>, CommentRepositoryCustom {
 
-  @EntityGraph(attributePaths = {"review", "user"})
+  @EntityGraph(attributePaths = {"user"})
   Optional<Comment> findByIdAndDeletedAtIsNull(UUID commentId);
 
 }
