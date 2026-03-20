@@ -40,7 +40,7 @@ public class CommentServiceImpl implements CommentService {
   private final CacheManager cacheManager;
 
   @Caching(evict = {
-          @CacheEvict(value = "review", key = "#commentCreateRequest.reviewId()")
+      @CacheEvict(value = "review", key = "#commentCreateRequest.reviewId()")
   })
   @Override
   public CommentDto create(CommentCreateRequest commentCreateRequest) {
@@ -96,7 +96,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   @Caching(evict = {
-          @CacheEvict(value = "comment", key = "#commentId")
+      @CacheEvict(value = "comment", key = "#commentId")
   })
   @Override
   public void softDelete(UUID commentId, UUID requestUserId) {
@@ -110,17 +110,20 @@ public class CommentServiceImpl implements CommentService {
     }
 
     comment.softDelete();
-    Review review = comment.getReview();
+
+    // 삭제 처리 트랜잭션동안 락 걸기
+    Review review = reviewRepository.findByIdForUpdate(comment.getReview().getId())
+        .orElseThrow(() -> new ReviewNotFoundException(comment.getReview().getId()));
     review.decrementCommentCount();
 
     Optional.ofNullable(cacheManager.getCache("review"))
-                    .ifPresent(cache -> cache.evict(review.getId()));
+        .ifPresent(cache -> cache.evict(review.getId()));
 
     log.info("[Comment-Service] 논리 삭제 작업 완료: commentId={}", commentId);
   }
 
   @Caching(evict = {
-          @CacheEvict(value = "comment", key = "#commentId")
+      @CacheEvict(value = "comment", key = "#commentId")
   })
   @Override
   public void hardDelete(UUID commentId, UUID requestUserId) {
@@ -136,7 +139,9 @@ public class CommentServiceImpl implements CommentService {
 
     // 논리 삭제가 이루어지지 않은 경우에만 count 깎기
     if (comment.getDeletedAt() == null) {
-      Review review = comment.getReview();
+      // 삭제 처리 트랜잭션동안 락 걸기
+      Review review = reviewRepository.findByIdForUpdate(comment.getReview().getId())
+          .orElseThrow(() -> new ReviewNotFoundException(comment.getReview().getId()));
       review.decrementCommentCount();
 
       Optional.ofNullable(cacheManager.getCache("review"))

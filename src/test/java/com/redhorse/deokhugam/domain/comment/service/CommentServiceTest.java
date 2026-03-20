@@ -268,19 +268,21 @@ class CommentServiceTest {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
+      UUID reviewId = UUID.randomUUID();
 
       given(userRepository.existsById(requestUserId)).willReturn(true);
 
       User mockUser = mock(User.class);
-      given(mockUser.getId()).willReturn(requestUserId);
-
       Review mockReview = mock(Review.class);
-
       Comment mockComment = mock(Comment.class);
+
+      given(mockUser.getId()).willReturn(requestUserId);
       given(mockComment.getUser()).willReturn(mockUser);
       given(mockComment.getReview()).willReturn(mockReview);
-      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(
-          Optional.of(mockComment));
+      given(mockReview.getId()).willReturn(reviewId);
+
+      given(commentRepository.findByIdAndDeletedAtIsNull(eq(commentId))).willReturn(Optional.of(mockComment));
+      given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(Optional.of(mockReview));
 
       Cache cache = mock(Cache.class);
       given(cacheManager.getCache("review")).willReturn(cache);
@@ -291,6 +293,8 @@ class CommentServiceTest {
       // then
       then(commentRepository).should().findByIdAndDeletedAtIsNull(eq(commentId));
       then(mockComment).should().softDelete();
+      then(reviewRepository).should().findByIdForUpdate(eq(reviewId));
+      then(mockReview).should().decrementCommentCount();
     }
 
     @Test
@@ -360,18 +364,21 @@ class CommentServiceTest {
       // given
       UUID commentId = UUID.randomUUID();
       UUID requestUserId = UUID.randomUUID();
+      UUID reviewId = UUID.randomUUID();
 
       given(userRepository.existsById(requestUserId)).willReturn(true);
 
       User mockUser = mock(User.class);
-      given(mockUser.getId()).willReturn(requestUserId);
-
-      Comment mockComment = mock(Comment.class);
-      given(mockComment.getUser()).willReturn(mockUser);
-      given(commentRepository.findById(eq(commentId))).willReturn(Optional.of(mockComment));
-
       Review mockReview = mock(Review.class);
+      Comment mockComment = mock(Comment.class);
+
+      given(mockUser.getId()).willReturn(requestUserId);
+      given(mockComment.getUser()).willReturn(mockUser);
       given(mockComment.getReview()).willReturn(mockReview);
+      given(mockReview.getId()).willReturn(reviewId);
+
+      given(commentRepository.findById(eq(commentId))).willReturn(Optional.of(mockComment));
+      given(reviewRepository.findByIdForUpdate(eq(reviewId))).willReturn(Optional.of(mockReview));
 
       Cache cache = mock(Cache.class);
       given(cacheManager.getCache("review")).willReturn(cache);
@@ -382,6 +389,8 @@ class CommentServiceTest {
       // then
       then(commentRepository).should().findById(eq(commentId));
       then(commentRepository).should().delete(eq(mockComment));
+      then(reviewRepository).should().findByIdForUpdate(eq(reviewId));
+      then(mockReview).should().decrementCommentCount();
     }
 
     @Test
