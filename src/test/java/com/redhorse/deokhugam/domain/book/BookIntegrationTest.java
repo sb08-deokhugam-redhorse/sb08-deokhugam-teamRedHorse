@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhorse.deokhugam.domain.book.dto.request.BookCreateRequest;
 import com.redhorse.deokhugam.infra.s3.S3ImageStorage;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -53,7 +53,7 @@ class BookIntegrationTest
     @DisplayName("도서 등록 POST /api/books")
     class CreateBook {
         @Test
-        @DisplayName("성공 - 유효한 요청이면 201 Created와 도서 정보를 반환한다")
+        @DisplayName("성공 - 유효한 요청이면 201 Created와 도서 정보를 반환한다.")
         void success_withValidRequest_returns201() throws Exception {
             MockMultipartFile bookData = new MockMultipartFile(
                     "bookData", "", MediaType.APPLICATION_JSON_VALUE,
@@ -70,7 +70,7 @@ class BookIntegrationTest
         }
 
         @Test
-        @DisplayName("성공 - 썸네일 이미지와 함께 요청하면 201 Created를 반환한다")
+        @DisplayName("성공 - 썸네일 이미지와 함께 요청하면 201 Created를 반환한다.")
         void success_withThumbnailImage_returns201() throws Exception {
             MockMultipartFile bookData = new MockMultipartFile(
                     "bookData", "", MediaType.APPLICATION_JSON_VALUE,
@@ -90,7 +90,7 @@ class BookIntegrationTest
         }
 
         @Test
-        @DisplayName("성공 - ISBN 없이 요청하면 201 Created를 반환한다")
+        @DisplayName("성공 - ISBN 없이 요청하면 201 Created를 반환한다.")
         void success_withoutIsbn_returns201() throws Exception {
             BookCreateRequest requestWithoutIsbn = new BookCreateRequest(
                     "자바 프로그래밍", "김자바", "자바 소개", "출판사A",
@@ -110,7 +110,7 @@ class BookIntegrationTest
         }
 
         @Test
-        @DisplayName("실패 - 제목이 없으면 400 Bad Request를 반환한다")
+        @DisplayName("실패 - 제목이 없으면 400 Bad Request를 반환한다.")
         void fail_withBlankTitle_returns400() throws Exception {
             BookCreateRequest invalidRequest = new BookCreateRequest(
                     "", "김자바", "자바 소개", "출판사A",
@@ -129,7 +129,7 @@ class BookIntegrationTest
         }
 
         @Test
-        @DisplayName("실패 - ISBN 형식이 올바르지 않으면 400 Bad Request를 반환한다")
+        @DisplayName("실패 - ISBN 형식이 올바르지 않으면 400 Bad Request를 반환한다.")
         void fail_withInvalidIsbn_returns400() throws Exception {
             BookCreateRequest invalidRequest = new BookCreateRequest(
                     "자바 프로그래밍", "김자바", "자바 소개", "출판사A",
@@ -148,7 +148,7 @@ class BookIntegrationTest
         }
 
         @Test
-        @DisplayName("실패 - ISBN이 중복되면 409 Conflict를 반환한다")
+        @DisplayName("실패 - ISBN이 중복되면 409 Conflict를 반환한다.")
         void fail_withDuplicateIsbn_returns409() throws Exception {
             MockMultipartFile bookData = new MockMultipartFile(
                     "bookData", "", MediaType.APPLICATION_JSON_VALUE,
