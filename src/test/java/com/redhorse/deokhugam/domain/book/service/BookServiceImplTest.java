@@ -98,6 +98,7 @@ class BookServiceImplTest
             assertThat(result.title()).isEqualTo("자바 프로그래밍");
             then(bookRepository).should(times(1)).existsByIsbn("9788965745464");
             then(bookRepository).should(times(1)).save(any(Book.class));
+            then(bookMapper).should().toBookDto(any(Book.class));
         }
 
         @Test
