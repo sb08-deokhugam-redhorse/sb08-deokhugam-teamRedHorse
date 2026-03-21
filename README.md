@@ -108,7 +108,7 @@
 
 <br/>
 
-## 구현 기능 상세
+## 🔍 구현 기능 상세
 ### **박성조 (사용자 관리)**
 ![사용자 관리](https://github.com/user-attachments/assets/2a63250f-79d1-45e6-89c4-4c66ddc80de3)
 
